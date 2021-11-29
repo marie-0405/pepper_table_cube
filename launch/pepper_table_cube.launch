@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="launch_control_trajectory_all" default="true"/>
+  <!-- Load the URDF Model -->
+  <include file="$(find pepper_description)/launch/pepper_upload.launch" />  
+  
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find pepper_table_cube)/worlds/pepper_table_cube.world"/>
+    <arg name="paused" value="true"/>
+  </include>
+
+  <!-- Call Pepper Robot Trajectory Controller -->
+
+  <include file="$(find pepper_control)/launch/pepper_control_trajectory.launch" unless="$(arg launch_control_trajectory_all)"/>
+  <include file="$(find pepper_control)/launch/pepper_control_trajectory_all.launch" if="$(arg launch_control_trajectory_all)"/>
+  <!-- <include file="$(find pepper_control)/launch/pepper_control_position.launch"/> -->
+
+  <!-- Spawn a robot into Gazebo -->
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model"
+    args="-param robot_description -urdf -x -0.2 -y 0 -z 0.88 -model pepper" />
+</launch>
