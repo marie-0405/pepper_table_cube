@@ -9,6 +9,9 @@
     <arg name="paused" value="true"/>
   </include>
 
+  Load joint controller configurations from YAML file to parameter server
+  <rosparam file="$(find pepper_gazebo_plugin)/config/pepper_gazebo_controller.yaml" command="load"/>
+
   <!-- Call Pepper Robot Trajectory Controller -->
 
   <include file="$(find pepper_control)/launch/pepper_control_trajectory.launch" unless="$(arg launch_control_trajectory_all)"/>
@@ -17,5 +20,5 @@
 
   <!-- Spawn a robot into Gazebo -->
   <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model"
-    args="-param robot_description -urdf -x -0.2 -y 0 -z 0.88 -model pepper" />
+    args="-param robot_description -urdf -x -0.2 -y 0 -z 0.84 -model pepper" />
 </launch>
