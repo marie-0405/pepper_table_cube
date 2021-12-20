@@ -15,36 +15,41 @@ from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 import time
 
 import roslib; 
-roslib.load_manifest('denso_launch')
-roslib.load_manifest('pr2_controllers_msgs')
+# roslib.load_manifest('pr2_controllers_msgs')
+from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryGoal
 
-import rospy, actionlib
-from pr2_controllers_msgs.msg import *
+import actionlib
+# from pr2_controllers_msgs.msg import *
 
 rospy.init_node("action_pepper_moveit")
 
-move_group = "right_arm"
-time.sleep(5)
-arm = MoveGroupCommander(move_group)
-print arm.get_current_pose().pose
-running_pub = rospy.Publisher("/pepper_dcm/RightArm_controller/follow_joint_trajectory", JointTrajectory)
-cancel_pub = rospy.Publisher("/move_group/cancel", actionlib_msgs.msg.GoalID)
 
+if __name__ == '__main__':
+    try:
+        rospy.init_node('action_pepper_moveit', anonymous=True)
+        client = actionlib.SimpleActionClient('/pepper_dcm/RightArm_controller/follow_joint_trajectory', FollowJointTrajectoryAction)
+        client.wait_for_server()
 
-def demo() :
-  for p in [[ 0.35, 0.35, 0.1],
-            [ 0.3,  0.2, 0.1],]:
-    print "set_pose_target(", p, ")"
-    pose = PoseStamped(header = rospy.Header(stamp = rospy.Time.now(), frame_id = '/torso'),
-                        pose = Pose(position = Point(*p),
-                        orientation = Quaternion(*quaternion_from_euler(1.57, 0, 1.57, 'sxyz'))))
-    print "pose", pose
-    arm.set_pose_target(pose)
-    arm.go() or arm.go() or rospy.logerr("arm.go fails")
-    rospy.sleep(1)
-    if rospy.is_shutdown():
-        return
+        goal = FollowJointTrajectoryGoal()
+        goal.trajectory.joint_names.append("RShoulderPitch")
+        goal.trajectory.joint_names.append("RShoulderRoll")
+        goal.trajectory.joint_names.append("RElbowYaw")
+        goal.trajectory.joint_names.append("RElbowRoll")
+        goal.trajectory.joint_names.append("RWristYaw")
+        print goal.trajectory.joint_names
 
-if __name__ == "__main__":
-    while not rospy.is_shutdown():
-        demo()
+        point1 = trajectory_msgs.msg.JointTrajectoryPoint()
+        point2 = trajectory_msgs.msg.JointTrajectoryPoint()
+        point1.positions = [0.0, 0.0, 0.0,  0.0, 0.0, 0.0]
+        point2.positions = [0.46, 0.03, 0.0, -0.47, 0.04]
+
+        goal.trajectory.points = [point1, point2]
+
+        goal.trajectory.points[0].time_from_start = rospy.Duration(2.0)
+        goal.trajectory.points[1].time_from_start = rospy.Duration(4.0)
+
+        goal.trajectory.header.stamp = rospy.Time.now()+rospy.Duration(1.0)
+
+        client.send_goal(goal)
+        print client.wait_for_result()
+    except rospy.ROSInterruptException: pass
