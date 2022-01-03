@@ -20,15 +20,13 @@ move_group = "right_arm"
 time.sleep(5)
 arm = MoveGroupCommander(move_group)
 print arm.get_current_pose().pose
-running_pub = rospy.Publisher("/pepper_dcm/RightArm_controller/command", JointTrajectory)
-cancel_pub = rospy.Publisher("/move_group/cancel", actionlib_msgs.msg.GoalID)
 
 
 def demo() :
   for p in [[ 0.35, 0.35, 0.1],
             [ 0.3,  0.2, 0.1],]:
     print "set_pose_target(", p, ")"
-    pose = PoseStamped(header = rospy.Header(stamp = rospy.Time.now(), frame_id = '/torso'),
+    pose = PoseStamped(header = rospy.Header(stamp = rospy.Time.now(), frame_id = '/odom'),
                         pose = Pose(position = Point(*p),
                         orientation = Quaternion(*quaternion_from_euler(1.57, 0, 1.57, 'sxyz'))))
     print "pose", pose

@@ -27,7 +27,10 @@ robot_ip = '192.168.11.30'
 
 
 if __name__ == '__main__':
-    try:  
+    try:
+        behavior = nep_aldebaran.BehaviorManager(robot_ip, robot_port)
+        behavior.onStop()
+        
         rospy.init_node('action_pepper_moveit', anonymous=True)
         client = actionlib.SimpleActionClient('/pepper_dcm/RightArm_controller/follow_joint_trajectory', FollowJointTrajectoryAction)
         client.wait_for_server()
@@ -54,4 +57,7 @@ if __name__ == '__main__':
 
         client.send_goal(goal)
         print client.wait_for_result()
+        
+        autonomus = nep_aldebaran.AutonomusLife(robot_ip, robot_port)
+        autonomus.onStop()
     except rospy.ROSInterruptException: pass
