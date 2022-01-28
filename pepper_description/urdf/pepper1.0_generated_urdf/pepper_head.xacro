@@ -6,7 +6,7 @@
 	<joint name="HeadYaw" type="revolute">
 		<parent link="torso"/>
 		<child link="Neck"/>
-		<origin rpy="0 0 0" xyz="-0.038 0 0.1699"/>
+		<origin rpy="0 0 -0.1" xyz="-0.038 0 0.1699"/>
 		<axis xyz="0 0 1.0"/>
 		<limit effort="5.428" lower="-2.08567" upper="2.08567" velocity="7.33998"/>
 	</joint>
@@ -21,7 +21,7 @@
 	<joint name="HeadPitch" type="revolute">
 		<parent link="Neck"/>
 		<child link="Head"/>
-		<origin rpy="0 0.3490 0" xyz="0 0 0"/>
+		<origin rpy="0 0.05 0" xyz="0 0 0"/>
 		<axis xyz="0 1.0 0"/>
 		<limit effort="2.666" lower="-0.706858" upper="0.637045" velocity="9.22756"/>
 	</joint>
