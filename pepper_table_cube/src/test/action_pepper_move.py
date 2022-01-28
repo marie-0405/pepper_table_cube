@@ -15,15 +15,10 @@ import std_msgs.msg
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 # from tf.transformations import quaternion_from_euler
 import time
+import numpy as np
 
 import roslib 
 from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryGoal
-import nep_aldebaran
-
-# Define NAO/Pepper parameters, port is often 9559
-robot_port = "9559"
-# Change this value for the IP of your robot, ex
-robot_ip = '192.168.11.30'
 
 
 if __name__ == '__main__':
@@ -43,14 +38,14 @@ if __name__ == '__main__':
         point1 = trajectory_msgs.msg.JointTrajectoryPoint()
         point2 = trajectory_msgs.msg.JointTrajectoryPoint()
         point1.positions = [0.0, 0.0, 0.0,  0.0, 0.0, 0.0]
-        point2.positions = [0.46, 0.03, 0.0, -0.47, 0.04]
+        point2.positions = [np.pi/6, -np.pi/8, 0.0, 0.0, 0.0]
 
         goal.trajectory.points = [point1, point2]
 
         goal.trajectory.points[0].time_from_start = rospy.Duration(2.0)
         goal.trajectory.points[1].time_from_start = rospy.Duration(4.0)
 
-        goal.trajectory.header.stamp = rospy.Time.now()+rospy.Duration(1.0)
+        goal.trajectory.header.stamp = rospy.Time.now() + rospy.Duration(1.0)
 
         client.send_goal(goal)
         print client.wait_for_result()

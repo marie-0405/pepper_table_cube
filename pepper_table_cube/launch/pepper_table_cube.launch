@@ -21,5 +21,5 @@
 
   <!-- Spawn a robot into Gazebo -->
   <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model"
-    args="-param robot_description -urdf -x -0.2 -y 0 -z 0.835 -model pepper" />
+    args="-param robot_description -urdf -x -0.1 -y 0 -z 0.835 -model pepper" />
 </launch>
