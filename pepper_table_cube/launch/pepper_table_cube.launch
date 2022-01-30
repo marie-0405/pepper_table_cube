@@ -3,7 +3,7 @@
   <arg name="launch_control_trajectory_all" default="true"/>
   
   <!-- Load the URDF Model -->
-  <include file="$(find pepper_description)/launch/pepper_upload.launch" />  
+  <include file="$(find my_pepper_description)/launch/pepper_upload.launch" />  
   
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find pepper_table_cube)/worlds/pepper_table_cube.world"/>
@@ -24,8 +24,8 @@
     args="-param robot_description -urdf -x -0.1 -y 0 -z 0.835 -model pepper" />
   
   <!-- Show image data -->
-  <node name="img_proc" pkg="pepper_table_cube" type="get_image" output="screen"/>
+  <node name="img_proc" pkg="pepper_table_cube" type="get_image.py"/>
 
   <!-- Move Pepper with action -->
-  <!-- <node name="action_pepper_moveit" pkg="pepper_table_cube" type="action_pepper_move"/> -->
+  <!-- <node name="action_pepper_moveit" pkg="pepper_table_cube" type="action_pepper_move.py"/> -->
 </launch>
