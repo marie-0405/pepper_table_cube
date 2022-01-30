@@ -38,7 +38,7 @@ if __name__ == '__main__':
         point1 = trajectory_msgs.msg.JointTrajectoryPoint()
         point2 = trajectory_msgs.msg.JointTrajectoryPoint()
         point1.positions = [0.0, 0.0, 0.0,  0.0, 0.0, 0.0]
-        point2.positions = [np.pi/6, -np.pi/8, 0.0, 0.0, 0.0]
+        point2.positions = [0, -0.01, 0.0, 0.0, 0.0]
 
         goal.trajectory.points = [point1, point2]
 

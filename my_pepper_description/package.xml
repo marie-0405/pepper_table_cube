@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>pepper_description</name>
+  <name>my_pepper_description</name>
   <version>0.1.10</version>
   <description>The pepper_description package</description>
 

@@ -22,4 +22,10 @@
   <!-- Spawn a robot into Gazebo -->
   <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model"
     args="-param robot_description -urdf -x -0.1 -y 0 -z 0.835 -model pepper" />
+  
+  <!-- Show image data -->
+  <node name="img_proc" pkg="pepper_table_cube" type="get_image" output="screen"/>
+
+  <!-- Move Pepper with action -->
+  <!-- <node name="action_pepper_moveit" pkg="pepper_table_cube" type="action_pepper_move"/> -->
 </launch>
