@@ -33,19 +33,25 @@ if __name__ == '__main__':
         goal.trajectory.joint_names.append("RElbowYaw")
         goal.trajectory.joint_names.append("RElbowRoll")
         goal.trajectory.joint_names.append("RWristYaw")
-        print goal.trajectory.joint_names
+        # print goal.trajectory.joint_names
 
         point1 = trajectory_msgs.msg.JointTrajectoryPoint()
         point2 = trajectory_msgs.msg.JointTrajectoryPoint()
-        point1.positions = [0.0, 0.0, 0.0,  0.0, 0.0, 0.0]
-        point2.positions = [0, -0.01, 0.0, 0.0, 0.0]
+        point3 = trajectory_msgs.msg.JointTrajectoryPoint()
 
-        goal.trajectory.points = [point1, point2]
+        point1.positions = [0.0, 0.0, 0.0,  0.0, 0.0]
+        point2.positions = [0, -0.1, 0.0, 0.0, 0.0]
+        # point3.positions = [0, -0.0, 0.0, 0.0, 0.0]
+        point3.positions = np.array([0, -0.0, 0.0, 0.0, 0.0])
+
+        goal.trajectory.points = [point1, point2, point3]
 
         goal.trajectory.points[0].time_from_start = rospy.Duration(2.0)
         goal.trajectory.points[1].time_from_start = rospy.Duration(4.0)
+        goal.trajectory.points[2].time_from_start = rospy.Duration(6.0)
 
         goal.trajectory.header.stamp = rospy.Time.now() + rospy.Duration(1.0)
+        print(goal)
 
         client.send_goal(goal)
         print client.wait_for_result()

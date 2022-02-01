@@ -9,4 +9,4 @@ right_arm = ["RShoulderPitch", "RShoulderRoll", "RElbowYaw", "RElbowRoll", "RWri
 # Get right arm joint data
 joint_df = joint_df.loc[:, right_arm]
 joint_df.loc[:, 'RWristYaw'] = 0.0  # Set 0 to all of RWristYaw
-print(joint_df)
+print(joint_df.values)
