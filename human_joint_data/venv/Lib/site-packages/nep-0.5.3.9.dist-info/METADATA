@@ -1,0 +1,25 @@
+Metadata-Version: 2.1
+Name: nep
+Version: 0.5.3.9
+Summary: NEP robot programming framework
+Home-page: http://enriquecoronadozu.github.io
+Author: Enrique Coronado
+Author-email: enriquecoronadozu@gmail.mx
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: Console
+Classifier: Intended Audience :: End Users/Desktop
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)
+Classifier: Natural Language :: English
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Topic :: Software Development
+Requires-Dist: pyzmq
+Requires-Dist: simplejson
+
+UNKNOWN
+
+
