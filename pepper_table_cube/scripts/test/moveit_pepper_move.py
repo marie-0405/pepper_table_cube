@@ -5,7 +5,7 @@ from subprocess import check_call
 
 import actionlib_msgs.msg
 from geometry_msgs.msg import Pose, PoseStamped, Point, Quaternion
-from moveit_commander import MoveGroupCommander, conversions
+from moveit_commander import MoveGroupCommander, conversions, RobotCommander
 from rospkg import RosPack
 import roslib
 import rospy
@@ -27,7 +27,9 @@ arm.set_goal_orientation_tolerance(0.01)
 arm.set_planning_time(5.0)
 
 pose_goal = arm.get_current_pose().pose
+state = arm.get_current_state()
 print "CURRENT POSE\n", pose_goal
+print "CURRENT STATE\n", state
 
 pose_goal.position.x = 0.16
 pose_goal.position.y = -0.14
