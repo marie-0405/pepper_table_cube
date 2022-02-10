@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>my_hopper_training</name>
+  <name>pepper_training</name>
   <version>0.0.0</version>
-  <description>The my_hopper_training package</description>
+  <description>The pepper_training package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->

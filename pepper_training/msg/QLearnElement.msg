@@ -1,2 +1,2 @@
-my_hopper_training/QLearnPoint qlearn_point
+pepper_training/QLearnPoint qlearn_point
 std_msgs/Float32 reward

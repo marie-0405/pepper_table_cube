@@ -11,13 +11,12 @@
   </include>
 
   Load joint controller configurations from YAML file to parameter server
-  <rosparam file="$(find pepper_gazebo_plugin)/config/pepper_gazebo_controller.yaml" command="load"/>
+  <rosparam file="$(find my_pepper_gazebo_plugin)/config/pepper_gazebo_controller.yaml" command="load"/>
 
   <!-- Call Pepper Robot Trajectory Controller -->
 
-  <include file="$(find pepper_control)/launch/pepper_control_trajectory.launch" unless="$(arg launch_control_trajectory_all)"/>
-  <include file="$(find pepper_control)/launch/pepper_control_trajectory_all.launch" if="$(arg launch_control_trajectory_all)"/>
-  <!-- <include file="$(find pepper_control)/launch/pepper_control_position.launch"/> -->
+  <include file="$(find my_pepper_control)/launch/pepper_control_trajectory.launch" unless="$(arg launch_control_trajectory_all)"/>
+  <include file="$(find my_pepper_control)/launch/pepper_control_trajectory_all.launch" if="$(arg launch_control_trajectory_all)"/>
 
   <!-- Spawn a robot into Gazebo -->
   <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model"
