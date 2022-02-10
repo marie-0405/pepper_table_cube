@@ -12,9 +12,9 @@ class JointPub(object):
     def __init__(self):
 
         self.publishers_array = []
-        self._haa_joint_pub = rospy.Publisher('/monoped/haa_joint_position_controller/command', Float64, queue_size=1)
-        self._hfe_joint_pub = rospy.Publisher('/monoped/hfe_joint_position_controller/command', Float64, queue_size=1)
-        self._kfe_joint_pub = rospy.Publisher('/monoped/kfe_joint_position_controller/command', Float64, queue_size=1)
+        self._haa_joint_pub = rospy.Publisher('/pepper/haa_joint_position_controller/command', Float64, queue_size=1)
+        self._hfe_joint_pub = rospy.Publisher('/pepper/hfe_joint_position_controller/command', Float64, queue_size=1)
+        self._kfe_joint_pub = rospy.Publisher('/pepper/kfe_joint_position_controller/command', Float64, queue_size=1)
         
         self.publishers_array.append(self._haa_joint_pub)
         self.publishers_array.append(self._hfe_joint_pub)
