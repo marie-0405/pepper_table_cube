@@ -134,7 +134,7 @@ class MonopedEnv(gym.Env):
 
         self._seed()
 
-    # A function to initialize the random generator
+    # A function to iline 49, in _nitialize the random generator
     def _seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(hopper_training)
+project(my_hopper_training)
 
 find_package(catkin REQUIRED COMPONENTS
   std_msgs

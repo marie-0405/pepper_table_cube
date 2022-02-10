@@ -167,7 +167,7 @@ class MonopedState(object):
         imu_data = None
         while imu_data is None and not rospy.is_shutdown():
             try:
-                imu_data = rospy.wait_for_message("/monoped/imu/data", Imu, timeout=0.1)
+                imu_data = rospy.wait_for_message("/monoped/imu/data", Imu, timeout=1.0)
                 self.base_orientation = imu_data.orientation
                 self.base_angular_velocity = imu_data.angular_velocity
                 self.base_linear_acceleration = imu_data.linear_acceleration

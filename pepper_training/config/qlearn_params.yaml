@@ -3,23 +3,29 @@ alpha: 0.1
 gamma: 0.8
 epsilon: 0.9
 epsilon_discount: 0.999 # 1098 eps to reach 0.1
-nepisodes: 100000
+nepisodes: 50
 nsteps: 1000
 
 # Environment Parameters
 desired_pose:
-    x: 0.0
-    y: 0.0
-    z: 1.0
+  x: 0.0
+  y: 0.0
+  z: 1.0
 desired_force: 7.08 # In Newtons, normal contact force when stanting still with 9.81 gravity
 desired_yaw: 0.0 # Desired yaw in radians for the hopper to stay
 max_height: 3.0   # in meters
 min_height: 0.5   # in meters
-max_incl: 1.6       # in rads
-running_step: 0.0010   # in seconds
-joint_increment_value: 0.05   # in radians
+max_incl: 1.57       # in rads
+running_step: 0.001   # in seconds
+joint_increment_value: 0.05  # in radians
 done_reward: -1000.0 # reward
 alive_reward: 100.0 # reward
+
+weight_r1: 1.0 # Weight for joint positions ( joints in the zero is perfect )
+weight_r2: 0.0 # Weight for joint efforts ( no efforts is perfect )
+weight_r3: 1.0 # Weight for contact force similar to desired ( weight of monoped )
+weight_r4: 1.0 # Weight for orientation ( vertical is perfect )
+weight_r5: 1.0 # Weight for distance from desired point ( on the point is perfect )
 
 list_of_observations: # Observations you want to use for the learning
   #- distance_from_desired_point
@@ -42,16 +48,10 @@ list_of_observations: # Observations you want to use for the learning
 
 discrete_division: 50 # Parts in which we divide each of the observations sensory range
 
-weight_r1: 0.0 # Weight for joint positions ( joints in the zero is perfect )
-weight_r2: 0.0 # Weight for joint efforts ( no efforts is perfect )
-weight_r3: 0.0 # Weight for contact force similar to desired ( weight of monoped )
-weight_r4: 0.0 # Weight for orientation ( vertical is perfect )
-weight_r5: 0.0 # Weight for distance from desired point ( on the point is perfect )
-
 init_joint_pose:
   haa: 0.0
   hfe: 0.0
-  kfe: -1.6
+  kfe: 0.0
 
 joint_limits_array:
   haa_max: 1.6
