@@ -55,15 +55,16 @@ class Pepper:
 
 if __name__ == '__main__':
   dirname = os.path.dirname(__file__)
-  FILE_PATH = dirname + '/../../human/joint_data/pushing_task_3d.csv'
+  FILE_PATH = dirname + '/../../human/joint_data/pushing_task5_1_3d.csv'
 
   joint_df = pd.read_csv(FILE_PATH)
-  joint_names = ["RShoulderPitch", "RShoulderRoll", "RElbowYaw", "RElbowRoll", "RWristYaw"]
+  joint_names = ["RShoulderRoll", "RShoulderPitch", "RElbowYaw", "RElbowRoll", "RWristYaw"]
 
   joint_df = joint_df.loc[:, joint_names]  # Get right arm joint data
   joint_df.loc[:, 'RWristYaw'] = 0.0  # Set 0 to all of RWristYaw
 
   positions = joint_df.values
+  positions = positions[:-1]  # Remove last values because including zero value
 
   try:
     rospy.init_node('action_pepper', anonymous=True)
