@@ -23,17 +23,17 @@ from functools import reduce
 
 if __name__ == '__main__':
     
-    rospy.init_node('monoped_gym', anonymous=True, log_level=rospy.INFO)
+    rospy.init_node('pepper_gym', anonymous=True, log_level=rospy.INFO)
 
     # Create the Gym environment
-    env = gym.make('Monoped-v0')
+    env = gym.make('Pepper-v0')
     rospy.logdebug ( "Gym environment done")
-    reward_pub = rospy.Publisher('/monoped/reward', Float64, queue_size=1)
-    episode_reward_pub = rospy.Publisher('/monoped/episode_reward', Float64, queue_size=1)
+    reward_pub = rospy.Publisher('/pepper/reward', Float64, queue_size=1)
+    episode_reward_pub = rospy.Publisher('/pepper/episode_reward', Float64, queue_size=1)
 
     # Set the logging system
     rospack = rospkg.RosPack()
-    pkg_path = rospack.get_path('my_hopper_training')
+    pkg_path = rospack.get_path('pepper_training')
     outdir = pkg_path + '/training_results'
     env = wrappers.Monitor(env, outdir, force=True)
     rospy.logdebug("Monitor Wrapper started")

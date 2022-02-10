@@ -23,7 +23,7 @@ alive_reward: 100.0 # reward
 
 weight_r1: 1.0 # Weight for joint positions ( joints in the zero is perfect )
 weight_r2: 0.0 # Weight for joint efforts ( no efforts is perfect )
-weight_r3: 1.0 # Weight for contact force similar to desired ( weight of monoped )
+weight_r3: 1.0 # Weight for contact force similar to desired ( weight of pepper )
 weight_r4: 1.0 # Weight for orientation ( vertical is perfect )
 weight_r5: 1.0 # Weight for distance from desired point ( on the point is perfect )
 
@@ -62,8 +62,8 @@ joint_limits_array:
   kfe_min: -1.6
 
 episode_done_criteria:
-  - monoped_minimum_height
-  #- monoped_vertical_orientation
+  - pepper_minimum_height
+  #- pepper_vertical_orientation
 
 maximum_base_linear_acceleration: 3000.0 # Based on making fall from a body height vertical max/min imu readings
 
