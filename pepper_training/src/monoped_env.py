@@ -13,18 +13,18 @@ from gym.utils import seeding
 from gym.envs.registration import register
 from gazebo_connection import GazeboConnection
 from joint_publisher import JointPub
-from monoped_state import MonopedState
+from research_pepper.pepper_training.src.pepper_state import PepperState
 from controllers_connection import ControllersConnection
 
 #register the training environment in the gym as an available one
 reg = register(
-    id='Monoped-v0',
-    entry_point='monoped_env:MonopedEnv',
+    id='Pepper-v0',
+    entry_point='pepper_env:PepperEnv',
     timestep_limit=100000,
     )
 
 
-class MonopedEnv(gym.Env):
+class PepperEnv(gym.Env):
 
     def __init__(self):
         
@@ -88,9 +88,9 @@ class MonopedEnv(gym.Env):
         # stablishes connection with simulator
         self.gazebo = GazeboConnection()
 
-        self.controllers_object = ControllersConnection(namespace="monoped")
+        self.controllers_object = ControllersConnection(namespace="pepper")
 
-        self.monoped_state_object = MonopedState(   max_height=self.max_height,
+        self.pepper_state_object = PepperState(   max_height=self.max_height,
                                                     min_height=self.min_height,
                                                     abs_max_roll=self.max_incl,
                                                     abs_max_pitch=self.max_incl,
@@ -114,11 +114,11 @@ class MonopedEnv(gym.Env):
                                                     jump_increment=self.jump_increment
                                                 )
 
-        self.monoped_state_object.set_desired_world_point(self.desired_pose.position.x,
+        self.pepper_state_object.set_desired_world_point(self.desired_pose.position.x,
                                                           self.desired_pose.position.y,
                                                           self.desired_pose.position.z)
 
-        self.monoped_joint_pubisher_object = JointPub()
+        self.pepper_joint_pubisher_object = JointPub()
         
 
 
@@ -156,27 +156,27 @@ class MonopedEnv(gym.Env):
         self.gazebo.change_gravity(0.0, 0.0, 0.0)
 
         # EXTRA: Reset JoinStateControlers because sim reset doesnt reset TFs, generating time problems
-        rospy.logdebug("reset_monoped_joint_controllers...")
-        self.controllers_object.reset_monoped_joint_controllers()
+        rospy.logdebug("reset_pepper_joint_controllers...")
+        self.controllers_object.reset_pepper_joint_controllers()
 
         # 3rd: resets the robot to initial conditions
         rospy.logdebug("set_init_pose init variable...>>>" + str(self.init_joint_pose))
         # We save that position as the current joint desired position
-        init_pos = self.monoped_state_object.init_joints_pose(self.init_joint_pose)
+        init_pos = self.pepper_state_object.init_joints_pose(self.init_joint_pose)
 
         # 4th: We Set the init pose to the jump topic so that the jump control can update
         rospy.logdebug("Publish init_pose for Jump Control...>>>" + str(init_pos))
         # We check the jump publisher has connection
-        self.monoped_joint_pubisher_object.check_publishers_connection()
+        self.pepper_joint_pubisher_object.check_publishers_connection()
         # We move the joints to position, no jump
         do_jump = False
-        self.monoped_joint_pubisher_object.move_joints_jump(init_pos, do_jump)
+        self.pepper_joint_pubisher_object.move_joints_jump(init_pos, do_jump)
 
         # 5th: Check all subscribers work.
         # Get the state of the Robot defined by its RPY orientation, distance from
         # desired point, contact force and JointState of the three joints
         rospy.logdebug("check_all_systems_ready...")
-        self.monoped_state_object.check_all_systems_ready()
+        self.pepper_state_object.check_all_systems_ready()
 
         # 6th: We restore the gravity to original
         rospy.logdebug("Restore Gravity...")
@@ -188,7 +188,7 @@ class MonopedEnv(gym.Env):
 
         # 8th: Get the State Discrete Stringuified version of the observations
         rospy.logdebug("get_observations...")
-        observation = self.monoped_state_object.get_observations()
+        observation = self.pepper_state_object.get_observations()
         state = self.get_state(observation)
 
         return state
@@ -199,11 +199,11 @@ class MonopedEnv(gym.Env):
         # we perform the corresponding movement of the robot
 
         # 1st, decide which action corresponds to which joint is incremented
-        next_action_position, do_jump = self.monoped_state_object.get_action_to_position(action)
+        next_action_position, do_jump = self.pepper_state_object.get_action_to_position(action)
 
         # We move it to that pos
         self.gazebo.unpauseSim()
-        self.monoped_joint_pubisher_object.move_joints_jump(next_action_position, do_jump)
+        self.pepper_joint_pubisher_object.move_joints_jump(next_action_position, do_jump)
         # Then we send the command to the robot and let it go
         # for running_step seconds
         time.sleep(self.running_step)
@@ -213,10 +213,10 @@ class MonopedEnv(gym.Env):
         # the state and the rewards. This way we guarantee that they work
         # with the same exact data.
         # Generate State based on observations
-        observation = self.monoped_state_object.get_observations()
+        observation = self.pepper_state_object.get_observations()
 
         # finally we get an evaluation based on what happened in the sim
-        reward,done = self.monoped_state_object.process_data()
+        reward,done = self.pepper_state_object.process_data()
 
         # Get the State Discrete Stringuified version of the observations
         state = self.get_state(observation)
@@ -228,4 +228,4 @@ class MonopedEnv(gym.Env):
         We retrieve the Stringuified-Discrete version of the given observation
         :return: state
         """
-        return self.monoped_state_object.get_state_as_string(observation)
+        return self.pepper_state_object.get_state_as_string(observation)

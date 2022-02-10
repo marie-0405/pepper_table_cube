@@ -43,9 +43,9 @@ import math
         z: 1.0
     depths: [0.000138379966266991]
   -
-    info: "Debug:  i:(2/4)     my geom:monoped::lowerleg::lowerleg_contactsensor_link_collision_1\
+    info: "Debug:  i:(2/4)     my geom:pepper::lowerleg::lowerleg_contactsensor_link_collision_1\
   \   other geom:ground_plane::link::collision         time:50.405000000\n"
-    collision1_name: "monoped::lowerleg::lowerleg_contactsensor_link_collision_1"
+    collision1_name: "pepper::lowerleg::lowerleg_contactsensor_link_collision_1"
     collision2_name: "ground_plane::link::collision"
 
 """
@@ -87,10 +87,10 @@ gazebo_msgs/ContactState[] states
   float64[] depths
 """
 
-class MonopedState(object):
+class PepperState(object):
 
     def __init__(self, max_height, min_height, abs_max_roll, abs_max_pitch, list_of_observations, joint_limits, episode_done_criteria, joint_increment_value = 0.05, done_reward = -1000.0, alive_reward=10.0, desired_force=7.08, desired_yaw=0.0, weight_r1=1.0, weight_r2=1.0, weight_r3=1.0, weight_r4=1.0, weight_r5=1.0, discrete_division=10, maximum_base_linear_acceleration=3000.0, maximum_base_angular_velocity=20.0, maximum_joint_effort=10.0, jump_increment=0.7):
-        rospy.logdebug("Starting MonopedState Class object...")
+        rospy.logdebug("Starting pepperState Class object...")
         self.desired_world_point = Vector3(0.0, 0.0, 0.0)
         self._min_height = min_height
         self._max_height = max_height
@@ -144,11 +144,11 @@ class MonopedState(object):
         #  because in real robots this data is not trivial.
         rospy.Subscriber("/odom", Odometry, self.odom_callback)
         # We use the IMU for orientation and linearacceleration detection
-        rospy.Subscriber("/monoped/imu/data", Imu, self.imu_callback)
+        rospy.Subscriber("/pepper/imu/data", Imu, self.imu_callback)
         # We use it to get the contact force, to know if its in the air or stumping too hard.
         rospy.Subscriber("/lowerleg_contactsensor_state", ContactsState, self.contact_callback)
         # We use it to get the joints positions and calculate the reward associated to it
-        rospy.Subscriber("/monoped/joint_states", JointState, self.joints_state_callback)
+        rospy.Subscriber("/pepper/joint_states", JointState, self.joints_state_callback)
 
     def check_all_systems_ready(self):
         """
@@ -167,7 +167,7 @@ class MonopedState(object):
         imu_data = None
         while imu_data is None and not rospy.is_shutdown():
             try:
-                imu_data = rospy.wait_for_message("/monoped/imu/data", Imu, timeout=1.0)
+                imu_data = rospy.wait_for_message("/pepper/imu/data", Imu, timeout=1.0)
                 self.base_orientation = imu_data.orientation
                 self.base_angular_velocity = imu_data.angular_velocity
                 self.base_linear_acceleration = imu_data.linear_acceleration
@@ -188,7 +188,7 @@ class MonopedState(object):
         joint_states_msg = None
         while joint_states_msg is None and not rospy.is_shutdown():
             try:
-                joint_states_msg = rospy.wait_for_message("/monoped/joint_states", JointState, timeout=0.1)
+                joint_states_msg = rospy.wait_for_message("/pepper/joint_states", JointState, timeout=0.1)
                 self.joints_state = joint_states_msg
                 rospy.logdebug("Current joint_states READY")
             except Exception as e:
@@ -198,7 +198,7 @@ class MonopedState(object):
 
     def set_desired_world_point(self, x, y, z):
         """
-        Point where you want the Monoped to be
+        Point where you want the pepper to be
         :return:
         """
         self.desired_world_point.x = x
@@ -284,12 +284,12 @@ class MonopedState(object):
     def joints_state_callback(self,msg):
         self.joints_state = msg
 
-    def monoped_height_ok(self):
+    def pepper_height_ok(self):
 
         height_ok = self._min_height <= self.get_base_height() < self._max_height
         return height_ok
 
-    def monoped_orientation_ok(self):
+    def pepper_orientation_ok(self):
 
         orientation_rpy = self.get_base_rpy()
         roll_ok = self._abs_max_roll > abs(orientation_rpy.x)
@@ -748,22 +748,22 @@ class MonopedState(object):
         :return: reward, done
         """
 
-        if "monoped_minimum_height" in self._episode_done_criteria:
-            monoped_height_ok = self.monoped_height_ok()
+        if "pepper_minimum_height" in self._episode_done_criteria:
+            pepper_height_ok = self.pepper_height_ok()
         else:
-            rospy.logdebug("monoped_height_ok NOT TAKEN INTO ACCOUNT")
-            monoped_height_ok = True
+            rospy.logdebug("pepper_height_ok NOT TAKEN INTO ACCOUNT")
+            pepper_height_ok = True
 
-        if "monoped_vertical_orientation" in self._episode_done_criteria:
-            monoped_orientation_ok = self.monoped_orientation_ok()
+        if "pepper_vertical_orientation" in self._episode_done_criteria:
+            pepper_orientation_ok = self.pepper_orientation_ok()
         else:
-            rospy.logdebug("monoped_orientation_ok NOT TAKEN INTO ACCOUNT")
-            monoped_orientation_ok = True
+            rospy.logdebug("pepper_orientation_ok NOT TAKEN INTO ACCOUNT")
+            pepper_orientation_ok = True
 
-        rospy.logdebug("monoped_height_ok="+str(monoped_height_ok))
-        rospy.logdebug("monoped_orientation_ok=" + str(monoped_orientation_ok))
+        rospy.logdebug("pepper_height_ok="+str(pepper_height_ok))
+        rospy.logdebug("pepper_orientation_ok=" + str(pepper_orientation_ok))
 
-        done = not(monoped_height_ok and monoped_orientation_ok)
+        done = not(pepper_height_ok and pepper_orientation_ok)
         if done:
             rospy.logerr("It fell, so the reward has to be very low")
             total_reward = self._done_reward
@@ -782,7 +782,7 @@ class MonopedState(object):
 
 
 if __name__ == "__main__":
-    rospy.init_node('monoped_state_node', anonymous=True, log_level=rospy.DEBUG)
+    rospy.init_node('pepper_state_node', anonymous=True, log_level=rospy.DEBUG)
     max_height = 3.0
     min_height = 0.5
     max_incl = 1.57
@@ -802,20 +802,20 @@ if __name__ == "__main__":
                      "kfe_max": 0.0,
                      "kfe_min": -1.6
                      }
-    episode_done_criteria = [ "monoped_minimum_height",
-                              "monoped_vertical_orientation"]
+    episode_done_criteria = [ "pepper_minimum_height",
+                              "pepper_vertical_orientation"]
     done_reward = -1000.0
     alive_reward = 100.0
     desired_force = 7.08
     desired_yaw = 0.0
     weight_r1 = 0.0 # Weight for joint positions ( joints in the zero is perfect )
     weight_r2 = 0.0 # Weight for joint efforts ( no efforts is perfect )
-    weight_r3 = 0.0 # Weight for contact force similar to desired ( weight of monoped )
+    weight_r3 = 0.0 # Weight for contact force similar to desired ( weight of pepper )
     weight_r4 = 10.0 # Weight for orientation ( vertical is perfect )
     weight_r5 = 10.0 # Weight for distance from desired point ( on the point is perfect )
     discrete_division = 10
     maximum_base_linear_acceleration = 3000.0
-    monoped_state = MonopedState(   max_height=max_height,
+    pepper_state = pepperState(   max_height=max_height,
                                     min_height=min_height,
                                     abs_max_roll=max_incl,
                                     abs_max_pitch=max_incl,
@@ -835,4 +835,4 @@ if __name__ == "__main__":
                                     discrete_division=discrete_division,
                                     maximum_base_linear_acceleration=maximum_base_linear_acceleration
                                                 )
-    monoped_state.testing_loop()
+    pepper_state.testing_loop()

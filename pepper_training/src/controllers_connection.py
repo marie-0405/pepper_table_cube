@@ -69,7 +69,7 @@ class ControllersConnection():
 
         return reset_result
 
-    def reset_monoped_joint_controllers(self):
+    def reset_pepper_joint_controllers(self):
         controllers_reset = ['joint_state_controller',
                              'haa_joint_position_controller',
                              'hfe_joint_position_controller',
