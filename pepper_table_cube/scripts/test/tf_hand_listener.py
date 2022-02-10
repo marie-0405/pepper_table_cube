@@ -14,7 +14,7 @@ if __name__ == '__main__':
     while not rospy.is_shutdown():
       try:
         print("rospy")
-        (trans,rot) = listener.lookupTransform('/world', '/r_gripper', rospy.Time(0))
+        (trans,rot) = listener.lookupTransform('world', 'Neck', rospy.Time(0))
       except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
         continue
       print(trans)
