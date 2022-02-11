@@ -33,103 +33,95 @@ class PepperEnv(gym.Env):
 
         # gets training parameters from param server
         self.desired_pose = Pose()
-        self.desired_pose.position.x = rospy.get_param("/desired_pose/x")
-        self.desired_pose.position.y = rospy.get_param("/desired_pose/y")
-        self.desired_pose.position.z = rospy.get_param("/desired_pose/z")
+        self.desired_length.position.x = rospy.get_param("/desired_length/x")
+        self.desired_length.position.y = rospy.get_param("/desired_length/y")
+        self.desired_length.position.z = rospy.get_param("/desired_length/z")
         self.running_step = rospy.get_param("/running_step")
-        self.max_incl = rospy.get_param("/max_incl")
-        self.max_height = rospy.get_param("/max_height")
-        self.min_height = rospy.get_param("/min_height")
         self.joint_increment_value = rospy.get_param("/joint_increment_value")
         self.done_reward = rospy.get_param("/done_reward")
         self.alive_reward = rospy.get_param("/alive_reward")
-        self.desired_force = rospy.get_param("/desired_force")
-        self.desired_yaw = rospy.get_param("/desired_yaw")
 
         self.list_of_observations = rospy.get_param("/list_of_observations")
 
-        haa_max = rospy.get_param("/joint_limits_array/haa_max")
-        haa_min = rospy.get_param("/joint_limits_array/haa_min")
-        hfe_max = rospy.get_param("/joint_limits_array/hfe_max")
-        hfe_min = rospy.get_param("/joint_limits_array/hfe_min")
-        kfe_max = rospy.get_param("/joint_limits_array/kfe_max")
-        kfe_min = rospy.get_param("/joint_limits_array/kfe_min")
-        self.joint_limits = {"haa_max": haa_max,
-                             "haa_min": haa_min,
-                             "hfe_max": hfe_max,
-                             "hfe_min": hfe_min,
-                             "kfe_max": kfe_max,
-                             "kfe_min": kfe_min
+        r_shoulder_pitch_max = rospy.get_param("/joint_limits_array/r_shoulder_pitch_max")
+        r_shoulder_pitch_min = rospy.get_param("/joint_limits_array/r_shoulder_pitch_min")
+        r_shoulder_roll_max = rospy.get_param("/joint_limits_array/r_shoulder_roll_max")
+        r_shoulder_roll_min = rospy.get_param("/joint_limits_array/r_shoulder_roll_min")
+        r_elbow_roll_max = rospy.get_param("/joint_limits_array/r_elbow_roll_max")
+        r_elbow_roll_min = rospy.get_param("/joint_limits_array/r_elbow_roll_min")
+        r_elbow_yaw_max = rospy.get_param("/joint_limits_array/r_elbow_yaw_max")
+        r_elbow_yaw_min = rospy.get_param("/joint_limits_array/r_elbow_yaw_min")
+        r_wrist_yaw_max = rospy.get_param("/joint_limits_array/r_wrist_yaw_max")
+        r_wrist_yaw_min = rospy.get_param("/joint_limits_array/r_wrist_yaw_min")
+
+        self.joint_limits = {"r_shoulder_pitch_max": r_shoulder_pitch_max,
+                             "r_shoulder_pitch_min": r_shoulder_pitch_min,
+                             "r_shoulder_roll_max": r_shoulder_roll_max,
+                             "r_shoulder_roll_min": r_shoulder_roll_min,
+                             "r_elbow_roll_max": r_elbow_roll_max,
+                             "r_elbow_roll_min": r_elbow_roll_min,
+                             "r_elbow_yaw_max": r_elbow_yaw_max,
+                             "r_elbow_yaw_min": r_elbow_yaw_min,
+                             "r_wrist_yaw_max": r_wrist_yaw_max,
+                             "r_wrist_yaw_min": r_wrist_yaw_min,
                              }
 
-        self.discrete_division = rospy.get_param("/discrete_division")
+        self.discrete_division = rospy.get_param("/discrete_division")  # ?
 
-        self.maximum_base_linear_acceleration = rospy.get_param("/maximum_base_linear_acceleration")
-        self.maximum_base_angular_velocity = rospy.get_param("/maximum_base_angular_velocity")
-        self.maximum_joint_effort = rospy.get_param("/maximum_joint_effort")
+        self.maximum_base_linear_acceleration = rospy.get_param("/maximum_base_linear_acceleration")  # ?
+        self.maximum_base_angular_velocity = rospy.get_param("/maximum_base_angular_velocity")  # ?
+        self.maximum_joint_effort = rospy.get_param("/maximum_joint_effort")  # ?
 
         self.weight_r1 = rospy.get_param("/weight_r1")
         self.weight_r2 = rospy.get_param("/weight_r2")
-        self.weight_r3 = rospy.get_param("/weight_r3")
-        self.weight_r4 = rospy.get_param("/weight_r4")
-        self.weight_r5 = rospy.get_param("/weight_r5")
 
-        haa_init_value = rospy.get_param("/init_joint_pose/haa")
-        hfe_init_value = rospy.get_param("/init_joint_pose/hfe")
-        kfe_init_value = rospy.get_param("/init_joint_pose/kfe")
-        self.init_joint_pose = [haa_init_value,hfe_init_value,kfe_init_value]
+        r_shoulder_pitch_init_value = rospy.get_param("/init_joint_pose/r_shoulder_pitch")
+        r_shoulder_pitch_init_value = rospy.get_param("/init_joint_pose/r_shoulder_roll")
+        r_elbow_roll_init_value = rospy.get_param("/init_joint_pose/r_elbow_roll")
+        r_elbow_yaw_init_value = rospy.get_param("/init_joint_pose/r_elbow_yaw")
+        r_wrist_yaw_init_value = rospy.get_param("/init_joint_pose/r_wrist_yaw")
+        self.init_joint_pose = [r_shoulder_pitch_init_value,r_shoulder_pitch_init_value,r_elbow_roll_init_value,
+                               r_elbow_yaw_init_value, r_wrist_yaw_init_value]
 
         # Fill in the Done Episode Criteria list
         self.episode_done_criteria = rospy.get_param("/episode_done_criteria")
-
-        # Jump Increment Value in Radians
-        self.jump_increment = rospy.get_param("/jump_increment")
 
         # stablishes connection with simulator
         self.gazebo = GazeboConnection()
 
         self.controllers_object = ControllersConnection(namespace="pepper")
 
-        self.pepper_state_object = PepperState(   max_height=self.max_height,
-                                                    min_height=self.min_height,
-                                                    abs_max_roll=self.max_incl,
-                                                    abs_max_pitch=self.max_incl,
-                                                    joint_increment_value=self.joint_increment_value,
+        self.pepper_state_object = PepperState(     joint_increment_value=self.joint_increment_value,
                                                     list_of_observations=self.list_of_observations,
                                                     joint_limits=self.joint_limits,
                                                     episode_done_criteria=self.episode_done_criteria,
                                                     done_reward=self.done_reward,
                                                     alive_reward=self.alive_reward,
-                                                    desired_force=self.desired_force,
-                                                    desired_yaw=self.desired_yaw,
                                                     weight_r1=self.weight_r1,
                                                     weight_r2=self.weight_r2,
-                                                    weight_r3=self.weight_r3,
-                                                    weight_r4=self.weight_r4,
-                                                    weight_r5=self.weight_r5,
                                                     discrete_division=self.discrete_division,
                                                     maximum_base_linear_acceleration=self.maximum_base_linear_acceleration,
                                                     maximum_base_angular_velocity=self.maximum_base_angular_velocity,
                                                     maximum_joint_effort=self.maximum_joint_effort,
-                                                    jump_increment=self.jump_increment
                                                 )
 
-        self.pepper_state_object.set_desired_world_point(self.desired_pose.position.x,
-                                                          self.desired_pose.position.y,
-                                                          self.desired_pose.position.z)
+        self.pepper_state_object.set_desired_world_length(self.desired_length.position.x,
+                                                          self.desired_length.position.y,
+                                                          self.desired_length.position.z)
 
         self.pepper_joint_pubisher_object = JointPub()
         
 
 
         """
-        For this version, we consider 5 actions
-        1-2) Increment/Decrement haa_joint
-        3-4) Increment/Decrement hfe_joint
-        5) Dont Move
-        6) Perform One Jump
+        For this version, we consider 10 actions
+        1-2) Increment/Decrement RShoulderPitch
+        3-4) Increment/Decrement RShoulderRoll
+        5-6) Increment/Decrement RElbowRoll
+        7-8) Increment/Decrement RElbowYaw
+        9-10) Increment/Decrement RWristYaw
         """
-        self.action_space = spaces.Discrete(6)
+        self.action_space = spaces.Discrete(10)
         self.reward_range = (-np.inf, np.inf)
 
         self._seed()
@@ -164,29 +156,21 @@ class PepperEnv(gym.Env):
         # We save that position as the current joint desired position
         init_pos = self.pepper_state_object.init_joints_pose(self.init_joint_pose)
 
-        # 4th: We Set the init pose to the jump topic so that the jump control can update
-        rospy.logdebug("Publish init_pose for Jump Control...>>>" + str(init_pos))
-        # We check the jump publisher has connection
-        self.pepper_joint_pubisher_object.check_publishers_connection()
-        # We move the joints to position, no jump
-        do_jump = False
-        self.pepper_joint_pubisher_object.move_joints_jump(init_pos, do_jump)
-
-        # 5th: Check all subscribers work.
+        # 4th: Check all subscribers work.
         # Get the state of the Robot defined by its RPY orientation, distance from
         # desired point, contact force and JointState of the three joints
         rospy.logdebug("check_all_systems_ready...")
         self.pepper_state_object.check_all_systems_ready()
 
-        # 6th: We restore the gravity to original
+        # 5th: We restore the gravity to original
         rospy.logdebug("Restore Gravity...")
         self.gazebo.change_gravity(0.0, 0.0, -9.81)
 
-        # 7th: pauses simulation
+        # 6th: pauses simulation
         rospy.logdebug("Pause SIM...")
         self.gazebo.pauseSim()
 
-        # 8th: Get the State Discrete Stringuified version of the observations
+        # 7th: Get the State Discrete Stringuified version of the observations
         rospy.logdebug("get_observations...")
         observation = self.pepper_state_object.get_observations()
         state = self.get_state(observation)

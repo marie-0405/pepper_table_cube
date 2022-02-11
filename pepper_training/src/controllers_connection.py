@@ -70,8 +70,13 @@ class ControllersConnection():
         return reset_result
 
     def reset_pepper_joint_controllers(self):
+        """
+        connect with pepper_trajectory_control.yaml
+        """
+        # controllers_reset = ['joint_state_controller',
+        #                      'haa_joint_position_controller',
+        #                      'hfe_joint_position_controller',
+        #                      'kfe_joint_position_controller']
         controllers_reset = ['joint_state_controller',
-                             'haa_joint_position_controller',
-                             'hfe_joint_position_controller',
-                             'kfe_joint_position_controller']
+                             'RightArm_controller']
         self.reset_controllers(controllers_reset)

@@ -196,14 +196,14 @@ class PepperState(object):
 
         rospy.logdebug("ALL SYSTEMS READY")
 
-    def set_desired_world_point(self, x, y, z):
+    def set_desired_world_length(self, x, y, z):
         """
-        Point where you want the pepper to be
+        Point where you want the cube to be
         :return:
         """
-        self.desired_world_point.x = x
-        self.desired_world_point.y = y
-        self.desired_world_point.z = z
+        self.desired_world_length.x = x
+        self.desired_world_length.y = y
+        self.desired_world_length.z = z
 
 
     def get_base_height(self):
@@ -414,27 +414,13 @@ class PepperState(object):
         """
         Returns the state of the robot needed for OpenAI QLearn Algorithm
         The state will be defined by an array of the:
-        1) distance from desired point in meters
-        2) The pitch orientation in radians
-        3) the Roll orientation in radians
-        4) the Yaw orientation in radians
-        5) Force in contact sensor in Newtons
-        6-7-8) State of the 3 joints in radians
+        1) distance from cube to target
+        2) distance from hand to cube
 
         observation = [distance_from_desired_point,
-                 base_roll,
-                 base_pitch,
-                 base_yaw,
-                 base_angular_vel_x,
-                 base_angular_vel_y,
-                 base_angular_vel_z,
-                 base_linear_acceleration_x,
-                 base_linear_acceleration_y,
-                 base_linear_acceleration_z,
-                 contact_force,
-                 joint_states_haa,
-                 joint_states_hfe,
-                 joint_states_kfe]
+                    - hand_position
+                    - cube_position
+                    - target_position]
 
         :return: observation
         """
@@ -658,14 +644,14 @@ class PepperState(object):
 
     def init_joints_pose(self, des_init_pos):
         """
-        We initialise the Position variable that saves the desired position where we want our
+        We initialise the Position variable that saves the desired length where we want our
         joints to be
         :param init_pos:
         :return:
         """
         self.current_joint_pose =[]
         self.current_joint_pose = copy.deepcopy(des_init_pos)
-        self.init_knee_value = copy.deepcopy(self.current_joint_pose[2])
+        # self.init_knee_value = copy.deepcopy(self.current_joint_pose[2])
         return self.current_joint_pose
 
     def get_action_to_position(self, action):
