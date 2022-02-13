@@ -21,10 +21,9 @@ if __name__ == '__main__':
   count = 0
   try:
     while not rospy.is_shutdown():
-      position = data.position
-      print(position)
-      df.loc[count] = [position.x, position.y, position.z]         
-      count += 1                
+      count += 1 
+      position = r_hand.get_position().position
+      df.loc[count] = [position.x, position.y, position.z]                       
       rate.sleep()
 
   except rospy.ROSInterruptException:
