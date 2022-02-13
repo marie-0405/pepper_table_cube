@@ -26,12 +26,16 @@ if __name__ == '__main__':
 
   rate = rospy.Rate(RATE)
   joint_dict = {}
+  error_dict = {}
 
   for i, joint_name in enumerate(joint_names):
     joint_dict['desired_' + joint_name] = joint.feedback.desired.positions[i]
     joint_dict['actual_' + joint_name] = joint.feedback.actual.positions[i]
 
+    error_dict['error_' + joint_name] = joint.feedback.actual.positions[i]
+
   df = pd.DataFrame(joint_dict, index=[0, ])
+  df_error = pd.DataFrame(error_dict, index=[0, ])
   count = 0
 
   try:
@@ -40,10 +44,13 @@ if __name__ == '__main__':
       joint = rospy.wait_for_message(topic, FollowJointTrajectoryActionFeedback)
       desired_pos = joint.feedback.desired.positions
       actual_pos = joint.feedback.actual.positions
+      error_pos = joint.feedback.error.positions
       df.loc[count] = [desired_pos[3], desired_pos[2], desired_pos[0], desired_pos[1],
-                        actual_pos[3], actual_pos[2], actual_pos[0], actual_pos[1]]                     
+                        actual_pos[3], actual_pos[2], actual_pos[0], actual_pos[1]]    
+      df_error.loc[count] = [error_pos[3], error_pos[2], error_pos[0], error_pos[1]]              
       rate.sleep()
 
   except rospy.ROSInterruptException:
     df.to_csv(dirname + '/test/data/{}.csv'.format(FILE_NAME), index=False)
+    df_error.to_csv(dirname + '/test/data/{}_error.csv'.format(FILE_NAME), index=False)
   

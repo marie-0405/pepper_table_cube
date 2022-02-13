@@ -12,7 +12,6 @@ RATE = 25.0
 if __name__ == '__main__':
   plt.figure(figsize=(15, 8))
   # plt.rcParams["font.family"] = "Times New Roman"
-  # plt.rcParams["font.family"] = 'MS ゴシック'
 
   plt.rcParams["font.size"] = 16
 
