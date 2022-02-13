@@ -7,8 +7,6 @@ import time
 
 class Model():
   def __init__(self, name):
-    rospy.init_node('model_state_sub', anonymous=True)
-
     self.name = name
     self.topic = '/gazebo/model_states'
 
@@ -17,7 +15,7 @@ class Model():
   
   def get_position(self):
     msg = rospy.wait_for_message(self.topic, ModelStates)
-    return msg.pose[self.index]
+    return msg.pose[self.index].position
   
   def get_twist(self, msg):
     msg = rospy.wait_for_message(self.topic, ModelStates)
@@ -25,6 +23,7 @@ class Model():
 
 if __name__ == '__main__':   
   try:
+    rospy.init_node('model_state_sub', anonymous=True)
     cube = Model("cube")
     print(cube.get_position())
   except rospy.ROSInterruptException: pass

@@ -14,11 +14,11 @@
     </include>
     <include>
       <uri>model://cube</uri>
-      <pose>0.17 -0.15 0.73 0 0 0</pose>
+      <pose>0.185 -0.18 0.73 0 0 0</pose>
     </include>
     <include>
       <uri>model://target</uri>
-      <pose>0.17 0 0.7055 0 0 0</pose>
+      <pose>0.16 -0.08 0.7055 0 0 0</pose>
     </include>
     <gravity>0 0 -9.81</gravity>
   </world>
