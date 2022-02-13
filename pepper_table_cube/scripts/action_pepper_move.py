@@ -23,6 +23,8 @@ import time
 import roslib 
 from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryGoal
 
+FILE_NAME = 'pushing_task4'
+
 
 class Pepper:
 
@@ -55,7 +57,7 @@ class Pepper:
 
 if __name__ == '__main__':
   dirname = os.path.dirname(__file__)
-  FILE_PATH = dirname + '/../../human/joint_data/pushing_task5_1_3d.csv'
+  FILE_PATH = dirname + '/../../human/joint_data/{}_3d.csv'.format(FILE_NAME)
 
   joint_df = pd.read_csv(FILE_PATH)
   joint_names = ["RShoulderRoll", "RShoulderPitch", "RElbowYaw", "RElbowRoll", "RWristYaw"]
