@@ -23,7 +23,8 @@ import time
 import roslib 
 from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryGoal
 
-FILE_NAME = 'pushing_task4'
+FILE_NAME = 'pushing_task6'
+DURATION = 0.25
 
 
 class Pepper:
@@ -45,7 +46,7 @@ class Pepper:
       # Set point
       point = trajectory_msgs.msg.JointTrajectoryPoint()
       point.positions = position
-      point.time_from_start = rospy.Duration(0.5 * i)
+      point.time_from_start = rospy.Duration(DURATION * i)
       points.append(point)
 
     self.goal.trajectory.points = points
