@@ -9,45 +9,61 @@ FILE_NAME = 'feedback_real'
 HUMAN_DATA = 'pushing_task4'
 RATE = 25.0
 
+class Feedback:
+  def __init__(self, file_name=FILE_NAME):
+    self.joint_dic={"RElbowRoll": "右肘ロール角",
+                "RElbowYaw": "右肘ヨー角",
+                "RShoulderPitch": "右肩ピッチ角",
+                "RShoulderRoll": "右肩ロール角"}
+                
+    self.colors=["blue", "red", "green", "orange"]
+
+    self.df = pd.read_csv('./test/data/{}.csv'.format(FILE_NAME))
+    
+  def display(self, english=True, font_size=25):
+    plt.figure(figsize=(15, 8))
+    plt.subplot(1, 2, 1)
+
+    ## Settings of graph
+    stride = float(1 / RATE)
+    time = np.linspace(0, stride * self.df.shape[0], self.df.shape[0])
+    plt.xlim(0, stride * self.df.shape[0])
+    plt.rcParams["font.size"] = 20
+
+    ## Plot data
+    if english:
+      for i, joint in enumerate(self.joint_dic):
+        plt.plot(time, self.df['actual_' + joint], '-', c=self.colors[i])
+      for i, joint in enumerate(self.joint_dic):
+        plt.plot(time, self.df['desired_' + joint], '--', c=self.colors[i])
+
+      plt.xlabel('Time [s]', fontsize=font_size)
+      plt.ylabel('Angle[rad]', fontsize=font_size) 
+
+    else:
+      for i, joint in enumerate(self.joint_dic):
+        plt.plot(time, self.df['actual_' + joint], '-', c=self.colors[i], label="実際の" + self.joint_dic[joint])
+      for i, joint in enumerate(self.joint_dic):
+        plt.plot(time, self.df['desired_' + joint], '--', c=self.colors[i], label="目標の" + self.joint_dic[joint])
+    
+      plt.xlabel('時間 [s]', fontsize=font_size)
+      plt.ylabel('関節角度[rad]', fontsize=font_size)
+    
+    plt.legend(bbox_to_anchor=(1.05, 0.5, 1.0, 0.5), loc="upper left")
+    plt.show()
+
+
 if __name__ == '__main__':
-  plt.figure(figsize=(15, 8))
-  # plt.rcParams["font.family"] = "Times New Roman"
+  feedback = Feedback()
+  feedback.display()
 
-  plt.rcParams["font.size"] = 20
+  
 
-  df = pd.read_csv('./test/data/{}.csv'.format(FILE_NAME))
-  human_df = pd.read_csv('../../human/joint_data/{}_3d.csv'.format(HUMAN_DATA))
 
-  stride = float(1 / RATE)
-  time = np.linspace(0, stride * df.shape[0], df.shape[0])
-  human_stride = float(1.0 / 2.3)
-  human_df = human_df.drop(human_df.shape[0] - 1)
-  human_time = np.linspace(0, human_stride * human_df.shape[0], human_df.shape[0])
+  
 
-  plt.subplot(1, 2, 1)
-  # plt.plot(time, df['actual_RElbowRoll'], '-', c='red')
-  # plt.plot(time, df['actual_RElbowYaw'], '-', c='blue')
-  # plt.plot(time, df['actual_RShoulderPitch'], '-', c='orange')
-  # plt.plot(time, df['actual_RShoulderRoll'], '-', c='black')
-  # plt.plot(time, df['desired_RElbowRoll'], '--', c='red')
-  # plt.plot(time, df['desired_RElbowYaw'], '--', c='blue')
-  # plt.plot(time, df['desired_RShoulderPitch'], '--', c='orange')
-  # plt.plot(time, df['desired_RShoulderRoll'], '--', c='black')
+  
 
-  plt.plot(time, df['actual_RElbowRoll'], '-', c='red', label='実際の右肘ロール角')
-  plt.plot(time, df['actual_RElbowYaw'], '-', c='blue', label='実際の右肘ヨー角')
-  plt.plot(time, df['actual_RShoulderPitch'], '-', c='orange', label='実際の右肩ピッチ角')
-  plt.plot(time, df['actual_RShoulderRoll'], '-', c='black', label='実際の右肩ロール角')
-  plt.plot(time, df['desired_RElbowRoll'], '--', c='red', label='目標の右肘ロール角')
-  plt.plot(time, df['desired_RElbowYaw'], '--', c='blue', label='目標の右肘ヨー角')
-  plt.plot(time, df['desired_RShoulderPitch'], '--', c='orange', label='目標の右肩ピッチ角')
-  plt.plot(time, df['desired_RShoulderRoll'], '--', c='black', label='目標の右肩ロール角')
 
-  # plt.xlabel('Time [s]')
-  # plt.ylabel('Angle[rad]')  
-  plt.xlabel('時間 [s]', fontsize=25)
-  plt.ylabel('関節角度[rad]', fontsize=25)
-  plt.xlim(0, stride * df.shape[0])
-  plt.legend(bbox_to_anchor=(1.05, 0.5, 1.0, 0.5), loc="upper left")
-  # plt.tight_layout()
-  plt.show()
+
+ 
