@@ -8,17 +8,25 @@ import pandas as pd
 FILE_NAME = 'feedback_real'
 HUMAN_DATA = 'pushing_task4'
 RATE = 25.0
-
-class Feedback:
-  def __init__(self, file_name=FILE_NAME):
-    self.joint_dic={"RElbowRoll": "右肘ロール角",
+JOINT_DIC = {"RElbowRoll": "右肘ロール角",
                 "RElbowYaw": "右肘ヨー角",
                 "RShoulderPitch": "右肩ピッチ角",
                 "RShoulderRoll": "右肩ロール角"}
-                
-    self.colors=["blue", "red", "green", "orange"]
 
+class Feedback:
+  def __init__(self, joint_names=None, file_name=FILE_NAME):
     self.df = pd.read_csv('./test/data/{}.csv'.format(FILE_NAME))
+
+    if joint_names:
+      self.joint_dic = {}
+      print(joint_names)
+      for joint_name in joint_names:
+        self.joint_dic[joint_name] = JOINT_DIC[joint_name]
+    else:
+      self.joint_dic = JOINT_DIC
+    
+    print(self.joint_dic)
+    self.colors=["blue", "red", "green", "orange"]
     
   def display(self, english=True, font_size=25):
     plt.figure(figsize=(15, 8))
@@ -33,18 +41,20 @@ class Feedback:
     ## Plot data
     if english:
       for i, joint in enumerate(self.joint_dic):
-        plt.plot(time, self.df['actual_' + joint], '-', c=self.colors[i])
+        plt.plot(time, self.df['desired_' + joint], '-', c=self.colors[i])
       for i, joint in enumerate(self.joint_dic):
-        plt.plot(time, self.df['desired_' + joint], '--', c=self.colors[i])
+        plt.plot(time, self.df['actual_' + joint], '--', c=self.colors[i])
+
 
       plt.xlabel('Time [s]', fontsize=font_size)
       plt.ylabel('Angle[rad]', fontsize=font_size) 
 
     else:
       for i, joint in enumerate(self.joint_dic):
-        plt.plot(time, self.df['actual_' + joint], '-', c=self.colors[i], label="実際の" + self.joint_dic[joint])
+        plt.plot(time, self.df['desired_' + joint], '-', c=self.colors[i], label="目標の" + self.joint_dic[joint])
       for i, joint in enumerate(self.joint_dic):
-        plt.plot(time, self.df['desired_' + joint], '--', c=self.colors[i], label="目標の" + self.joint_dic[joint])
+        plt.plot(time, self.df['actual_' + joint], '--', c=self.colors[i], label="実際の" + self.joint_dic[joint])
+      
     
       plt.xlabel('時間 [s]', fontsize=font_size)
       plt.ylabel('関節角度[rad]', fontsize=font_size)
@@ -54,8 +64,9 @@ class Feedback:
 
 
 if __name__ == '__main__':
-  feedback = Feedback()
-  feedback.display()
+  joint_names = ["RShoulderRoll"]
+  feedback = Feedback(joint_names)
+  feedback.display(english=False)
 
   
 
