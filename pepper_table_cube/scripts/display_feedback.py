@@ -5,8 +5,9 @@ import matplotlib.pyplot as plt
 import os
 import pandas as pd
 
-FILE_NAME = 'feedback_real'
-HUMAN_DATA = 'pushing_task4'
+FILE_NAME = 'feedback_ros'
+HUMAN_DATA = 'pushing_task6'
+
 RATE = 25.0
 JOINT_DIC = {"RElbowRoll": "右肘ロール角",
                 "RElbowYaw": "右肘ヨー角",
@@ -27,10 +28,16 @@ class Feedback:
     
     print(self.joint_dic)
     self.colors=["blue", "red", "green", "orange"]
-    
-  def display(self, english=True, font_size=25):
+  
+  def display(self, joint_name, english=True,font_size=25, ):
     plt.figure(figsize=(15, 8))
     plt.subplot(1, 2, 1)
+
+    human_df = pd.read_csv('../../human/joint_data/{}_3d.csv'.format(HUMAN_DATA))
+
+    human_stride = float(1.0 / 4.0)
+    human_df = human_df.drop(human_df.shape[0] - 1)
+    human_time = np.linspace(0, human_stride * human_df.shape[0], human_df.shape[0])
 
     ## Settings of graph
     stride = float(1 / RATE)
@@ -43,7 +50,8 @@ class Feedback:
       for i, joint in enumerate(self.joint_dic):
         plt.plot(time, self.df['desired_' + joint], '-', c=self.colors[i])
       for i, joint in enumerate(self.joint_dic):
-        plt.plot(time, self.df['actual_' + joint], '--', c=self.colors[i])
+        plt.plot(time, self.df['actual_' + joint], '-', c=self.colors[i])
+        plt.plot(human_time, human_df[joint_name], '--', c=self.colors[i])
 
 
       plt.xlabel('Time [s]', fontsize=font_size)
@@ -54,7 +62,6 @@ class Feedback:
         plt.plot(time, self.df['desired_' + joint], '-', c=self.colors[i], label="目標の" + self.joint_dic[joint])
       for i, joint in enumerate(self.joint_dic):
         plt.plot(time, self.df['actual_' + joint], '--', c=self.colors[i], label="実際の" + self.joint_dic[joint])
-      
     
       plt.xlabel('時間 [s]', fontsize=font_size)
       plt.ylabel('関節角度[rad]', fontsize=font_size)
@@ -66,7 +73,11 @@ class Feedback:
 if __name__ == '__main__':
   joint_names = ["RShoulderRoll"]
   feedback = Feedback(joint_names)
-  feedback.display(english=False)
+  feedback.display("RShoulderRoll")
+  human = Feedback(joint_names)
+  human.display("RShoulderRoll")
+
+
 
   
 

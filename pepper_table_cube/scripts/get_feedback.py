@@ -29,8 +29,8 @@ if __name__ == '__main__':
   error_dict = {}
 
   for i, joint_name in enumerate(joint_names):
-    joint_dict['desired_' + joint_name] = joint.feedback.desired.positions[i]
     joint_dict['actual_' + joint_name] = joint.feedback.actual.positions[i]
+    joint_dict['desired_' + joint_name] = joint.feedback.desired.positions[i]  
 
     error_dict['error_' + joint_name] = joint.feedback.actual.positions[i]
 
@@ -45,8 +45,9 @@ if __name__ == '__main__':
       desired_pos = joint.feedback.desired.positions
       actual_pos = joint.feedback.actual.positions
       error_pos = joint.feedback.error.positions
-      df.loc[count] = [desired_pos[3], desired_pos[2], desired_pos[0], desired_pos[1],
-                        actual_pos[3], actual_pos[2], actual_pos[0], actual_pos[1]]    
+      df.loc[count] = [actual_pos[3], actual_pos[2], actual_pos[0], actual_pos[1],
+                      desired_pos[3], desired_pos[2], desired_pos[0], desired_pos[1]]
+                            
       df_error.loc[count] = [error_pos[3], error_pos[2], error_pos[0], error_pos[1]]              
       rate.sleep()
 
