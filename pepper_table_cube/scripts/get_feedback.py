@@ -8,7 +8,7 @@ import rospy
 
 from control_msgs.msg import FollowJointTrajectoryActionFeedback
 
-FILE_NAME = 'feedback'
+FILE_NAME = 'feedback_ros'
 RATE = 25
 
 dirname = os.path.dirname(__file__)

@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import os
 import pandas as pd
 
-FILE_NAME = 'feedback'
+FILE_NAME = 'feedback_real'
 HUMAN_DATA = 'pushing_task4'
 RATE = 25.0
 
@@ -13,7 +13,7 @@ if __name__ == '__main__':
   plt.figure(figsize=(15, 8))
   # plt.rcParams["font.family"] = "Times New Roman"
 
-  plt.rcParams["font.size"] = 16
+  plt.rcParams["font.size"] = 20
 
   df = pd.read_csv('./test/data/{}.csv'.format(FILE_NAME))
   human_df = pd.read_csv('../../human/joint_data/{}_3d.csv'.format(HUMAN_DATA))
@@ -45,8 +45,8 @@ if __name__ == '__main__':
 
   # plt.xlabel('Time [s]')
   # plt.ylabel('Angle[rad]')  
-  plt.xlabel('時間 [s]')
-  plt.ylabel('関節角度[rad]')
+  plt.xlabel('時間 [s]', fontsize=25)
+  plt.ylabel('関節角度[rad]', fontsize=25)
   plt.xlim(0, stride * df.shape[0])
   plt.legend(bbox_to_anchor=(1.05, 0.5, 1.0, 0.5), loc="upper left")
   # plt.tight_layout()
