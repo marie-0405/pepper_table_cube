@@ -38,8 +38,8 @@ if __name__ == '__main__':
     ax = fig.add_subplot(111)
 
     hand, = ax.plot([], [], 'o', ms=50)
-    cube, = ax.plot([], [], 'o', ms=50)
-    target, = ax.plot([], [], 'o', ms=50)
+    cube, = ax.plot([], [], 's', ms=50)
+    target, = ax.plot([], [], '*', ms=50)
 
     ani = FuncAnimation(fig, animate, frames=np.arange(0, len(time)), interval=50, blit=True)
 
@@ -47,9 +47,9 @@ if __name__ == '__main__':
     ax.set_ylim(-0.5, 0.0)
 
     ## for legend
-    ax.plot([], [], label='手先', color='b', linewidth=3)
-    ax.plot([], [], label='目標', color='r', linewidth=3)
-    ax.plot([], [], label='キューブ', color='g', linewidth=3)
+    # ax.scatter([], [], label='手先', color='b', marker='o')
+    # ax.scatter([], [], label='目標', color='r', marker='s')
+    # ax.scatter([], [], label='キューブ', color='g', marker='*')
 
     # Set the label
     ax.set_xlabel("x座標[m]", fontsize = 25)
