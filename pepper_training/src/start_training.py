@@ -84,7 +84,7 @@ if __name__ == '__main__':
             
             # Execute the action in the environment and get feedback
             rospy.logdebug("###################### Start Step...["+str(i)+"]")
-            rospy.logdebug("haa+,haa-,hfe+,hfe-,kfe+,kfe- >> [0,1,2,3,4,5]")
+            rospy.logdebug("RSP+,RSP-,RSR+,RSR-,RER+,RER-,REY+,REY-,RWY+,RWY- >> [0,1,2,3,4,5,6,7,8,9]")
             rospy.logdebug("Action to Perform >> "+str(action))
             nextState, reward, done, info = env.step(action)
             rospy.logdebug("END Step...")

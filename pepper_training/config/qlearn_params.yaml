@@ -27,11 +27,11 @@ list_of_observations: # Observations you want to use for the learning
 
 discrete_division: 50 # Parts in which we divide each of the observations sensory range
 
-init_joint_pose:  # TODO have to change to hand on table
-  RShoulderPitch: 0.0
-  RShoulderRoll: 0.0
-  RElbowRoll: 0.0
-  RElbowYaw: 0.0
+init_joint_pose:  # Set the right arm on the table
+  RShoulderPitch: -0.0037184561
+  RShoulderRoll: -0.0123692708
+  RElbowRoll: 0.0085497772
+  RElbowYaw: 0.0010389422
   RWristYaw: 0.0
 
 joint_limits_array:  # in rad
