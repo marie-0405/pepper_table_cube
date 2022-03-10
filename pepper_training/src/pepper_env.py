@@ -13,7 +13,7 @@ from gym.utils import seeding
 from gym.envs.registration import register
 from gazebo_connection import GazeboConnection
 from joint_publisher import JointPub
-from research_pepper.pepper_training.src.pepper_state import PepperState
+from pepper_state import PepperState
 from controllers_connection import ControllersConnection
 
 #register the training environment in the gym as an available one
@@ -32,7 +32,7 @@ class PepperEnv(gym.Env):
         # before initialising the environment
 
         # gets training parameters from param server
-        self.desired_pose = Pose()
+        self.desired_length = Pose()
         self.desired_length.position.x = rospy.get_param("/desired_length/x")
         self.desired_length.position.y = rospy.get_param("/desired_length/y")
         self.desired_length.position.z = rospy.get_param("/desired_length/z")
@@ -91,8 +91,8 @@ class PepperEnv(gym.Env):
 
         self.controllers_object = ControllersConnection(namespace="pepper")
 
-        self.pepper_state_object = PepperState(     joint_increment_value=self.joint_increment_value,
-                                                    list_of_observations=self.list_of_observations,
+        self.pepper_state_object = PepperState(     list_of_observations=self.list_of_observations,
+                                                    joint_increment_value=self.joint_increment_value,
                                                     joint_limits=self.joint_limits,
                                                     episode_done_criteria=self.episode_done_criteria,
                                                     done_reward=self.done_reward,
