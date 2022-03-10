@@ -89,24 +89,15 @@ gazebo_msgs/ContactState[] states
 
 class PepperState(object):
 
-    def __init__(self, max_height, min_height, abs_max_roll, abs_max_pitch, list_of_observations, joint_limits, episode_done_criteria, joint_increment_value = 0.05, done_reward = -1000.0, alive_reward=10.0, desired_force=7.08, desired_yaw=0.0, weight_r1=1.0, weight_r2=1.0, weight_r3=1.0, weight_r4=1.0, weight_r5=1.0, discrete_division=10, maximum_base_linear_acceleration=3000.0, maximum_base_angular_velocity=20.0, maximum_joint_effort=10.0, jump_increment=0.7):
+    def __init__(self, list_of_observations, joint_limits, episode_done_criteria, joint_increment_value = 0.05, done_reward = -1000.0, alive_reward=10.0, weight_r1=1.0, weight_r2=1.0, discrete_division=10, maximum_base_linear_acceleration=3000.0, maximum_base_angular_velocity=20.0, maximum_joint_effort=10.0):
         rospy.logdebug("Starting pepperState Class object...")
         self.desired_world_point = Vector3(0.0, 0.0, 0.0)
-        self._min_height = min_height
-        self._max_height = max_height
-        self._abs_max_roll = abs_max_roll
-        self._abs_max_pitch = abs_max_pitch
         self._joint_increment_value = joint_increment_value
         self._done_reward = done_reward
         self._alive_reward = alive_reward
-        self._desired_force = desired_force
-        self._desired_yaw = desired_yaw
 
         self._weight_r1 = weight_r1
         self._weight_r2 = weight_r2
-        self._weight_r3 = weight_r3
-        self._weight_r4 = weight_r4
-        self._weight_r5 = weight_r5
 
         self._list_of_observations = list_of_observations
 
@@ -129,7 +120,6 @@ class PepperState(object):
 
         self._discrete_division = discrete_division
 
-        self.jump_increment = jump_increment
         # We init the observation ranges and We create the bins now for all the observations
         self.init_bins()
 
@@ -137,16 +127,11 @@ class PepperState(object):
         self.base_orientation = Quaternion()
         self.base_angular_velocity = Vector3()
         self.base_linear_acceleration = Vector3()
-        self.contact_force = Vector3()
         self.joints_state = JointState()
 
         # Odom we only use it for the height detection and planar position ,
         #  because in real robots this data is not trivial.
         rospy.Subscriber("/odom", Odometry, self.odom_callback)
-        # We use the IMU for orientation and linearacceleration detection
-        rospy.Subscriber("/pepper/imu/data", Imu, self.imu_callback)
-        # We use it to get the contact force, to know if its in the air or stumping too hard.
-        rospy.Subscriber("/lowerleg_contactsensor_state", ContactsState, self.contact_callback)
         # We use it to get the joints positions and calculate the reward associated to it
         rospy.Subscriber("/pepper/joint_states", JointState, self.joints_state_callback)
 
