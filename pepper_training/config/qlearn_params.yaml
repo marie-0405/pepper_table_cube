@@ -28,23 +28,23 @@ list_of_observations: # Observations you want to use for the learning
 discrete_division: 50 # Parts in which we divide each of the observations sensory range
 
 init_joint_pose:  # Set the right arm on the table
-  RShoulderPitch: -0.0037184561
-  RShoulderRoll: -0.0123692708
-  RElbowRoll: 0.0085497772
-  RElbowYaw: 0.0010389422
-  RWristYaw: 0.0
+  r_shoulder_pitch: -0.0037184561
+  r_shoulder_roll: -0.0123692708
+  r_elbow_roll: 0.0085497772
+  r_elbow_yaw: 0.0010389422
+  r_wrist_yaw: 0.0
 
 joint_limits_array:  # in rad
-  RShoulderPitch_max: 2.0856684561
-  RShoulderPitch_min: -2.0856684561
-  RShoulderRoll_max: -0.0087266463
-  RShoulderRoll_min: -1.5620696805
-  RElbowRoll_max: 1.5620696805
-  RElbowRoll_min: 0.0087266463
-  RElbowYaw_max: 2.0856684561
-  RElbowYaw_min: -2.0856684561
-  RWristYaw_max: 1.8238690683
-  RWristYaw_min: -1.8238690683
+  r_shoulder_pitch_max: 2.0856684561
+  r_shoulder_pitch_min: -2.0856684561
+  r_shoulder_roll_max: -0.0087266463
+  r_shoulder_roll_min: -1.5620696805
+  r_elbow_roll_max: 1.5620696805
+  r_elbow_roll_min: 0.0087266463
+  r_elbow_yaw_max: 2.0856684561
+  r_elbow_yaw_min: -2.0856684561
+  r_wrist_yaw_max: 1.8238690683
+  r_wrist_yaw_min: -1.8238690683
 
 episode_done_criteria:
   - time_over
