@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+<!-- joint states -->
+  <node name="robot_state_publisher_pepper" pkg="robot_state_publisher" type="robot_state_publisher"
+        respawn="false" output="screen">
+            <param name="publish_frequency" type="double" value="30.0" />
+            <param name="ignore_timestamp" type="bool" value="true" />
+            <param name="tf_prefix" type="string" value="pepper" />
+            <remap from="/joint_states" to="/pepper/joint_states" />
+  </node>
+
+</launch>

@@ -91,19 +91,20 @@ class PepperEnv(gym.Env):
 
         self.controllers_object = ControllersConnection(namespace="pepper")
 
-        self.pepper_state_object = PepperState(     list_of_observations=self.list_of_observations,
-                                                    joint_increment_value=self.joint_increment_value,
-                                                    joint_limits=self.joint_limits,
-                                                    episode_done_criteria=self.episode_done_criteria,
-                                                    done_reward=self.done_reward,
-                                                    alive_reward=self.alive_reward,
-                                                    weight_r1=self.weight_r1,
-                                                    weight_r2=self.weight_r2,
-                                                    discrete_division=self.discrete_division,
-                                                    maximum_base_linear_acceleration=self.maximum_base_linear_acceleration,
-                                                    maximum_base_angular_velocity=self.maximum_base_angular_velocity,
-                                                    maximum_joint_effort=self.maximum_joint_effort,
-                                                )
+        self.pepper_state_object = PepperState(
+            list_of_observations=self.list_of_observations,
+            joint_increment_value=self.joint_increment_value,
+            joint_limits=self.joint_limits,
+            episode_done_criteria=self.episode_done_criteria,
+            done_reward=self.done_reward,
+            alive_reward=self.alive_reward,
+            weight_r1=self.weight_r1,
+            weight_r2=self.weight_r2,
+            discrete_division=self.discrete_division,
+            maximum_base_linear_acceleration=self.maximum_base_linear_acceleration,
+            maximum_base_angular_velocity=self.maximum_base_angular_velocity,
+            maximum_joint_effort=self.maximum_joint_effort,
+        )
 
         self.pepper_state_object.set_desired_world_length(self.desired_length.position.x,
                                                           self.desired_length.position.y,
@@ -126,7 +127,7 @@ class PepperEnv(gym.Env):
 
         self._seed()
 
-    # A function to iline 49, in _nitialize the random generator
+    # A function to iline 49, in _initialize the random generator
     def _seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]

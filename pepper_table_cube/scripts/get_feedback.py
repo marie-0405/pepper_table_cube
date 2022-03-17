@@ -11,7 +11,9 @@ from control_msgs.msg import FollowJointTrajectoryActionFeedback
 FILE_NAME = 'feedback_ros'
 RATE = 25
 
-dirname = os.path.dirname(__file__)
+# dirname = os.path.dirname(__file__)
+dirname = "~/catkin_ws/src/research_pepper/pepper_table_cube/scripts"
+
 cwd = os.getcwd()
 
 
@@ -53,5 +55,5 @@ if __name__ == '__main__':
 
   except rospy.ROSInterruptException:
     df.to_csv(dirname + '/test/data/{}.csv'.format(FILE_NAME), index=False)
-    df_error.to_csv(dirname + '/test/data/{}_error.csv'.format(FILE_NAME), index=False)
+    # df_error.to_csv(dirname + '/test/data/{}.csv'.format(FILE_NAME), index=False)
   

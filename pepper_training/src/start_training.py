@@ -17,7 +17,7 @@ import rospy
 import rospkg
 
 # import our training environment
-import research_pepper.pepper_training.src.pepper_env as pepper_env
+import pepper_env
 
 from functools import reduce
 

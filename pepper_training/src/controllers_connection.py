@@ -73,10 +73,6 @@ class ControllersConnection():
         """
         connect with pepper_trajectory_control.yaml
         """
-        # controllers_reset = ['joint_state_controller',
-        #                      'haa_joint_position_controller',
-        #                      'hfe_joint_position_controller',
-        #                      'kfe_joint_position_controller']
         controllers_reset = ['joint_state_controller',
                              'RightArm_controller']
         self.reset_controllers(controllers_reset)

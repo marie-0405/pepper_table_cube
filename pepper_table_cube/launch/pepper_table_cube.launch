@@ -3,14 +3,14 @@
   <arg name="launch_control_trajectory_all" default="true"/>
   
   <!-- Load the URDF Model -->
-  <include file="$(find my_pepper_description)/launch/pepper_upload.launch" />  
-  
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find pepper_table_cube)/worlds/pepper_table_cube.world"/>
     <arg name="paused" value="true"/>
   </include>
 
-  Load joint controller configurations from YAML file to parameter server
+  <include file="$(find my_pepper_description)/launch/pepper_upload.launch" />  
+
+  <!-- Load joint controller configurations from YAML file to parameter server -->
   <rosparam file="$(find my_pepper_gazebo_plugin)/config/pepper_gazebo_controller.yaml" command="load"/>
 
   <!-- Call Pepper Robot Trajectory Controller -->
@@ -21,6 +21,9 @@
   <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model"
     args="-param robot_description -urdf -x -0.1 -y 0 -z 0.835 -model pepper" />
   
+  <!-- Load joint_states -->
+  <include file="$(find my_pepper_control)/launch/pepper_control.launch"/>
+
   <!-- Show image data -->
   <node name="img_proc" pkg="pepper_table_cube" type="get_image.py"/>
 

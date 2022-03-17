@@ -148,28 +148,7 @@ class PepperState(object):
                 rospy.logdebug("Current odom READY")
             except:
                 rospy.logdebug("Current odom pose not ready yet, retrying for getting robot base_position")
-
-        imu_data = None
-        while imu_data is None and not rospy.is_shutdown():
-            try:
-                imu_data = rospy.wait_for_message("/pepper/imu/data", Imu, timeout=1.0)
-                self.base_orientation = imu_data.orientation
-                self.base_angular_velocity = imu_data.angular_velocity
-                self.base_linear_acceleration = imu_data.linear_acceleration
-                rospy.logdebug("Current imu_data READY")
-            except:
-                rospy.logdebug("Current imu_data not ready yet, retrying for getting robot base_orientation, and base_linear_acceleration")
-
-        contacts_data = None
-        while contacts_data is None and not rospy.is_shutdown():
-            try:
-                contacts_data = rospy.wait_for_message("/lowerleg_contactsensor_state", ContactsState, timeout=0.1)
-                for state in contacts_data.states:
-                    self.contact_force = state.total_wrench.force
-                rospy.logdebug("Current contacts_data READY")
-            except:
-                rospy.logdebug("Current contacts_data not ready yet, retrying")
-
+                
         joint_states_msg = None
         while joint_states_msg is None and not rospy.is_shutdown():
             try:
