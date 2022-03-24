@@ -152,7 +152,7 @@ class PepperState(object):
         joint_states_msg = None
         while joint_states_msg is None and not rospy.is_shutdown():
             try:
-                joint_states_msg = rospy.wait_for_message("/pepper/joint_states", JointState, timeout=0.1)
+                joint_states_msg = rospy.wait_for_message("/joint_states", JointState, timeout=0.1)
                 self.joints_state = joint_states_msg
                 rospy.logdebug("Current joint_states READY")
             except Exception as e:
