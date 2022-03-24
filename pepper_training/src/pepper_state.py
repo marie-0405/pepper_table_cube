@@ -204,6 +204,30 @@ class PepperState(object):
 
         return distance
 
+    def get_distance_from_point_to_point(self, p_from, p_to):
+        """
+        Given a Vector3 Object, get distance from current position
+        
+        Parameters
+        ---------- 
+        p_from: Vector3
+            position of reference point
+        p_to: Vector3
+            position of target point
+
+        Returns
+        -------
+        distance: int
+            distance from reference point to target point
+        """
+        a = numpy.array((p_from.x, p_from.y, p_from.z))
+        b = numpy.array((p_to.x, p_to.y, p_to.z))
+
+        distance = numpy.linalg.norm(a - b)
+
+        return distance
+
+
     def get_contact_force_magnitude(self):
         """
         You will see that because the X axis is the one pointing downwards, it will be the one with
@@ -381,15 +405,16 @@ class PepperState(object):
         1) distance from cube to target
         2) distance from hand to cube
 
-        observation = [distance_from_desired_point,
-                    - hand_position
-                    - cube_position
-                    - target_position]
+        observation = [distance_from_cube_to_target,
+                    - distance from hand to cube]
 
         :return: observation
         """
-
-        distance_from_desired_point = self.get_distance_from_point(self.desired_world_point)
+        ## TODO get_model_positionメソッドを作成して、cubeとtargetとhandの位置を算出するコードを書く。
+        cube_position = self.get_model_position("cube")
+        target_position = self.get_model_position("target")
+        hand_position = self.get_model_position("hand")
+        distance_from_cube_to_target = self.get_distance_from_point_to_point(self.desired_world_point)
 
         base_orientation = self.get_base_rpy()
         base_roll = base_orientation.x
