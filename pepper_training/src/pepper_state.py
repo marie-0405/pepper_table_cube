@@ -172,44 +172,9 @@ class PepperState(object):
         self.desired_world_length.y = y
         self.desired_world_length.z = z
 
-
-    def get_base_height(self):
-        height = self.base_position.z
-        rospy.logdebug("BASE-HEIGHT="+str(height))
-        return height
-
-    def get_base_rpy(self):
-        euler_rpy = Vector3()
-        euler = tf.transformations.euler_from_quaternion(
-            [self.base_orientation.x, self.base_orientation.y, self.base_orientation.z, self.base_orientation.w])
-
-        euler_rpy.x = euler[0]
-        euler_rpy.y = euler[1]
-        euler_rpy.z = euler[2]
-        return euler_rpy
-
-    def get_base_angular_velocity(self):
-        return self.base_angular_velocity
-
-    def get_base_linear_acceleration(self):
-        return self.base_linear_acceleration
-
     def get_model_position(self, model_name:str):
         index = self.model_states.name.index(model_name)
         return self.model_states.pose[index].position
-
-    def get_distance_from_point(self, p_end):
-        """
-        Given a Vector3 Object, get distance from current position
-        :param p_end:
-        :return:
-        """
-        a = numpy.array((self.base_position.x, self.base_position.y, self.base_position.z))
-        b = numpy.array((p_end.x, p_end.y, p_end.z))
-
-        distance = numpy.linalg.norm(a - b)
-
-        return distance
 
     def get_distance_from_point_to_point(self, p_from, p_to):
         """
@@ -234,47 +199,8 @@ class PepperState(object):
 
         return distance
 
-
-    def get_contact_force_magnitude(self):
-        """
-        You will see that because the X axis is the one pointing downwards, it will be the one with
-        higher value when touching the floor
-        For a Robot of total mas of 0.55Kg, a gravity of 9.81 m/sec**2, Weight = 0.55*9.81=5.39 N
-        Falling from around 5centimetres ( negligible height ), we register peaks around
-        Fx = 7.08 N
-        :return:
-        """
-        contact_force = self.contact_force
-        contact_force_np = numpy.array((contact_force.x, contact_force.y, contact_force.z))
-        force_magnitude = numpy.linalg.norm(contact_force_np)
-
-        return force_magnitude
-
     def get_joint_states(self):
         return self.joints_state
-
-    def odom_callback(self,msg):
-        self.base_position = msg.pose.pose.position
-
-    def imu_callback(self,msg):
-        self.base_orientation = msg.orientation
-        self.base_angular_velocity = msg.angular_velocity
-        self.base_linear_acceleration = msg.linear_acceleration
-
-    def contact_callback(self,msg):
-        """
-        /lowerleg_contactsensor_state/states[0]/contact_positions ==> PointContact in World
-        /lowerleg_contactsensor_state/states[0]/contact_normals ==> NormalContact in World
-
-        ==> One is an array of all the forces, the other total,
-         and are relative to the contact link referred to in the sensor.
-        /lowerleg_contactsensor_state/states[0]/wrenches[]
-        /lowerleg_contactsensor_state/states[0]/total_wrench
-        :param msg:
-        :return:
-        """
-        for state in msg.states:
-            self.contact_force = state.total_wrench.force
 
     def model_states_callback(self, msg):
         self.model_states = msg
