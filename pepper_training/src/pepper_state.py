@@ -89,9 +89,11 @@ gazebo_msgs/ContactState[] states
 
 class PepperState(object):
 
-    def __init__(self, list_of_observations, joint_limits, episode_done_criteria, joint_increment_value = 0.05, done_reward = -1000.0, alive_reward=10.0, weight_r1=1.0, weight_r2=1.0, discrete_division=10, maximum_base_linear_acceleration=3000.0, maximum_base_angular_velocity=20.0, maximum_joint_effort=10.0):
+    def __init__(self, min_distance, max_distance, list_of_observations, joint_limits, episode_done_criteria, joint_increment_value = 0.05, done_reward = -1000.0, alive_reward=10.0, weight_r1=1.0, weight_r2=1.0, discrete_division=10, maximum_base_linear_acceleration=3000.0, maximum_base_angular_velocity=20.0, maximum_joint_effort=10.0):
         rospy.logdebug("Starting pepperState Class object...")
         self.desired_world_point = Vector3(0.0, 0.0, 0.0)
+        self._min_distance = min_distance
+        self._max_distance = max_distance
         self._joint_increment_value = joint_increment_value
         self._done_reward = done_reward
         self._alive_reward = alive_reward
@@ -172,7 +174,7 @@ class PepperState(object):
         self.desired_world_length.y = y
         self.desired_world_length.z = z
 
-    def get_model_position(self, model_name:str):
+    def get_model_position(self, model_name):
         index = self.model_states.name.index(model_name)
         return self.model_states.pose[index].position
 
@@ -401,7 +403,7 @@ class PepperState(object):
 
     def init_bins(self):
         """
-        We initalise all related to the bins
+        We initalize all related to the bins
         :return:
         """
         self.fill_observations_ranges()
@@ -414,72 +416,15 @@ class PepperState(object):
         """
         self._obs_range_dict = {}
         for obs_name in self._list_of_observations:
-
-            if obs_name == "distance_from_desired_point":
-                # We consider the range as based on the range of distance allowed in height
-                delta = self._max_height - self._min_height
+            if obs_name == "distance_from_hand_to_cube":
+                # We consider the range as based on the range of distance between models
+                delta = self._max_distance - self._min_distance
                 max_value = delta
                 min_value = -delta
-            elif obs_name == "base_roll":
-                max_value = self._abs_max_roll
-                min_value = -self._abs_max_roll
-            elif obs_name == "base_pitch":
-                max_value = self._abs_max_pitch
-                min_value = -self._abs_max_pitch
-            elif obs_name == "base_yaw":
-                # We consider that 360 degrees is max range
-                max_value = 2*math.pi
-                min_value = -2*math.pi
-            elif obs_name == "contact_force":
-                # We consider that no force is the minimum, and the maximum is 2 times the desired
-                # We dont want to make a very big range because we might loose the desired force
-                # in the middle.
-                max_value = 2*self._desired_force
-                min_value = 0.0
-
-            elif obs_name == "joint_states_haa":
-                # We consider the URDF maximum values
-                max_value = self._joint_limits["haa_max"]
-                min_value = self._joint_limits["haa_min"]
-            elif obs_name == "joint_states_hfe":
-                max_value = self._joint_limits["hfe_max"]
-                min_value = self._joint_limits["hfe_min"]
-            elif obs_name == "joint_states_kfe":
-                max_value = self._joint_limits["kfe_max"]
-                min_value = self._joint_limits["kfe_min"]
-
-            elif obs_name == "joint_effort_haa":
-                # We consider the URDF maximum values
-                max_value = self.maximum_joint_effort
-                min_value = -self.maximum_joint_effort
-            elif obs_name == "joint_effort_hfe":
-                max_value = self.maximum_joint_effort
-                min_value = -self.maximum_joint_effort
-            elif obs_name == "joint_effort_kfe":
-                max_value = self.maximum_joint_effort
-                min_value = -self.maximum_joint_effort
-
-
-            elif obs_name == "base_angular_vel_x":
-                max_value = self.maximum_base_angular_velocity
-                min_value = -self.maximum_base_angular_velocity
-            elif obs_name == "base_angular_vel_y":
-                max_value = self.maximum_base_angular_velocity
-                min_value = -self.maximum_base_angular_velocity
-            elif obs_name == "base_angular_vel_z":
-                max_value = self.maximum_base_angular_velocity
-                min_value = -self.maximum_base_angular_velocity
-
-            elif obs_name == "base_linear_acceleration_x":
-                max_value = self.maximum_base_linear_acceleration
-                min_value = -self.maximum_base_linear_acceleration
-            elif obs_name == "base_linear_acceleration_y":
-                max_value = self.maximum_base_linear_acceleration
-                min_value = -self.maximum_base_linear_acceleration
-            elif obs_name == "base_linear_acceleration_z":
-                max_value = self.maximum_base_linear_acceleration
-                min_value = -self.maximum_base_linear_acceleration
-
+            elif obs_name == "distance_from_cube_to_target":
+                delta = self._max_distance - self._min_distance
+                max_value = delta
+                min_value = -delta
             else:
                 raise NameError('Observation Asked does not exist=='+str(obs_name))
 

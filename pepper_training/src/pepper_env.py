@@ -37,6 +37,8 @@ class PepperEnv(gym.Env):
         self.desired_length.position.y = rospy.get_param("/desired_length/y")
         self.desired_length.position.z = rospy.get_param("/desired_length/z")
         self.running_step = rospy.get_param("/running_step")
+        self.min_distance = rospy.get_param("/min_distance")
+        self.max_distance = rospy.get_param("/max_distance")
         self.joint_increment_value = rospy.get_param("/joint_increment_value")
         self.done_reward = rospy.get_param("/done_reward")
         self.alive_reward = rospy.get_param("/alive_reward")
@@ -92,6 +94,8 @@ class PepperEnv(gym.Env):
         self.controllers_object = ControllersConnection(namespace="pepper")
 
         self.pepper_state_object = PepperState(
+            min_distance = self.min_distance,
+            max_distance = self.max_distance,
             list_of_observations=self.list_of_observations,
             joint_increment_value=self.joint_increment_value,
             joint_limits=self.joint_limits,
