@@ -2,7 +2,7 @@
 
 import rospy
 import copy
-from gazebo_msgs.msg import ContactsState
+from gazebo_msgs.msg import ContactsState, ModelStates
 from sensor_msgs.msg import Imu
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Point, Quaternion, Vector3
@@ -131,9 +131,12 @@ class PepperState(object):
 
         # Odom we only use it for the height detection and planar position ,
         #  because in real robots this data is not trivial.
-        rospy.Subscriber("/odom", Odometry, self.odom_callback)
+        # rospy.Subscriber("/odom", Odometry, self.odom_callback)
         # We use it to get the joints positions and calculate the reward associated to it
-        rospy.Subscriber("/pepper/joint_states", JointState, self.joints_state_callback)
+        rospy.Subscriber("/joint_states", JointState, self.joints_state_callback)
+
+        # We use it to get the positions of models.
+        rospy.Subscriber("/gazebo/model_states", ModelStates, self.model_states_callback)
 
     def check_all_systems_ready(self):
         """
@@ -190,6 +193,10 @@ class PepperState(object):
 
     def get_base_linear_acceleration(self):
         return self.base_linear_acceleration
+
+    def get_model_position(self, model_name:str):
+        index = self.model_states.name.index(model_name)
+        return self.model_states.pose[index].position
 
     def get_distance_from_point(self, p_end):
         """
@@ -268,6 +275,9 @@ class PepperState(object):
         """
         for state in msg.states:
             self.contact_force = state.total_wrench.force
+
+    def model_states_callback(self, msg):
+        self.model_states = msg
 
     def joints_state_callback(self,msg):
         self.joints_state = msg
@@ -410,11 +420,15 @@ class PepperState(object):
 
         :return: observation
         """
-        ## TODO get_model_positionメソッドを作成して、cubeとtargetとhandの位置を算出するコードを書く。
-        cube_position = self.get_model_position("cube")
-        target_position = self.get_model_position("target")
-        hand_position = self.get_model_position("hand")
-        distance_from_cube_to_target = self.get_distance_from_point_to_point(self.desired_world_point)
+        
+        cube_pos = self.get_model_position("cube")
+        target_pos = self.get_model_position("target")
+        hand_pos = self.get_model_position("hand")
+
+        distance_from_hand_to_cube = \
+         self.get_distance_from_point_to_point(hand_pos, cube_pos)
+        distance_from_cube_to_target = \
+         self.get_distance_from_point_to_point(cube_pos, target_pos)
 
         base_orientation = self.get_base_rpy()
         base_roll = base_orientation.x
