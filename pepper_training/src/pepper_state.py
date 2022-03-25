@@ -430,69 +430,13 @@ class PepperState(object):
         distance_from_cube_to_target = \
          self.get_distance_from_point_to_point(cube_pos, target_pos)
 
-        base_orientation = self.get_base_rpy()
-        base_roll = base_orientation.x
-        base_pitch = base_orientation.y
-        base_yaw = base_orientation.z
-
-        base_angular_velocity = self.get_base_angular_velocity()
-        base_angular_vel_x = base_angular_velocity.x
-        base_angular_vel_y = base_angular_velocity.y
-        base_angular_vel_z = base_angular_velocity.z
-
-        base_linear_acceleration = self.get_base_linear_acceleration()
-        base_linear_acceleration_x = base_linear_acceleration.x
-        base_linear_acceleration_y = base_linear_acceleration.y
-        base_linear_acceleration_z = base_linear_acceleration.z
-
-        contact_force = self.get_contact_force_magnitude()
-
-        joint_states = self.get_joint_states()
-        joint_states_haa = joint_states.position[0]
-        joint_states_hfe = joint_states.position[1]
-        joint_states_kfe = joint_states.position[2]
-
-        joint_effort_haa = joint_states.effort[0]
-        joint_effort_hfe = joint_states.effort[1]
-        joint_effort_kfe = joint_states.effort[2]
-
         observation = []
         rospy.logdebug("List of Observations==>"+str(self._list_of_observations))
         for obs_name in self._list_of_observations:
-            if obs_name == "distance_from_desired_point":
-                observation.append(distance_from_desired_point)
-            elif obs_name == "base_roll":
-                observation.append(base_roll)
-            elif obs_name == "base_pitch":
-                observation.append(base_pitch)
-            elif obs_name == "base_yaw":
-                observation.append(base_yaw)
-            elif obs_name == "contact_force":
-                observation.append(contact_force)
-            elif obs_name == "joint_states_haa":
-                observation.append(joint_states_haa)
-            elif obs_name == "joint_states_hfe":
-                observation.append(joint_states_hfe)
-            elif obs_name == "joint_states_kfe":
-                observation.append(joint_states_kfe)
-            elif obs_name == "joint_effort_haa":
-                observation.append(joint_effort_haa)
-            elif obs_name == "joint_effort_hfe":
-                observation.append(joint_effort_hfe)
-            elif obs_name == "joint_effort_kfe":
-                observation.append(joint_effort_kfe)
-            elif obs_name == "base_angular_vel_x":
-                observation.append(base_angular_vel_x)
-            elif obs_name == "base_angular_vel_y":
-                observation.append(base_angular_vel_y)
-            elif obs_name == "base_angular_vel_z":
-                observation.append(base_angular_vel_z)
-            elif obs_name == "base_linear_acceleration_x":
-                observation.append(base_linear_acceleration_x)
-            elif obs_name == "base_linear_acceleration_y":
-                observation.append(base_linear_acceleration_y)
-            elif obs_name == "base_linear_acceleration_z":
-                observation.append(base_linear_acceleration_z)
+            if obs_name == "distance_from_hand_to_cube":
+                observation.append(distance_from_hand_to_cube)
+            elif obs_name == "distance_from_cube_to_target":
+                observation.append(distance_from_cube_to_target)
             else:
                 raise NameError('Observation Asked does not exist=='+str(obs_name))
 

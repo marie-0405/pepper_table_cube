@@ -20,10 +20,8 @@ weight_r1: 1.0 # Weight for distance from hand to cube ( what hand is within a r
 weight_r2: 1.0 # Weight for distance from cube to target position ( on the point is perfect )
 
 list_of_observations: # Observations you want to use for the learning
-  - hand_position
-  - cube_position
-  - target_position
-
+  - distance_from_hand_to_cube
+  - distance_from_cube_to_target
 
 discrete_division: 50 # Parts in which we divide each of the observations sensory range
 
