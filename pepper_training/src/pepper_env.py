@@ -110,7 +110,7 @@ class PepperEnv(gym.Env):
             maximum_joint_effort=self.maximum_joint_effort,
         )
 
-        self.pepper_state_object.set_desired_world_length(self.desired_length.position.x,
+        self.pepper_state_object.set_desired_length(self.desired_length.position.x,
                                                           self.desired_length.position.y,
                                                           self.desired_length.position.z)
 

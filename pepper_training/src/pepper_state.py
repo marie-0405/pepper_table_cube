@@ -91,7 +91,7 @@ class PepperState(object):
 
     def __init__(self, min_distance, max_distance, list_of_observations, joint_limits, episode_done_criteria, joint_increment_value = 0.05, done_reward = -1000.0, alive_reward=10.0, weight_r1=1.0, weight_r2=1.0, discrete_division=10, maximum_base_linear_acceleration=3000.0, maximum_base_angular_velocity=20.0, maximum_joint_effort=10.0):
         rospy.logdebug("Starting pepperState Class object...")
-        self.desired_world_point = Vector3(0.0, 0.0, 0.0)
+        self.desired_length = Vector3(0.0, 0.0, 0.0)
         self._min_distance = min_distance
         self._max_distance = max_distance
         self._joint_increment_value = joint_increment_value
@@ -165,14 +165,14 @@ class PepperState(object):
 
         rospy.logdebug("ALL SYSTEMS READY")
 
-    def set_desired_world_length(self, x, y, z):
+    def set_desired_length(self, x, y, z):
         """
-        Point where you want the cube to be
+        Point where you want the cube to be from target
         :return:
         """
-        self.desired_world_length.x = x
-        self.desired_world_length.y = y
-        self.desired_world_length.z = z
+        self.desired_length.x = x
+        self.desired_length.y = y
+        self.desired_length.z = z
 
     def get_model_position(self, model_name):
         index = self.model_states.name.index(model_name)

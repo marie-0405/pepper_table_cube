@@ -23,7 +23,7 @@ from functools import reduce
 
 if __name__ == '__main__':
     
-    rospy.init_node('pepper_gym', anonymous=True, log_level=rospy.INFO)
+    rospy.init_node('pepper_gym', anonymous=True, log_level=rospy.DEBUG)
 
     # Create the Gym environment
     env = gym.make('Pepper-v0')
