@@ -145,19 +145,11 @@ class PepperState(object):
         We check that all systems are ready
         :return:
         """
-        data_pose = None
-        while data_pose is None and not rospy.is_shutdown():
-            try:
-                data_pose = rospy.wait_for_message("/odom", Odometry, timeout=0.1)
-                self.base_position = data_pose.pose.pose.position
-                rospy.logdebug("Current odom READY")
-            except:
-                rospy.logdebug("Current odom pose not ready yet, retrying for getting robot base_position")
-                
+ 
         joint_states_msg = None
         while joint_states_msg is None and not rospy.is_shutdown():
             try:
-                joint_states_msg = rospy.wait_for_message("/joint_states", JointState, timeout=0.1)
+                joint_states_msg = rospy.wait_for_message("pepper_dcm/joint_states", JointState, timeout=0.1)
                 self.joints_state = joint_states_msg
                 rospy.logdebug("Current joint_states READY")
             except Exception as e:
