@@ -91,7 +91,7 @@ class PepperEnv(gym.Env):
         # stablishes connection with simulator
         self.gazebo = GazeboConnection()
 
-        self.controllers_object = ControllersConnection(namespace="pepper")
+        self.controllers_object = ControllersConnection(namespace="pepper_dcm")
 
         self.pepper_state_object = PepperState(
             min_distance = self.min_distance,

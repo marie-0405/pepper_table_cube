@@ -5,18 +5,18 @@
   <rosparam file="$(find my_pepper_control)/config/pepper_trajectory_control.yaml" command="load"/>
 
   <!-- load the controllers -->
-  <node name="pepper_trajectory_controller" pkg="controller_manager" type="spawner" respawn="true"
-    output="screen" args="
-      /pepper_dcm/RightArm_controller
-      /pepper_dcm/LeftArm_controller
-      /pepper_dcm/RightHand_controller
-      /pepper_dcm/LeftHand_controller
-      /pepper_dcm/Head_controller
-      /pepper_dcm/Pelvis_controller
-      /pepper_dcm/joint_state_controller "/>
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="true"
+    output="screen" ns="/pepper_dcm" args="
+      RightArm_controller
+      LeftArm_controller
+      RightHand_controller
+      LeftHand_controller
+      Head_controller
+      Pelvis_controller
+      joint_state_controller "/>
 </launch>
 <!--
-      /pepper_dcm/WheelFL_controller
-      /pepper_dcm/WheelFR_controller
-      /pepper_dcm/WheelB_controller
+      /WheelFL_controller
+      /WheelFR_controller
+      /WheelB_controller
 -->
