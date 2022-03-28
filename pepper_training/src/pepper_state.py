@@ -314,21 +314,14 @@ class PepperState(object):
 
         r1 = self.calculate_reward_joint_position(self._weight_r1)
         r2 = self.calculate_reward_joint_effort(self._weight_r2)
-        # Desired Force in Newtons, taken form idle contact with 9.81 gravity.
-        r3 = self.calculate_reward_contact_force(self._weight_r3)
-        r4 = self.calculate_reward_orientation(self._weight_r4)
-        r5 = self.calculate_reward_distance_from_des_point(self._weight_r5)
 
         # The sign depend on its function.
-        total_reward = self._alive_reward - r1 - r2 - r3 - r4 - r5
+        total_reward = self._alive_reward - r1 - r2
 
         rospy.logdebug("###############")
         rospy.logdebug("alive_bonus=" + str(self._alive_reward))
         rospy.logdebug("r1 joint_position=" + str(r1))
         rospy.logdebug("r2 joint_effort=" + str(r2))
-        rospy.logdebug("r3 contact_force=" + str(r3))
-        rospy.logdebug("r4 orientation=" + str(r4))
-        rospy.logdebug("r5 distance=" + str(r5))
         rospy.logdebug("total_reward=" + str(total_reward))
         rospy.logdebug("###############")
 
