@@ -2,7 +2,7 @@
 
 import rospy
 import copy
-from gazebo_msgs.msg import ContactsState, ModelStates
+from gazebo_msgs.msg import ContactsState, ModelStates, LinkStates
 from sensor_msgs.msg import Imu
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Point, Quaternion, Vector3
@@ -135,11 +135,13 @@ class PepperState(object):
         #  because in real robots this data is not trivial.
         # rospy.Subscriber("/odom", Odometry, self.odom_callback)
         # We use it to get the joints positions and calculate the reward associated to it
-        rospy.Subscriber("/joint_states", JointState, self.joints_state_callback)
+        rospy.Subscriber("/pepper_dcm/joint_states", JointState, self.joints_state_callback)
 
         # We use it to get the positions of models.
         rospy.Subscriber("/gazebo/model_states", ModelStates, self.model_states_callback)
 
+        # We use it to get the position of hand.
+        rospy.Subscriber("/gazebo/link_states", LinkStates, self.link_states_callback)
     def check_all_systems_ready(self):
         """
         We check that all systems are ready
@@ -170,6 +172,10 @@ class PepperState(object):
         index = self.model_states.name.index(model_name)
         return self.model_states.pose[index].position
 
+    def get_link_position(self, link_name):
+        index = self.link_states.name.index(link_name)
+        return self.link_states.pose[index].position
+
     def get_distance_from_point_to_point(self, p_from, p_to):
         """
         Given a Vector3 Object, get distance from current position
@@ -195,12 +201,15 @@ class PepperState(object):
 
     def get_joint_states(self):
         return self.joints_state
+    
+    def joints_state_callback(self,msg):
+        self.joints_state = msg
 
     def model_states_callback(self, msg):
         self.model_states = msg
 
-    def joints_state_callback(self,msg):
-        self.joints_state = msg
+    def link_states_callback(self, msg):
+        self.link_states = msg
 
     def pepper_height_ok(self):
 
@@ -343,7 +352,7 @@ class PepperState(object):
         
         cube_pos = self.get_model_position("cube")
         target_pos = self.get_model_position("target")
-        hand_pos = self.get_model_position("hand")
+        hand_pos = self.get_link_position("pepper::r_gripper")
 
         distance_from_hand_to_cube = \
          self.get_distance_from_point_to_point(hand_pos, cube_pos)
