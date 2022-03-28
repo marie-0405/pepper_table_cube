@@ -56,16 +56,16 @@ class PepperEnv(gym.Env):
         r_wrist_yaw_max = rospy.get_param("/joint_limits_array/r_wrist_yaw_max")
         r_wrist_yaw_min = rospy.get_param("/joint_limits_array/r_wrist_yaw_min")
 
-        self.joint_limits = {"r_shoulder_pitch_max": r_shoulder_pitch_max,
-                             "r_shoulder_pitch_min": r_shoulder_pitch_min,
-                             "r_shoulder_roll_max": r_shoulder_roll_max,
-                             "r_shoulder_roll_min": r_shoulder_roll_min,
-                             "r_elbow_roll_max": r_elbow_roll_max,
-                             "r_elbow_roll_min": r_elbow_roll_min,
-                             "r_elbow_yaw_max": r_elbow_yaw_max,
-                             "r_elbow_yaw_min": r_elbow_yaw_min,
-                             "r_wrist_yaw_max": r_wrist_yaw_max,
-                             "r_wrist_yaw_min": r_wrist_yaw_min,
+        self.joint_limits = {"rsp_max": r_shoulder_pitch_max,
+                             "rsp_min": r_shoulder_pitch_min,
+                             "rsr_max": r_shoulder_roll_max,
+                             "rsr_min": r_shoulder_roll_min,
+                             "rer_max": r_elbow_roll_max,
+                             "rer_min": r_elbow_roll_min,
+                             "rey_max": r_elbow_yaw_max,
+                             "rey_min": r_elbow_yaw_min,
+                             "rwy_max": r_wrist_yaw_max,
+                             "rwy_min": r_wrist_yaw_min,
                              }
 
         self.discrete_division = rospy.get_param("/discrete_division")  # ?
@@ -188,11 +188,11 @@ class PepperEnv(gym.Env):
         # we perform the corresponding movement of the robot
 
         # 1st, decide which action corresponds to which joint is incremented
-        next_action_position, do_jump = self.pepper_state_object.get_action_to_position(action)
+        next_action_position = self.pepper_state_object.get_action_to_position(action)
 
         # We move it to that pos
         self.gazebo.unpauseSim()
-        self.pepper_joint_pubisher_object.move_joints_jump(next_action_position, do_jump)
+        self.pepper_joint_pubisher_object.move_joints_jump(next_action_position)
         # Then we send the command to the robot and let it go
         # for running_step seconds
         time.sleep(self.running_step)

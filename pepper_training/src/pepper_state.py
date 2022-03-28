@@ -475,73 +475,88 @@ class PepperState(object):
 
     def get_action_to_position(self, action):
         """
-        Here we have the ACtions number to real joint movement correspondance.
-        :param action: Integer that goes from 0 to 6, because we have 7 actions.
+        Here we have the Actions number to real joint movement correspondance.
+        :param action: Integer that goes from 0 to 9, because we have 10 actions.
         :return:
         """
 
         rospy.logdebug("current joint pose>>>"+str(self.current_joint_pose))
         rospy.logdebug("Action Number>>>"+str(action))
-        # We dont want to jump unless the action jump is selected
-        do_jump = False
 
-        if action == 0: #Increment haa_joint
-            rospy.logdebug("Action Decided:Increment haa_joint>>>")
+        if action == 0: #Increment RShoulderPitch
+            rospy.logdebug("Action Decided:Increment RShoulderPitch>>>")
             self.current_joint_pose[0] += self._joint_increment_value
-        elif action == 1: #Decrement haa_joint
-            rospy.logdebug("Action Decided:Decrement haa_joint>>>")
+        elif action == 1: #Decrement RShoulderPitch
+            rospy.logdebug("Action Decided:Decrement RShoulderPitch>>>")
             self.current_joint_pose[0] -= self._joint_increment_value
-        elif action == 2: #Increment hfe_joint
-            rospy.logdebug("Action Decided:Increment hfe_joint>>>")
+        elif action == 2: #Increment RShoulderRoll
+            rospy.logdebug("Action Decided:Increment RShoulderRoll>>>")
             self.current_joint_pose[1] += self._joint_increment_value
-        elif action == 3: #Decrement hfe_joint
-            rospy.logdebug("Action Decided:Decrement hfe_joint>>>")
+        elif action == 3: #Decrement RShoulderRoll
+            rospy.logdebug("Action Decided:Decrement RShoulderRoll>>>")
             self.current_joint_pose[1] -= self._joint_increment_value
-        elif action == 4:  # Dont Move
-            rospy.logdebug("Action Decided:Dont Move>>>")
-        elif action == 5:  # Perform One Jump
-            rospy.logdebug("Action Decided:Perform One Jump>>>")
-            # We get the Value Used for the Knee charged position
-            do_jump = True
-
-        # We set the Knee to be ready for jump, based on the init knee pose
-        self.current_joint_pose[2] = self.init_knee_value
+        elif action == 4: #Increment RElbowRoll
+            rospy.logdebug("Action Decided:Increment RElbowRoll>>>")
+            self.current_joint_pose[2] += self._joint_increment_value
+        elif action == 5: #Decrement RElbowRoll
+            rospy.logdebug("Action Decided:Decrement RElbowRoll>>>")
+            self.current_joint_pose[2] -= self._joint_increment_value
+        elif action == 6: #Increment RElbowYaw
+            rospy.logdebug("Action Decided:Increment RElbowYaw>>>")
+            self.current_joint_pose[3] += self._joint_increment_value
+        elif action == 7: #Decrement RElbowYaw
+            rospy.logdebug("Action Decided:Decrement RElbowYaw>>>")
+            self.current_joint_pose[3] -= self._joint_increment_value
+        elif action == 8: #Increment RWristYaw
+            rospy.logdebug("Action Decided:Increment RWristYaw>>>")
+            self.current_joint_pose[4] += self._joint_increment_value
+        elif action == 9: #Decrement RWristYaw
+            rospy.logdebug("Action Decided:Decrement RWristYaw>>>")
+            self.current_joint_pose[4] -= self._joint_increment_value
 
         rospy.logdebug("action to move joint states>>>" + str(self.current_joint_pose))
 
         self.clamp_to_joint_limits()
 
-        return self.current_joint_pose, do_jump
+        return self.current_joint_pose
 
     def clamp_to_joint_limits(self):
         """
         clamps self.current_joint_pose based on the joint limits
         self._joint_limits
-        {"haa_max": haa_max,
-         "haa_min": haa_min,
-         "hfe_max": hfe_max,
-         "hfe_min": hfe_min,
-         "kfe_max": kfe_max,
-         "kfe_min": kfe_min
-         }
+        {"r_shoulder_pitch_max": r_shoulder_pitch_max,
+         "r_shoulder_pitch_min": r_shoulder_pitch_min,
+         "r_shoulder_roll_max": r_shoulder_roll_max,
+         "r_shoulder_roll_min": r_shoulder_roll_min,
+         "r_elbow_roll_max": r_elbow_roll_max,
+         "r_elbow_roll_min": r_elbow_roll_min,
+         "r_elbow_yaw_max": r_elbow_yaw_max,
+         "r_elbow_yaw_min": r_elbow_yaw_min,
+         "r_wrist_yaw_max": r_wrist_yaw_max,
+         "r_wrist_yaw_min": r_wrist_yaw_min,
+        }
         :return:
         """
 
         rospy.logdebug("Clamping current_joint_pose>>>" + str(self.current_joint_pose))
-        haa_joint_value = self.current_joint_pose[0]
-        hfe_joint_value = self.current_joint_pose[1]
-        kfe_joint_value = self.current_joint_pose[2]
+        rsp_joint_value = self.current_joint_pose[0]
+        rsr_joint_value = self.current_joint_pose[1]
+        rer_joint_value = self.current_joint_pose[2]
+        rey_joint_value = self.current_joint_pose[3]
+        rwy_joint_value = self.current_joint_pose[4]
 
-        self.current_joint_pose[0] = max(min(haa_joint_value, self._joint_limits["haa_max"]),
-                                         self._joint_limits["haa_min"])
-        self.current_joint_pose[1] = max(min(hfe_joint_value, self._joint_limits["hfe_max"]),
-                                         self._joint_limits["hfe_min"])
-
-
-        rospy.logdebug("kfe_min>>>" + str(self._joint_limits["kfe_min"]))
-        rospy.logdebug("kfe_max>>>" + str(self._joint_limits["kfe_max"]))
-        self.current_joint_pose[2] = max(min(kfe_joint_value, self._joint_limits["kfe_max"]),
-                                         self._joint_limits["kfe_min"])
+        rospy.logdebug("rsp_min>>>" + str(self._joint_limits["rsp_min"]))
+        rospy.logdebug("rsp_max>>>" + str(self._joint_limits["rsp_max"]))
+        self.current_joint_pose[0] = max(min(rsp_joint_value, self._joint_limits["rsp_max"]),
+                                         self._joint_limits["rsp_min"])
+        self.current_joint_pose[1] = max(min(rsr_joint_value, self._joint_limits["rsr_max"]),
+                                         self._joint_limits["rsr_min"])
+        self.current_joint_pose[2] = max(min(rer_joint_value, self._joint_limits["rer_max"]),
+                                         self._joint_limits["rer_min"])
+        self.current_joint_pose[3] = max(min(rey_joint_value, self._joint_limits["rey_max"]),
+                                         self._joint_limits["rey_min"])
+        self.current_joint_pose[4] = max(min(rwy_joint_value, self._joint_limits["rwy_max"]),
+                                         self._joint_limits["rwy_min"])
 
         rospy.logdebug("DONE Clamping current_joint_pose>>>" + str(self.current_joint_pose))
 
