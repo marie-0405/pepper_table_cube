@@ -138,10 +138,10 @@ class PepperState(object):
         rospy.Subscriber("/pepper_dcm/joint_states", JointState, self.joints_state_callback)
 
         # We use it to get the positions of models.
-        rospy.Subscriber("/gazebo/model_states", ModelStates, self.model_states_callback)
+        rospy.Subscriber("/gazebo/model_states", ModelStates, self.models_state_callback)
 
         # We use it to get the position of hand.
-        rospy.Subscriber("/gazebo/link_states", LinkStates, self.link_states_callback)
+        rospy.Subscriber("/gazebo/link_states", LinkStates, self.links_state_callback)
     def check_all_systems_ready(self):
         """
         We check that all systems are ready
@@ -169,12 +169,12 @@ class PepperState(object):
         self.desired_length.z = z
 
     def get_model_position(self, model_name):
-        index = self.model_states.name.index(model_name)
-        return self.model_states.pose[index].position
+        index = self.models_state.name.index(model_name)
+        return self.models_state.pose[index].position
 
     def get_link_position(self, link_name):
-        index = self.link_states.name.index(link_name)
-        return self.link_states.pose[index].position
+        index = self.links_state.name.index(link_name)
+        return self.links_state.pose[index].position
 
     def get_distance_from_point_to_point(self, p_from, p_to):
         """
@@ -202,14 +202,21 @@ class PepperState(object):
     def get_joint_states(self):
         return self.joints_state
     
+    def get_joint_positions(self, joint_names):
+        positions = []
+        for joint_name in joint_names:
+            index = self.joints_state.name.index(joint_name)
+            positions.append(self.joints_state.position[index])
+        return positions
+    
     def joints_state_callback(self,msg):
         self.joints_state = msg
 
-    def model_states_callback(self, msg):
-        self.model_states = msg
+    def models_state_callback(self, msg):
+        self.models_state = msg
 
-    def link_states_callback(self, msg):
-        self.link_states = msg
+    def links_state_callback(self, msg):
+        self.links_state = msg
 
     def pepper_height_ok(self):
 
@@ -305,10 +312,8 @@ class PepperState(object):
         We consider VERY BAD REWARD -7 or less
         Perfect reward is 0.0, and total reward 1.0.
         The defaults values are chosen so that when the robot has fallen or very extreme joint config:
-        r1 = -8.04
+        r1 = -10.0 ==> We give priority to this, giving it higher value.
         r2 = -8.84
-        r3 = -7.08
-        r4 = -10.0 ==> We give priority to this, giving it higher value.
         :return:
         """
 
@@ -592,60 +597,4 @@ class PepperState(object):
         while not rospy.is_shutdown():
             self.calculate_total_reward()
             rate.sleep()
-
-
-if __name__ == "__main__":
-    rospy.init_node('pepper_state_node', anonymous=True, log_level=rospy.DEBUG)
-    max_height = 3.0
-    min_height = 0.5
-    max_incl = 1.57
-    joint_increment_value = 0.32
-    list_of_observations = ["base_roll",
-                            "base_pitch",
-                            "base_angular_vel_x",
-                            "base_angular_vel_y",
-                            "base_angular_vel_z",
-                            "base_linear_acceleration_x",
-                            "base_linear_acceleration_y",
-                            "base_linear_acceleration_z"]
-    joint_limits = {"haa_max": 1.6,
-                     "haa_min": -1.6,
-                     "hfe_max": 1.6,
-                     "hfe_min": -1.6,
-                     "kfe_max": 0.0,
-                     "kfe_min": -1.6
-                     }
-    episode_done_criteria = [ "pepper_minimum_height",
-                              "pepper_vertical_orientation"]
-    done_reward = -1000.0
-    alive_reward = 100.0
-    desired_force = 7.08
-    desired_yaw = 0.0
-    weight_r1 = 0.0 # Weight for joint positions ( joints in the zero is perfect )
-    weight_r2 = 0.0 # Weight for joint efforts ( no efforts is perfect )
-    weight_r3 = 0.0 # Weight for contact force similar to desired ( weight of pepper )
-    weight_r4 = 10.0 # Weight for orientation ( vertical is perfect )
-    weight_r5 = 10.0 # Weight for distance from desired point ( on the point is perfect )
-    discrete_division = 10
-    maximum_base_linear_acceleration = 3000.0
-    pepper_state = pepperState(   max_height=max_height,
-                                    min_height=min_height,
-                                    abs_max_roll=max_incl,
-                                    abs_max_pitch=max_incl,
-                                    joint_increment_value=joint_increment_value,
-                                    list_of_observations=list_of_observations,
-                                    joint_limits=joint_limits,
-                                    episode_done_criteria=episode_done_criteria,
-                                    done_reward=done_reward,
-                                    alive_reward=alive_reward,
-                                    desired_force=desired_force,
-                                    desired_yaw=desired_yaw,
-                                    weight_r1=weight_r1,
-                                    weight_r2=weight_r2,
-                                    weight_r3=weight_r3,
-                                    weight_r4=weight_r4,
-                                    weight_r5=weight_r5,
-                                    discrete_division=discrete_division,
-                                    maximum_base_linear_acceleration=maximum_base_linear_acceleration
-                                                )
-    pepper_state.testing_loop()
+            

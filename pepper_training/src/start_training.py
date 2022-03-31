@@ -93,7 +93,7 @@ if __name__ == '__main__':
             if highest_reward < cumulated_reward:
                 highest_reward = cumulated_reward
 
-            rospy.logdebug("env.get_state...[distance_from_desired_point,base_roll,base_pitch,base_yaw,contact_force,joint_states_haa,joint_states_hfe,joint_states_kfe]==>" + str(nextState))
+            rospy.logdebug("env.get_state...[distance_from_cube_to_target,distance from hand to cube]==>" + str(nextState))
 
             # Make the algorithm learn based on the results
             qlearn.learn(state, action, reward, nextState)

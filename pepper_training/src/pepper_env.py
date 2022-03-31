@@ -12,7 +12,7 @@ from geometry_msgs.msg import Pose
 from gym.utils import seeding
 from gym.envs.registration import register
 from gazebo_connection import GazeboConnection
-from joint_publisher import JointPub
+from body_action import BodyAction
 from pepper_state import PepperState
 from controllers_connection import ControllersConnection
 
@@ -109,12 +109,13 @@ class PepperEnv(gym.Env):
             maximum_base_angular_velocity=self.maximum_base_angular_velocity,
             maximum_joint_effort=self.maximum_joint_effort,
         )
-
+        self.joint_names = ["RShoulderRoll", "RShoulderPitch","RElbowYaw", "RElbowRoll", "RWristYaw"]
         self.pepper_state_object.set_desired_length(self.desired_length.position.x,
-                                                          self.desired_length.position.y,
-                                                          self.desired_length.position.z)
+                                                    self.desired_length.position.y,
+                                                    self.desired_length.position.z)
 
-        self.pepper_joint_pubisher_object = JointPub()
+        self.pepper_body_action_object = BodyAction(self.joint_names, 
+            "/pepper_dcm/RightArm_controller/follow_joint_trajectory")
         
 
 
@@ -161,7 +162,8 @@ class PepperEnv(gym.Env):
         # We save that position as the current joint desired position
         init_pos = self.pepper_state_object.init_joints_pose(self.init_joint_pose)
 
-        # 4th: Check all subscribers work.
+
+        # 4th: Check all scribers work.
         # Get the state of the Robot defined by its RPY orientation, distance from
         # desired point, contact force and JointState of the three joints
         rospy.logdebug("check_all_systems_ready...")
@@ -170,6 +172,9 @@ class PepperEnv(gym.Env):
         # 5th: We restore the gravity to original
         rospy.logdebug("Restore Gravity...")
         self.gazebo.change_gravity(0.0, 0.0, -9.81)
+        
+        # EXTRA: Wait about 20 sec because Pepper moves.
+        time.sleep(20)
 
         # 6th: pauses simulation
         rospy.logdebug("Pause SIM...")
@@ -188,11 +193,13 @@ class PepperEnv(gym.Env):
         # we perform the corresponding movement of the robot
 
         # 1st, decide which action corresponds to which joint is incremented
-        next_action_position = self.pepper_state_object.get_action_to_position(action)
+        next_positions = self.pepper_state_object.get_action_to_position(action)
 
         # We move it to that pos
         self.gazebo.unpauseSim()
-        self.pepper_joint_pubisher_object.move_joints_jump(next_action_position)
+        # Get current positions of joint
+        current_positions = self.pepper_state_object.get_joint_positions(self.joint_names)
+        self.pepper_body_action_object.move_joints(current_positions, next_positions)
         # Then we send the command to the robot and let it go
         # for running_step seconds
         time.sleep(self.running_step)
