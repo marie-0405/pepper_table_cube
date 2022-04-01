@@ -7,6 +7,7 @@ from sensor_msgs.msg import Imu
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Point, Quaternion, Vector3
 from sensor_msgs.msg import JointState
+from rosgraph_msgs.msg import Clock
 import tf
 import numpy
 import math
@@ -89,11 +90,12 @@ gazebo_msgs/ContactState[] states
 
 class PepperState(object):
 
-    def __init__(self, min_distance, max_distance, list_of_observations, joint_limits, episode_done_criteria, joint_increment_value = 0.05, done_reward = -1000.0, alive_reward=10.0, weight_r1=1.0, weight_r2=1.0, discrete_division=10, maximum_base_linear_acceleration=3000.0, maximum_base_angular_velocity=20.0, maximum_joint_effort=10.0):
+    def __init__(self, min_distance, max_distance, max_simulation_time, list_of_observations, joint_limits, episode_done_criteria, joint_increment_value = 0.05, done_reward = -1000.0, alive_reward=10.0, weight_r1=1.0, weight_r2=1.0, discrete_division=10, maximum_base_linear_acceleration=3000.0, maximum_base_angular_velocity=20.0, maximum_joint_effort=10.0):
         rospy.logdebug("Starting pepperState Class object...")
         self.desired_length = Vector3(0.0, 0.0, 0.0)
         self._min_distance = min_distance
         self._max_distance = max_distance
+        self._max_simulation_time = max_simulation_time
         self._joint_increment_value = joint_increment_value
         self._done_reward = done_reward
         self._alive_reward = alive_reward
@@ -134,12 +136,12 @@ class PepperState(object):
         # Odom we only use it for the height detection and planar position ,
         #  because in real robots this data is not trivial.
         # rospy.Subscriber("/odom", Odometry, self.odom_callback)
+        # We use the simulation_time to decide learning has been done.
+        rospy.Subscriber("/clock", Clock, self.simulation_time_callback)
         # We use it to get the joints positions and calculate the reward associated to it
         rospy.Subscriber("/pepper_dcm/joint_states", JointState, self.joints_state_callback)
-
         # We use it to get the positions of models.
         rospy.Subscriber("/gazebo/model_states", ModelStates, self.models_state_callback)
-
         # We use it to get the position of hand.
         rospy.Subscriber("/gazebo/link_states", LinkStates, self.links_state_callback)
     def check_all_systems_ready(self):
@@ -167,6 +169,9 @@ class PepperState(object):
         self.desired_length.x = x
         self.desired_length.y = y
         self.desired_length.z = z
+    
+    def get_simulation_time_in_secs(self):
+        return self.simulation_time.clock.secs
 
     def get_model_position(self, model_name):
         index = self.models_state.name.index(model_name)
@@ -209,6 +214,9 @@ class PepperState(object):
             positions.append(self.joints_state.position[index])
         return positions
     
+    def simulation_time_callback(self, msg):
+        self.simulation_time = msg
+
     def joints_state_callback(self,msg):
         self.joints_state = msg
 
@@ -218,22 +226,36 @@ class PepperState(object):
     def links_state_callback(self, msg):
         self.links_state = msg
 
-    def pepper_height_ok(self):
+    def simulation_time_ok(self):
+        ## TODO ここで使っているget_simulation_time_in_secsが思っている値と違いそう。
+        simulation_time_ok = self._max_simulation_time >= self.get_simulation_time_in_secs()
+        rospy.logdebug("Simulation time" + str(self.get_simulation_time_in_secs))
+        return simulation_time_ok
 
-        height_ok = self._min_height <= self.get_base_height() < self._max_height
-        return height_ok
-
-    def pepper_orientation_ok(self):
-
-        orientation_rpy = self.get_base_rpy()
-        roll_ok = self._abs_max_roll > abs(orientation_rpy.x)
-        pitch_ok = self._abs_max_pitch > abs(orientation_rpy.y)
-        orientation_ok = roll_ok and pitch_ok
-        return orientation_ok
+    def calculate_reward_distance(self, weight, p_from, p_to):
+        """
+        We calculate reward base on the position between hand and cube. The more near 0 the better.
+        
+        Parameters
+        ---------- 
+        weight: int
+            weight of reward
+        p_from: Vector3
+            position of reference point
+        p_to: Vector3
+            position of target point
+        
+        Returns
+        ---------- 
+        reward: int
+        """
+        distance = self.get_distance_from_point_to_point(p_from, p_to)
+        reward = weight * distance
+        return reward
 
     def calculate_reward_joint_position(self, weight=1.0):
         """
-        We calculate reward base on the joints configuration. The more near 0 the better.
+        We calculate reward base on the position between hand and cube. The more near 0 the better.
         :return:
         """
         acumulated_joint_pos = 0.0
@@ -312,28 +334,28 @@ class PepperState(object):
         We consider VERY BAD REWARD -7 or less
         Perfect reward is 0.0, and total reward 1.0.
         The defaults values are chosen so that when the robot has fallen or very extreme joint config:
-        r1 = -10.0 ==> We give priority to this, giving it higher value.
-        r2 = -8.84
+        r1 = -8.84 
+        r2 = -10.0  ==> We give priority to this, giving it higher value.
         :return:
         """
+        cube_pos = self.get_model_position("cube")
+        target_pos = self.get_model_position("target")
+        hand_pos = self.get_link_position("pepper::r_gripper")
 
-        r1 = self.calculate_reward_joint_position(self._weight_r1)
-        r2 = self.calculate_reward_joint_effort(self._weight_r2)
+        r1 = self.calculate_reward_distance(self._weight_r1, hand_pos, cube_pos)
+        r2 = self.calculate_reward_distance(self._weight_r2, cube_pos, target_pos)
 
         # The sign depend on its function.
         total_reward = self._alive_reward - r1 - r2
 
         rospy.logdebug("###############")
         rospy.logdebug("alive_bonus=" + str(self._alive_reward))
-        rospy.logdebug("r1 joint_position=" + str(r1))
-        rospy.logdebug("r2 joint_effort=" + str(r2))
+        rospy.logdebug("r1 distance_from_hand_to_cube=" + str(r1))
+        rospy.logdebug("r2 distance_from_cube_to_target=" + str(r2))
         rospy.logdebug("total_reward=" + str(total_reward))
         rospy.logdebug("###############")
 
         return total_reward
-
-
-
 
     def get_observations(self):
         """
@@ -566,22 +588,15 @@ class PepperState(object):
         :return: reward, done
         """
 
-        if "pepper_minimum_height" in self._episode_done_criteria:
-            pepper_height_ok = self.pepper_height_ok()
+        if "simulation_time" in self._episode_done_criteria:
+            simulation_time_ok = self.simulation_time_ok()
         else:
-            rospy.logdebug("pepper_height_ok NOT TAKEN INTO ACCOUNT")
-            pepper_height_ok = True
+            rospy.logdebug("simulation_time_ok NOT TAKEN INTO ACCOUNT")
+            simulation_time_ok = True
 
-        if "pepper_vertical_orientation" in self._episode_done_criteria:
-            pepper_orientation_ok = self.pepper_orientation_ok()
-        else:
-            rospy.logdebug("pepper_orientation_ok NOT TAKEN INTO ACCOUNT")
-            pepper_orientation_ok = True
+        rospy.logdebug("simulation_time_ok="+str(simulation_time_ok))
 
-        rospy.logdebug("pepper_height_ok="+str(pepper_height_ok))
-        rospy.logdebug("pepper_orientation_ok=" + str(pepper_orientation_ok))
-
-        done = not(pepper_height_ok and pepper_orientation_ok)
+        done = not(simulation_time_ok)
         if done:
             rospy.logerr("It fell, so the reward has to be very low")
             total_reward = self._done_reward

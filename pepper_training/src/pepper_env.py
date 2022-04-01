@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# coding: UTF-8
+
 '''
     By Miguel Angel Rodriguez <duckfrost@theconstructsim.com>
     Visit our website at www.theconstructsim.com
@@ -39,6 +41,7 @@ class PepperEnv(gym.Env):
         self.running_step = rospy.get_param("/running_step")
         self.min_distance = rospy.get_param("/min_distance")
         self.max_distance = rospy.get_param("/max_distance")
+        self.max_simulation_time = rospy.get_param("/max_simulation_time")
         self.joint_increment_value = rospy.get_param("/joint_increment_value")
         self.done_reward = rospy.get_param("/done_reward")
         self.alive_reward = rospy.get_param("/alive_reward")
@@ -94,8 +97,9 @@ class PepperEnv(gym.Env):
         self.controllers_object = ControllersConnection(namespace="pepper_dcm")
 
         self.pepper_state_object = PepperState(
-            min_distance = self.min_distance,
-            max_distance = self.max_distance,
+            min_distance=self.min_distance,
+            max_distance=self.max_distance,
+            max_simulation_time=self.max_simulation_time,
             list_of_observations=self.list_of_observations,
             joint_increment_value=self.joint_increment_value,
             joint_limits=self.joint_limits,
@@ -210,7 +214,7 @@ class PepperEnv(gym.Env):
         # with the same exact data.
         # Generate State based on observations
         observation = self.pepper_state_object.get_observations()
-
+        ## TODO ここから！！
         # finally we get an evaluation based on what happened in the sim
         reward,done = self.pepper_state_object.process_data()
 

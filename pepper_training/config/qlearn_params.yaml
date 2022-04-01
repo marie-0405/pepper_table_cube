@@ -13,6 +13,7 @@ desired_length:
   z: 0.026
 max_distance: 0.5  # in meters
 min_distance: 0.0  # in meters
+max_simulation_time: 300 # in seconds
 running_step: 0.001   # in seconds
 joint_increment_value: 0.05  # in radians
 done_reward: -1000.0 # reward
@@ -47,7 +48,7 @@ joint_limits_array:  # in rad
   r_wrist_yaw_min: -1.8238690683
 
 episode_done_criteria:
-  - time_over
+  - simulation_time
 
 maximum_base_linear_acceleration: 3000.0 # Based on making fall from a body height vertical max/min imu readings
 
