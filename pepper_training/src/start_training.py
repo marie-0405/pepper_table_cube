@@ -17,16 +17,17 @@ import rospy
 import rospkg
 
 # import our training environment
-import pepper_env
+import pepper_env_hand
+# import pepper_env_joint
 
 from functools import reduce
 
 if __name__ == '__main__':
     
-    rospy.init_node('pepper_gym', anonymous=True, log_level=rospy.DEBUG)
+    rospy.init_node('pepper_gym', anonymous=True, log_level=rospy.INFO)
 
     # Create the Gym environment
-    env = gym.make('Pepper-v0')
+    env = gym.make('Pepper-v1')
     rospy.logdebug ( "Gym environment done")
     reward_pub = rospy.Publisher('/pepper/reward', Float64, queue_size=1)
     episode_reward_pub = rospy.Publisher('/pepper/episode_reward', Float64, queue_size=1)

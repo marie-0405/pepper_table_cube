@@ -4,7 +4,7 @@ gamma: 0.8
 epsilon: 0.9
 epsilon_discount: 0.999 # 1098 eps to reach 0.1
 nepisodes: 50
-nsteps: 1000
+nsteps: 10000
 
 # Environment Parameters
 desired_length:
@@ -13,9 +13,10 @@ desired_length:
   z: 0.026
 max_distance: 0.5  # in meters
 min_distance: 0.0  # in meters
-max_simulation_time: 300 # in seconds
+max_simulation_time: 3 # in seconds
 running_step: 0.001   # in seconds
 joint_increment_value: 0.05  # in radians
+position_increment_value: 0.001  # in meter
 done_reward: -1000.0 # reward
 alive_reward: 100.0 # reward
 
@@ -34,6 +35,10 @@ init_joint_pose:  # Set the right arm on the table
   r_elbow_roll: 0.0085497772
   r_elbow_yaw: 0.0010389422
   r_wrist_yaw: 0.0
+init_hand_pose:  # Set the right arm on the table
+  x: 0.0830
+  y: -0.308
+  z: 0.7452
 
 joint_limits_array:  # in rad
   r_shoulder_pitch_max: 2.0856684561
@@ -46,6 +51,14 @@ joint_limits_array:  # in rad
   r_elbow_yaw_min: -2.0856684561
   r_wrist_yaw_max: 1.8238690683
   r_wrist_yaw_min: -1.8238690683
+
+hand_limits_array:  # in meter
+  x_max: 0.01
+  x_min: 0.0
+  y_max: -0.32
+  y_min: -0.05
+  z_max: 0.1
+  z_min: 0.74523
 
 episode_done_criteria:
   - simulation_time

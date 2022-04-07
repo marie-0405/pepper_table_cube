@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding: UTF-8
 
 import rospy
 import copy
@@ -227,9 +228,7 @@ class PepperState(object):
         self.links_state = msg
 
     def simulation_time_ok(self):
-        ## TODO ここで使っているget_simulation_time_in_secsが思っている値と違いそう。
         simulation_time_ok = self._max_simulation_time >= self.get_simulation_time_in_secs()
-        rospy.logdebug("Simulation time" + str(self.get_simulation_time_in_secs))
         return simulation_time_ok
 
     def calculate_reward_distance(self, weight, p_from, p_to):
@@ -490,8 +489,55 @@ class PepperState(object):
         """
         self.current_joint_pose =[]
         self.current_joint_pose = copy.deepcopy(des_init_pos)
-        # self.init_knee_value = copy.deepcopy(self.current_joint_pose[2])
         return self.current_joint_pose
+
+    def get_action_to_position(self, action):
+        """
+        Here we have the Actions number to real hand movement correspondance.
+        :param action: Integer that goes from 0 to 5, because we have 6 actions.
+        :return:
+        """
+
+        rospy.logdebug("current hand pose>>>"+str(self.current_joint_pose))
+        rospy.logdebug("Action Number>>>"+str(action))
+
+        if action == 0: #Increment RShoulderPitch
+            rospy.logdebug("Action Decided:Increment RShoulderPitch>>>")
+            self.current_joint_pose[0] += self._joint_increment_value
+        elif action == 1: #Decrement RShoulderPitch
+            rospy.logdebug("Action Decided:Decrement RShoulderPitch>>>")
+            self.current_joint_pose[0] -= self._joint_increment_value
+        elif action == 2: #Increment RShoulderRoll
+            rospy.logdebug("Action Decided:Increment RShoulderRoll>>>")
+            self.current_joint_pose[1] += self._joint_increment_value
+        elif action == 3: #Decrement RShoulderRoll
+            rospy.logdebug("Action Decided:Decrement RShoulderRoll>>>")
+            self.current_joint_pose[1] -= self._joint_increment_value
+        elif action == 4: #Increment RElbowRoll
+            rospy.logdebug("Action Decided:Increment RElbowRoll>>>")
+            self.current_joint_pose[2] += self._joint_increment_value
+        elif action == 5: #Decrement RElbowRoll
+            rospy.logdebug("Action Decided:Decrement RElbowRoll>>>")
+            self.current_joint_pose[2] -= self._joint_increment_value
+        elif action == 6: #Increment RElbowYaw
+            rospy.logdebug("Action Decided:Increment RElbowYaw>>>")
+            self.current_joint_pose[3] += self._joint_increment_value
+        elif action == 7: #Decrement RElbowYaw
+            rospy.logdebug("Action Decided:Decrement RElbowYaw>>>")
+            self.current_joint_pose[3] -= self._joint_increment_value
+        elif action == 8: #Increment RWristYaw
+            rospy.logdebug("Action Decided:Increment RWristYaw>>>")
+            self.current_joint_pose[4] += self._joint_increment_value
+        elif action == 9: #Decrement RWristYaw
+            rospy.logdebug("Action Decided:Decrement RWristYaw>>>")
+            self.current_joint_pose[4] -= self._joint_increment_value
+
+        rospy.logdebug("action to move joint states>>>" + str(self.current_joint_pose))
+
+        self.clamp_to_joint_limits()
+
+        return self.current_joint_pose
+
 
     def get_action_to_position(self, action):
         """
@@ -584,7 +630,6 @@ class PepperState(object):
     def process_data(self):
         """
         We return the total reward based on the state in which we are in and if its done or not
-        ( it fell basically )
         :return: reward, done
         """
 
@@ -601,7 +646,7 @@ class PepperState(object):
             rospy.logerr("It fell, so the reward has to be very low")
             total_reward = self._done_reward
         else:
-            rospy.logdebug("Calculate normal reward because it didn't fall.")
+            rospy.logdebug("Calculate normal reward because it is succeeded.")
             total_reward = self.calculate_total_reward()
 
         return total_reward, done
