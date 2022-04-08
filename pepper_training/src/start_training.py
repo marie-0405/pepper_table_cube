@@ -24,7 +24,7 @@ from functools import reduce
 
 if __name__ == '__main__':
     
-    rospy.init_node('pepper_gym', anonymous=True, log_level=rospy.DEBUG)
+    rospy.init_node('pepper_gym', anonymous=True, log_level=rospy.INFO)
 
     # Create the Gym environment
     env = gym.make('Pepper-v0')
@@ -98,6 +98,8 @@ if __name__ == '__main__':
 
             # Make the algorithm learn based on the results
             qlearn.learn(state, action, reward, nextState)
+            q_matrix = qlearn.get_Q_matrix()
+            rospy.loginfo(q_matrix)
 
             # We publish the cumulated reward
             cumulated_reward_msg.data = cumulated_reward

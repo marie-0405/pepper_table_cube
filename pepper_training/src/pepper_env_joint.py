@@ -44,7 +44,8 @@ class PepperEnvJoint(gym.Env):
         self.max_simulation_time = rospy.get_param("/max_simulation_time")
         self.joint_increment_value = rospy.get_param("/joint_increment_value")
         self.done_reward = rospy.get_param("/done_reward")
-        self.alive_reward = rospy.get_param("/alive_reward")
+        self.base_reward = rospy.get_param("/base_reward")
+        self.success_reward = rospy.get_param("/success_reward")
 
         self.list_of_observations = rospy.get_param("/list_of_observations")
 
@@ -106,7 +107,8 @@ class PepperEnvJoint(gym.Env):
             joint_limits=self.joint_limits,
             episode_done_criteria=self.episode_done_criteria,
             done_reward=self.done_reward,
-            alive_reward=self.alive_reward,
+            base_reward=self.base_reward,
+            success_reward=self.success_reward,
             weight_r1=self.weight_r1,
             weight_r2=self.weight_r2,
             discrete_division=self.discrete_division,
@@ -195,14 +197,13 @@ class PepperEnvJoint(gym.Env):
         # we perform the corresponding movement of the robot
 
         # 1st, decide which action corresponds to which position is incremented
+        rospy.loginfo("action number >>> " + str(action))
         next_positions = self.pepper_state_object.get_action_to_position(action)
 
         # We move it to that pos
         self.gazebo.unpauseSim()
         ## Using Action
         # Get current positions of joint
-        ## TODO actionを用いて関節角度を動かすと、学習が遅くなりそうなので、moveitを用いて手先位置から
-        # 逆算して、関節を動かすようにする
         current_positions = self.pepper_state_object.get_joint_positions(self.joint_names)
         # Then we send the command to the robot and let it go
         self.pepper_body_action_object.move_joints(current_positions, next_positions)
@@ -216,10 +217,9 @@ class PepperEnvJoint(gym.Env):
         # with the same exact data.
         # Generate State based on observations
         observation = self.pepper_state_object.get_observations()
-        ## TODO ここから！！
         # finally we get an evaluation based on what happened in the sim
         reward,done = self.pepper_state_object.process_data()
-        rospy.loginfo("reward "+str(reward))
+        rospy.loginfo("reward >>> " + str(reward))
 
         # Get the State Discrete Stringuified version of the observations
         state = self.get_state(observation)
