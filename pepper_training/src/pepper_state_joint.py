@@ -156,7 +156,7 @@ class PepperState(object):
             try:
                 joint_states_msg = rospy.wait_for_message("pepper_dcm/joint_states", JointState, timeout=0.1)
                 self.joints_state = joint_states_msg
-                rospy.logdebug("Current joint_states READY")
+                # rospy.logdebug("Current joint_states READY")
             except Exception as e:
                 rospy.logdebug("Current joint_states not ready yet, retrying==>"+str(e))
 
@@ -230,6 +230,19 @@ class PepperState(object):
     def simulation_time_ok(self):
         simulation_time_ok = self._max_simulation_time >= self.get_simulation_time_in_secs()
         return simulation_time_ok
+    
+    def task_ok(self):
+        """
+        The task is that the cube is moved to the target position. 
+        If the distance from cube to target is smaller than 0.03m, 
+        task is done.
+        """
+        cube_pos = self.get_model_position("cube")
+        target_pos = self.get_model_position("target")
+        distance_from_cube_to_target = \
+            self.get_distance_from_point_to_point(cube_pos, target_pos)
+        task_ok = distance_from_cube_to_target <= 0.03
+        return task_ok
 
     def calculate_reward_distance(self, weight, p_from, p_to):
         """
@@ -261,9 +274,9 @@ class PepperState(object):
         for joint_pos in self.joints_state.position:
             # Abs to remove sign influence, it doesnt matter the direction of turn.
             acumulated_joint_pos += abs(joint_pos)
-            rospy.logdebug("calculate_reward_joint_position>>acumulated_joint_pos=" + str(acumulated_joint_pos))
+            # rospy.logdebug("calculate_reward_joint_position>>acumulated_joint_pos=" + str(acumulated_joint_pos))
         reward = weight * acumulated_joint_pos
-        rospy.logdebug("calculate_reward_joint_position>>reward=" + str(reward))
+        # rospy.logdebug("calculate_reward_joint_position>>reward=" + str(reward))
         return reward
 
     def calculate_reward_joint_effort(self, weight=1.0):
@@ -275,29 +288,10 @@ class PepperState(object):
         for joint_effort in self.joints_state.effort:
             # Abs to remove sign influence, it doesnt matter the direction of the effort.
             acumulated_joint_effort += abs(joint_effort)
-            rospy.logdebug("calculate_reward_joint_effort>>joint_effort=" + str(joint_effort))
-            rospy.logdebug("calculate_reward_joint_effort>>acumulated_joint_effort=" + str(acumulated_joint_effort))
+            # rospy.logdebug("calculate_reward_joint_effort>>joint_effort=" + str(joint_effort))
+            # rospy.logdebug("calculate_reward_joint_effort>>acumulated_joint_effort=" + str(acumulated_joint_effort))
         reward = weight * acumulated_joint_effort
-        rospy.logdebug("calculate_reward_joint_effort>>reward=" + str(reward))
-        return reward
-
-    def calculate_reward_contact_force(self, weight=1.0):
-        """
-        We calculate reward base on the contact force.
-        The nearest to the desired contact force the better.
-        We use exponential to magnify big departures from the desired force.
-        Default ( 7.08 N ) desired force was taken from reading of the robot touching
-        the ground from a negligible height of 5cm.
-        :return:
-        """
-        force_magnitude = self.get_contact_force_magnitude()
-        force_displacement = force_magnitude - self._desired_force
-
-        rospy.logdebug("calculate_reward_contact_force>>force_magnitude=" + str(force_magnitude))
-        rospy.logdebug("calculate_reward_contact_force>>force_displacement=" + str(force_displacement))
-        # Abs to remove sign
-        reward = weight * abs(force_displacement)
-        rospy.logdebug("calculate_reward_contact_force>>reward=" + str(reward))
+        # rospy.logdebug("calculate_reward_joint_effort>>reward=" + str(reward))
         return reward
 
     def calculate_reward_orientation(self, weight=1.0):
@@ -325,7 +319,7 @@ class PepperState(object):
         """
         distance = self.get_distance_from_point(self.desired_world_point)
         reward = weight * distance
-        rospy.logdebug("calculate_reward_orientation>>reward=" + str(reward))
+        # rospy.logdebug("calculate_reward_orientation>>reward=" + str(reward))
         return reward
 
     def calculate_total_reward(self):
@@ -379,7 +373,7 @@ class PepperState(object):
          self.get_distance_from_point_to_point(cube_pos, target_pos)
 
         observation = []
-        rospy.logdebug("List of Observations==>"+str(self._list_of_observations))
+        # rospy.logdebug("List of Observations==>"+str(self._list_of_observations))
         for obs_name in self._list_of_observations:
             if obs_name == "distance_from_hand_to_cube":
                 observation.append(distance_from_hand_to_cube)
@@ -416,9 +410,9 @@ class PepperState(object):
             # We convert to int because anyway it will be round floats. We add Right True to include limits
             # Ex: [-20, 0, 20], value=-20 ==> index=0, In right = False, would be index=1
             state_discrete[i] = int(numpy.digitize(observation[i], self._bins[i], right=True))
-            rospy.logdebug("bin="+str(self._bins[i])+"obs="+str(observation[i])+",end_val="+str(state_discrete[i]))
+            # rospy.logdebug("bin="+str(self._bins[i])+"obs="+str(observation[i])+",end_val="+str(state_discrete[i]))
 
-        rospy.logdebug(str(state_discrete))
+        # rospy.logdebug(str(state_discrete))
         return state_discrete
 
     def init_bins(self):
@@ -470,7 +464,7 @@ class PepperState(object):
 
         number_of_observations = len(self._list_of_observations)
         parts_we_disrcetize = self._discrete_division
-        rospy.logdebug("Parts to discretise==>"+str(parts_we_disrcetize))
+        # rospy.logdebug("Parts to discretise==>"+str(parts_we_disrcetize))
         self._bins = numpy.zeros((number_of_observations, parts_we_disrcetize))
         for counter in range(number_of_observations):
             obs_name = self._list_of_observations[counter]
@@ -493,61 +487,13 @@ class PepperState(object):
 
     def get_action_to_position(self, action):
         """
-        Here we have the Actions number to real hand movement correspondance.
-        :param action: Integer that goes from 0 to 5, because we have 6 actions.
-        :return:
-        """
-
-        rospy.logdebug("current hand pose>>>"+str(self.current_joint_pose))
-        rospy.logdebug("Action Number>>>"+str(action))
-
-        if action == 0: #Increment RShoulderPitch
-            rospy.logdebug("Action Decided:Increment RShoulderPitch>>>")
-            self.current_joint_pose[0] += self._joint_increment_value
-        elif action == 1: #Decrement RShoulderPitch
-            rospy.logdebug("Action Decided:Decrement RShoulderPitch>>>")
-            self.current_joint_pose[0] -= self._joint_increment_value
-        elif action == 2: #Increment RShoulderRoll
-            rospy.logdebug("Action Decided:Increment RShoulderRoll>>>")
-            self.current_joint_pose[1] += self._joint_increment_value
-        elif action == 3: #Decrement RShoulderRoll
-            rospy.logdebug("Action Decided:Decrement RShoulderRoll>>>")
-            self.current_joint_pose[1] -= self._joint_increment_value
-        elif action == 4: #Increment RElbowRoll
-            rospy.logdebug("Action Decided:Increment RElbowRoll>>>")
-            self.current_joint_pose[2] += self._joint_increment_value
-        elif action == 5: #Decrement RElbowRoll
-            rospy.logdebug("Action Decided:Decrement RElbowRoll>>>")
-            self.current_joint_pose[2] -= self._joint_increment_value
-        elif action == 6: #Increment RElbowYaw
-            rospy.logdebug("Action Decided:Increment RElbowYaw>>>")
-            self.current_joint_pose[3] += self._joint_increment_value
-        elif action == 7: #Decrement RElbowYaw
-            rospy.logdebug("Action Decided:Decrement RElbowYaw>>>")
-            self.current_joint_pose[3] -= self._joint_increment_value
-        elif action == 8: #Increment RWristYaw
-            rospy.logdebug("Action Decided:Increment RWristYaw>>>")
-            self.current_joint_pose[4] += self._joint_increment_value
-        elif action == 9: #Decrement RWristYaw
-            rospy.logdebug("Action Decided:Decrement RWristYaw>>>")
-            self.current_joint_pose[4] -= self._joint_increment_value
-
-        rospy.logdebug("action to move joint states>>>" + str(self.current_joint_pose))
-
-        self.clamp_to_joint_limits()
-
-        return self.current_joint_pose
-
-
-    def get_action_to_position(self, action):
-        """
         Here we have the Actions number to real joint movement correspondance.
         :param action: Integer that goes from 0 to 9, because we have 10 actions.
         :return:
         """
 
-        rospy.logdebug("current joint pose>>>"+str(self.current_joint_pose))
-        rospy.logdebug("Action Number>>>"+str(action))
+        # rospy.logdebug("current joint pose>>>"+str(self.current_joint_pose))
+        # rospy.logdebug("Action Number>>>"+str(action))
 
         if action == 0: #Increment RShoulderPitch
             rospy.logdebug("Action Decided:Increment RShoulderPitch>>>")
@@ -580,7 +526,7 @@ class PepperState(object):
             rospy.logdebug("Action Decided:Decrement RWristYaw>>>")
             self.current_joint_pose[4] -= self._joint_increment_value
 
-        rospy.logdebug("action to move joint states>>>" + str(self.current_joint_pose))
+        # rospy.logdebug("action to move joint states>>>" + str(self.current_joint_pose))
 
         self.clamp_to_joint_limits()
 
@@ -604,15 +550,15 @@ class PepperState(object):
         :return:
         """
 
-        rospy.logdebug("Clamping current_joint_pose>>>" + str(self.current_joint_pose))
+        # rospy.logdebug("Clamping current_joint_pose>>>" + str(self.current_joint_pose))
         rsp_joint_value = self.current_joint_pose[0]
         rsr_joint_value = self.current_joint_pose[1]
         rer_joint_value = self.current_joint_pose[2]
         rey_joint_value = self.current_joint_pose[3]
         rwy_joint_value = self.current_joint_pose[4]
 
-        rospy.logdebug("rsp_min>>>" + str(self._joint_limits["rsp_min"]))
-        rospy.logdebug("rsp_max>>>" + str(self._joint_limits["rsp_max"]))
+        # rospy.logdebug("rsp_min>>>" + str(self._joint_limits["rsp_min"]))
+        # rospy.logdebug("rsp_max>>>" + str(self._joint_limits["rsp_max"]))
         self.current_joint_pose[0] = max(min(rsp_joint_value, self._joint_limits["rsp_max"]),
                                          self._joint_limits["rsp_min"])
         self.current_joint_pose[1] = max(min(rsr_joint_value, self._joint_limits["rsr_max"]),
@@ -624,7 +570,7 @@ class PepperState(object):
         self.current_joint_pose[4] = max(min(rwy_joint_value, self._joint_limits["rwy_max"]),
                                          self._joint_limits["rwy_min"])
 
-        rospy.logdebug("DONE Clamping current_joint_pose>>>" + str(self.current_joint_pose))
+        # rospy.logdebug("DONE Clamping current_joint_pose>>>" + str(self.current_joint_pose))
 
 
     def process_data(self):
@@ -636,17 +582,23 @@ class PepperState(object):
         if "simulation_time" in self._episode_done_criteria:
             simulation_time_ok = self.simulation_time_ok()
         else:
-            rospy.logdebug("simulation_time_ok NOT TAKEN INTO ACCOUNT")
+            # rospy.logdebug("simulation_time_ok NOT TAKEN INTO ACCOUNT")
             simulation_time_ok = True
+        if "cube_moved_target" in self._episode_done_criteria:
+            task_ok = self.task_ok()
+        else:
+            rospy.logdebug("cube_moved_target NOT TAKEN INTO ACCOUNT")
+            task_ok = True
 
         rospy.logdebug("simulation_time_ok="+str(simulation_time_ok))
+        rospy.logdebug("task_ok="+str(task_ok))
 
-        done = not(simulation_time_ok)
+        done = task_ok
         if done:
-            rospy.logerr("It fell, so the reward has to be very low")
+            rospy.logerr("The reward has to be very low because it is not succeeded.")
             total_reward = self._done_reward
         else:
-            rospy.logdebug("Calculate normal reward because it is succeeded.")
+            rospy.logdebug("Calculate normal reward because it is continued.")
             total_reward = self.calculate_total_reward()
 
         return total_reward, done

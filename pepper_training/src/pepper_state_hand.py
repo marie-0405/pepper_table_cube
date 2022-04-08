@@ -503,7 +503,7 @@ class PepperState(object):
         return self.current_hand_pose
 
     def get_action_to_position(self, action):
-        ## TODO 変更する
+        ## TODO 変更する DONE
         """
         Here we have the Actions number to real hand movement correspondance.
         :param action: Integer that goes from 0 to 5, because we have 6 actions.

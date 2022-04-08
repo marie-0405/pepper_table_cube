@@ -14,8 +14,9 @@ from geometry_msgs.msg import Pose
 from gym.utils import seeding
 from gym.envs.registration import register
 from gazebo_connection import GazeboConnection
-from body_action import BodyAction
+from moveit_pepper import MoveitPepper
 # If you want to use joint angle for action, you can use below
+# from body_action import BodyAction
 # from pepper_state_joint import PepperState  
 from pepper_state_hand import PepperState
 from controllers_connection import ControllersConnection
@@ -134,8 +135,11 @@ class PepperEnvHand(gym.Env):
                                                     self.desired_length.position.y,
                                                     self.desired_length.position.z)
 
+        rospy.loginfo("koko")
+        self.pepper_moveit_object = MoveitPepper("right_arm")
+
         """
-        For this version, we consider 10 actions
+        For this version, we consider 6 actions
         1-2) Increment/Decrement x direction of hand
         3-4) Increment/Decrement y direction of hand
         5-6) Increment/Decrement z direction of hand
@@ -211,6 +215,12 @@ class PepperEnvHand(gym.Env):
         # Get current positions of joint
         
         ## Using MoveIt
+        ## TODO actionを用いて関節角度を動かすと、学習が遅くなりそうなので、moveitを用いて手先位置から
+        # 逆算して、関節を動かすようにする
+        current_positions = self.pepper_state_object.get_joint_positions(self.joint_names)
+        # Then we send the command to the robot and let it go
+        self.pepper_body_action_object.move_joints(current_positions, next_positions)
+        
         # Get current position of right hand
         current_position = self.pepper_state_object.get_link_position("pepper::r_gripper")
         # for running_step seconds
@@ -222,7 +232,6 @@ class PepperEnvHand(gym.Env):
         # with the same exact data.
         # Generate State based on observations
         observation = self.pepper_state_object.get_observations()
-        ## TODO ここから！！
         # finally we get an evaluation based on what happened in the sim
         reward,done = self.pepper_state_object.process_data()
         rospy.loginfo("reward "+str(reward))

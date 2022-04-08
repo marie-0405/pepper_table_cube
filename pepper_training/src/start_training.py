@@ -17,17 +17,17 @@ import rospy
 import rospkg
 
 # import our training environment
-import pepper_env_hand
-# import pepper_env_joint
+# import pepper_env_hand
+import pepper_env_joint
 
 from functools import reduce
 
 if __name__ == '__main__':
     
-    rospy.init_node('pepper_gym', anonymous=True, log_level=rospy.INFO)
+    rospy.init_node('pepper_gym', anonymous=True, log_level=rospy.DEBUG)
 
     # Create the Gym environment
-    env = gym.make('Pepper-v1')
+    env = gym.make('Pepper-v0')
     rospy.logdebug ( "Gym environment done")
     reward_pub = rospy.Publisher('/pepper/reward', Float64, queue_size=1)
     episode_reward_pub = rospy.Publisher('/pepper/episode_reward', Float64, queue_size=1)
@@ -37,7 +37,7 @@ if __name__ == '__main__':
     pkg_path = rospack.get_path('pepper_training')
     outdir = pkg_path + '/training_results'
     env = wrappers.Monitor(env, outdir, force=True)
-    rospy.logdebug("Monitor Wrapper started")
+    # rospy.logdebug("Monitor Wrapper started")
     
     last_time_steps = numpy.ndarray(0)
 
@@ -75,7 +75,7 @@ if __name__ == '__main__':
         # Now We return directly the stringuified observations called state
         state = env.reset()
 
-        rospy.logdebug("env.get_state...==>" + str(state))
+        # rospy.logdebug("env.get_state...==>" + str(state))
         
         # for each episode, we test the robot for nsteps
         for i in range(nsteps):
@@ -85,7 +85,7 @@ if __name__ == '__main__':
             
             # Execute the action in the environment and get feedback
             rospy.logdebug("###################### Start Step...["+str(i)+"]")
-            rospy.logdebug("RSP+,RSP-,RSR+,RSR-,RER+,RER-,REY+,REY-,RWY+,RWY- >> [0,1,2,3,4,5,6,7,8,9]")
+            # rospy.logdebug("RSP+,RSP-,RSR+,RSR-,RER+,RER-,REY+,REY-,RWY+,RWY- >> [0,1,2,3,4,5,6,7,8,9]")
             rospy.logdebug("Action to Perform >> "+str(action))
             nextState, reward, done, info = env.step(action)
             rospy.logdebug("END Step...")

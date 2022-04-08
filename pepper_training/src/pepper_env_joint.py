@@ -146,7 +146,7 @@ class PepperEnvJoint(gym.Env):
     def _reset(self):
 
         # 0st: We pause the Simulator
-        rospy.logdebug("Pausing SIM...")
+        # rospy.logdebug("Pausing SIM...")
         self.gazebo.pauseSim()
 
         # 1st: resets the simulation to initial values
@@ -155,15 +155,15 @@ class PepperEnvJoint(gym.Env):
 
         # 2nd: We Set the gravity to 0.0 so that we dont fall when reseting joints
         # It also UNPAUSES the simulation
-        rospy.logdebug("Remove Gravity...")
+        # rospy.logdebug("Remove Gravity...")
         self.gazebo.change_gravity(0.0, 0.0, 0.0)
 
         # EXTRA: Reset JoinStateControlers because sim reset doesnt reset TFs, generating time problems
-        rospy.logdebug("reset_pepper_joint_controllers...")
+        # rospy.logdebug("reset_pepper_joint_controllers...")
         self.controllers_object.reset_pepper_joint_controllers()
 
         # 3rd: resets the robot to initial conditions
-        rospy.logdebug("set_init_pose init variable...>>>" + str(self.init_joint_pose))
+        # rospy.logdebug("set_init_pose init variable...>>>" + str(self.init_joint_pose))
         # We save that position as the current joint desired position
         init_pos = self.pepper_state_object.init_joints_pose(self.init_joint_pose)
 
@@ -175,11 +175,8 @@ class PepperEnvJoint(gym.Env):
         self.pepper_state_object.check_all_systems_ready()
 
         # 5th: We restore the gravity to original
-        rospy.logdebug("Restore Gravity...")
+        # rospy.logdebug("Restore Gravity...")
         self.gazebo.change_gravity(0.0, 0.0, -9.81)
-        
-        # EXTRA: Wait about 20 sec because Pepper moves.
-        time.sleep(20)
 
         # 6th: pauses simulation
         rospy.logdebug("Pause SIM...")
@@ -221,7 +218,7 @@ class PepperEnvJoint(gym.Env):
         observation = self.pepper_state_object.get_observations()
         ## TODO ここから！！
         # finally we get an evaluation based on what happened in the sim
-        reward,done = self.pepper_state_object.prrocess_data()
+        reward,done = self.pepper_state_object.process_data()
         rospy.loginfo("reward "+str(reward))
 
         # Get the State Discrete Stringuified version of the observations
