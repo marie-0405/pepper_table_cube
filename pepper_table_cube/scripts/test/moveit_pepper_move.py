@@ -19,6 +19,7 @@ rospy.init_node("test_pepper_moveit")
 move_group = "right_arm"
 time.sleep(5)
 arm = MoveGroupCommander(move_group)
+robot = RobotCommander()
 
 # Change the value of tolerance(required)
 arm.set_goal_tolerance(0.01)
@@ -27,9 +28,9 @@ arm.set_goal_orientation_tolerance(0.01)
 arm.set_planning_time(5.0)
 
 pose_goal = arm.get_current_pose().pose
-state = arm.get_current_state()
+
 print "CURRENT POSE\n", pose_goal
-print "CURRENT STATE\n", state
+# print "CURRENT STATE\n", state
 
 pose_goal.position.x = 0.16
 pose_goal.position.y = -0.14
