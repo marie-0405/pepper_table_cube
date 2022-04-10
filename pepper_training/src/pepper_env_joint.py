@@ -148,7 +148,7 @@ class PepperEnvJoint(gym.Env):
     def _reset(self):
 
         # 0st: We pause the Simulator
-        # rospy.logdebug("Pausing SIM...")
+        rospy.logdebug("Pausing SIM...")
         self.gazebo.pauseSim()
 
         # 1st: resets the simulation to initial values
@@ -197,7 +197,6 @@ class PepperEnvJoint(gym.Env):
         # we perform the corresponding movement of the robot
 
         # 1st, decide which action corresponds to which position is incremented
-        rospy.loginfo("action number >>> " + str(action))
         next_positions = self.pepper_state_object.get_action_to_position(action)
 
         # We move it to that pos
@@ -219,7 +218,6 @@ class PepperEnvJoint(gym.Env):
         observation = self.pepper_state_object.get_observations()
         # finally we get an evaluation based on what happened in the sim
         reward,done = self.pepper_state_object.process_data()
-        rospy.loginfo("reward >>> " + str(reward))
 
         # Get the State Discrete Stringuified version of the observations
         state = self.get_state(observation)

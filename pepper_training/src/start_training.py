@@ -17,7 +17,7 @@ import rospy
 import rospkg
 
 # import our training environment
-# import pepper_env_hand
+import pepper_env_hand
 import pepper_env_joint
 
 from functools import reduce
@@ -27,7 +27,7 @@ if __name__ == '__main__':
     rospy.init_node('pepper_gym', anonymous=True, log_level=rospy.INFO)
 
     # Create the Gym environment
-    env = gym.make('Pepper-v0')
+    env = gym.make('PepperHand-v0')  # TODO change
     rospy.logdebug ( "Gym environment done")
     reward_pub = rospy.Publisher('/pepper/reward', Float64, queue_size=1)
     episode_reward_pub = rospy.Publisher('/pepper/episode_reward', Float64, queue_size=1)
@@ -36,7 +36,7 @@ if __name__ == '__main__':
     rospack = rospkg.RosPack()
     pkg_path = rospack.get_path('pepper_training')
     outdir = pkg_path + '/training_results'
-    env = wrappers.Monitor(env, outdir, force=True)
+    # env = wrappers.Monitor(env, outdir, force=True)
     # rospy.logdebug("Monitor Wrapper started")
     
     last_time_steps = numpy.ndarray(0)
@@ -58,6 +58,7 @@ if __name__ == '__main__':
 
     start_time = time.time()
     highest_reward = 0
+    rewards = []
     
     # Starts the main training loop: the one about the episodes to do
     for x in range(nepisodes):
@@ -84,12 +85,12 @@ if __name__ == '__main__':
             action = qlearn.chooseAction(state)
             
             # Execute the action in the environment and get feedback
-            rospy.logdebug("###################### Start Step...["+str(i)+"]")
+            rospy.loginfo("###################### Start Step...["+str(i)+"]")
             # rospy.logdebug("RSP+,RSP-,RSR+,RSR-,RER+,RER-,REY+,REY-,RWY+,RWY- >> [0,1,2,3,4,5,6,7,8,9]")
             rospy.logdebug("Action to Perform >> "+str(action))
             nextState, reward, done, info = env.step(action)
-            rospy.logdebug("END Step...")
-            rospy.logdebug("Reward ==> " + str(reward))
+            rospy.loginfo("END Step...")
+            rospy.loginfo("Reward ==> " + str(reward))
             cumulated_reward += reward
             if highest_reward < cumulated_reward:
                 highest_reward = cumulated_reward
@@ -99,11 +100,13 @@ if __name__ == '__main__':
             # Make the algorithm learn based on the results
             qlearn.learn(state, action, reward, nextState)
             q_matrix = qlearn.get_Q_matrix()
-            rospy.loginfo(q_matrix)
+            rospy.logdebug(q_matrix)
 
             # We publish the cumulated reward
             cumulated_reward_msg.data = cumulated_reward
             reward_pub.publish(cumulated_reward_msg)
+            if i == nsteps - 1:
+                done = True
 
             if not(done):
                 state = nextState
@@ -112,18 +115,21 @@ if __name__ == '__main__':
                 last_time_steps = numpy.append(last_time_steps, [int(i + 1)])
                 break
 
-            rospy.logdebug("###################### END Step...["+str(i)+"]")
+            rospy.loginfo("###################### END Step...["+str(i)+"]")
 
         m, s = divmod(int(time.time() - start_time), 60)
         h, m = divmod(m, 60)
+        rewards.append(cumulated_reward)
         episode_reward_msg.data = cumulated_reward
         episode_reward_pub.publish(episode_reward_msg)
+        rospy.loginfo("rewards: " + str(rewards))
         rospy.loginfo( ("EP: "+str(x+1)+" - [alpha: "+str(round(qlearn.alpha,2))+" - gamma: "+str(round(qlearn.gamma,2))+" - epsilon: "+str(round(qlearn.epsilon,2))+"] - Reward: "+str(cumulated_reward)+"     Time: %d:%02d:%02d" % (h, m, s)))
 
     rospy.loginfo ( ("\n|"+str(nepisodes)+"|"+str(qlearn.alpha)+"|"+str(qlearn.gamma)+"|"+str(initial_epsilon)+"*"+str(epsilon_discount)+"|"+str(highest_reward)+"| PICTURE |"))
 
     l = last_time_steps.tolist()
     l.sort()
+
 
     rospy.loginfo("Overall score: {:0.2f}".format(last_time_steps.mean()))
     rospy.loginfo("Best 100 score: {:0.2f}".format(reduce(lambda x, y: x + y, l[-100:]) / len(l[-100:])))

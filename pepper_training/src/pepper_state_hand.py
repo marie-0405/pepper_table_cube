@@ -89,9 +89,9 @@ gazebo_msgs/ContactState[] states
   float64[] depths
 """
 
-class PepperState(object):
+class PepperStateHand(object):
 
-    def __init__(self, min_distance, max_distance, max_simulation_time, list_of_observations, joint_limits, hand_limits, episode_done_criteria, joint_increment_value = 0.05, position_increment_value = 0.001, done_reward = -1000.0, alive_reward=10.0, weight_r1=1.0, weight_r2=1.0, discrete_division=10, maximum_base_linear_acceleration=3000.0, maximum_base_angular_velocity=20.0, maximum_joint_effort=10.0):
+    def __init__(self, min_distance, max_distance, max_simulation_time, list_of_observations, joint_limits, hand_limits, episode_done_criteria, joint_increment_value = 0.05, position_increment_value = 0.001, done_reward = -1000.0, success_reward=10.0, base_reward=10.0, weight_r1=1.0, weight_r2=1.0, discrete_division=10, maximum_base_linear_acceleration=3000.0, maximum_base_angular_velocity=20.0, maximum_joint_effort=10.0):
         ## TODO 変更, position_increment_valueを追加
         rospy.logdebug("Starting pepperState Class object...")
         self.desired_length = Vector3(0.0, 0.0, 0.0)
@@ -101,7 +101,9 @@ class PepperState(object):
         self._joint_increment_value = joint_increment_value
         self._position_increment_value = position_increment_value
         self._done_reward = done_reward
-        self._alive_reward = alive_reward
+        self._success_reward = success_reward
+        self._base_reward = base_reward
+
 
         self._weight_r1 = weight_r1
         self._weight_r2 = weight_r2
@@ -348,10 +350,10 @@ class PepperState(object):
         r2 = self.calculate_reward_distance(self._weight_r2, cube_pos, target_pos)
 
         # The sign depend on its function.
-        total_reward = self._alive_reward - r1 - r2
+        total_reward = self._base_reward - r1 - r2
 
         rospy.logdebug("###############")
-        rospy.logdebug("alive_bonus=" + str(self._alive_reward))
+        rospy.logdebug("base=" + str(self._base_reward))
         rospy.logdebug("r1 distance_from_hand_to_cube=" + str(r1))
         rospy.logdebug("r2 distance_from_cube_to_target=" + str(r2))
         rospy.logdebug("total_reward=" + str(total_reward))
@@ -463,7 +465,8 @@ class PepperState(object):
         self.position_z = position_z
         self.position_increment_value = position_increment_value
         self._done_reward = done_reward
-        self._alive_reward = alive_reward
+        self._success_reward = success_reward
+        self._base_reward = base_reward
 
         :return:bins
         """

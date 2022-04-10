@@ -459,7 +459,6 @@ class PepperState(object):
         self._desired_force = desired_force
         self._desired_yaw = desired_yaw
 
-
         :return:bins
         """
 
@@ -493,38 +492,38 @@ class PepperState(object):
         :return:
         """
 
-        # rospy.logdebug("current joint pose>>>"+str(self.current_joint_pose))
-        # rospy.logdebug("Action Number>>>"+str(action))
+        rospy.logdebug("current joint pose>>>"+str(self.current_joint_pose))
+        rospy.logdebug("Action Number>>>"+str(action))
 
         if action == 0: #Increment RShoulderPitch
-            rospy.logdebug("Action Decided:Increment RShoulderPitch>>>")
+            rospy.loginfo("Action Decided:Increment RShoulderPitch>>>")
             self.current_joint_pose[0] += self._joint_increment_value
         elif action == 1: #Decrement RShoulderPitch
-            rospy.logdebug("Action Decided:Decrement RShoulderPitch>>>")
+            rospy.loginfo("Action Decided:Decrement RShoulderPitch>>>")
             self.current_joint_pose[0] -= self._joint_increment_value
         elif action == 2: #Increment RShoulderRoll
-            rospy.logdebug("Action Decided:Increment RShoulderRoll>>>")
+            rospy.loginfo("Action Decided:Increment RShoulderRoll>>>")
             self.current_joint_pose[1] += self._joint_increment_value
         elif action == 3: #Decrement RShoulderRoll
-            rospy.logdebug("Action Decided:Decrement RShoulderRoll>>>")
+            rospy.loginfo("Action Decided:Decrement RShoulderRoll>>>")
             self.current_joint_pose[1] -= self._joint_increment_value
         elif action == 4: #Increment RElbowRoll
-            rospy.logdebug("Action Decided:Increment RElbowRoll>>>")
+            rospy.loginfo("Action Decided:Increment RElbowRoll>>>")
             self.current_joint_pose[2] += self._joint_increment_value
         elif action == 5: #Decrement RElbowRoll
-            rospy.logdebug("Action Decided:Decrement RElbowRoll>>>")
+            rospy.loginfo("Action Decided:Decrement RElbowRoll>>>")
             self.current_joint_pose[2] -= self._joint_increment_value
         elif action == 6: #Increment RElbowYaw
-            rospy.logdebug("Action Decided:Increment RElbowYaw>>>")
+            rospy.loginfo("Action Decided:Increment RElbowYaw>>>")
             self.current_joint_pose[3] += self._joint_increment_value
         elif action == 7: #Decrement RElbowYaw
-            rospy.logdebug("Action Decided:Decrement RElbowYaw>>>")
+            rospy.loginfo("Action Decided:Decrement RElbowYaw>>>")
             self.current_joint_pose[3] -= self._joint_increment_value
         elif action == 8: #Increment RWristYaw
-            rospy.logdebug("Action Decided:Increment RWristYaw>>>")
+            rospy.loginfo("Action Decided:Increment RWristYaw>>>")
             self.current_joint_pose[4] += self._joint_increment_value
         elif action == 9: #Decrement RWristYaw
-            rospy.logdebug("Action Decided:Decrement RWristYaw>>>")
+            rospy.loginfo("Action Decided:Decrement RWristYaw>>>")
             self.current_joint_pose[4] -= self._joint_increment_value
 
         # rospy.logdebug("action to move joint states>>>" + str(self.current_joint_pose))
@@ -592,7 +591,7 @@ class PepperState(object):
             task_ok = True
 
         rospy.logdebug("simulation_time_ok="+str(simulation_time_ok))
-        rospy.logdebug("task_ok="+str(task_ok))
+        rospy.loginfo("task_ok="+str(task_ok))
 
         done = task_ok
         if done:

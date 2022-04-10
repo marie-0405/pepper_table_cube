@@ -9,24 +9,15 @@ import sys
 import time
 from std_msgs.msg import String
 from geometry_msgs.msg import Vector3
-import moveit_commander
+from moveit_commander import MoveGroupCommander, conversions, RobotCommander
 
 DURATION = 0.25
 
-## TODO　MoveitPepperの作成
-class MoveitPepper(object):
+## TODO　PepperMoveitの作成
+class PepperMoveit(object):
     def __init__(self, group_name):
         ## First initialize `moveit_commander`_ and a `rospy`_ node:
-        moveit_commander.roscpp_initialize(sys.argv)
-
-        ## Instantiate a `RobotCommander`_ object. Provides information such as the robot's
-        ## kinematic model and the robot's current joint states
-        robot = moveit_commander.RobotCommander()
-
-        ## Instantiate a `PlanningSceneInterface`_ object.  This provides a remote interface
-        ## for getting, setting, and updating the robot's internal understanding of the
-        ## surrounding world:
-        scene = moveit_commander.PlanningSceneInterface()
+        # moveit_commander.roscpp_initialize(sys.argv)
 
         ## Instantiate a `MoveGroupCommander`_ object.  This object is an interface
         ## to a planning group (group of joints).  In this project, the group is the primary
@@ -34,7 +25,11 @@ class MoveitPepper(object):
         ## If you are using a different robot, change this value to the name of your robot
         ## arm planning group.
         ## This interface can be used to plan and execute motions:
-        move_group = moveit_commander.MoveGroupCommander(group_name)  # TODO ここで処理がとまっている…？
+        move_group = MoveGroupCommander(group_name)  # TODO ここで処理がとまっている…？
+        
+        ## Instantiate a `RobotCommander`_ object. Provides information such as the robot's
+        ## kinematic model and the robot's current joint states
+        self.robot = RobotCommander()
 
         planning_frame = move_group.get_planning_frame()
         rospy.loginfo("============ Planning frame: %s" % planning_frame)
@@ -44,13 +39,13 @@ class MoveitPepper(object):
         rospy.loginfo("============ End effector link: %s" % eef_link)
 
         # We can get a list of all the groups in the robot:
-        group_names = robot.get_group_names()
+        group_names = self.robot.get_group_names()
         rospy.loginfo("============ Available Planning Groups:", robot.get_group_names())
 
         # Sometimes for debugging it is useful to print the entire state of the
         # robot:
         rospy.loginfo("============ Printing robot state")
-        rospy.loginfo(robot.get_current_state())
+        rospy.loginfo(self.robot.get_current_state())
         rospy.loginfo("")
 
     def set_init_pose(self, init_pose):
@@ -101,14 +96,16 @@ class MoveitPepper(object):
 
         self.move_joints(msg.joint_state.position)
 
-    def move_hand(self, current_position, next_position):
+    def move_hand(self, pose_goal):
         """
-        Move joints angle by controller of action in ROS.
-        Action is unsynchronous communication.
-        :param array current: positions of current joint
-        :param array next_positions: positions of next joint
+        Move hand by MoveIt.
+        MoveIt can calculate trajectory from hand position to joint angle.
+        :param array pose_goal
         :return
         """
+
+        pose_goal = self.move_group.get_current_pose().pose
+
         
         # Set current point (type is JointTrajectoryPoint)
         current_point = JointTrajectoryPoint()
@@ -130,8 +127,7 @@ class MoveitPepper(object):
         rospy.logdebug("Success" if self._right_arm_action_client.wait_for_result() else "Failed")
 
 if __name__=="__main__":
-    rospy.init_node('joint_publisher_node', log_level=rospy.WARN)
-    joint_publisher = JointPub()
+    rospy.init_node('moveit_node', log_level=rospy.WARN)
     rate_value = 8.0
     #joint_publisher.start_loop(rate_value)
     #joint_publisher.start_sinus_loop(rate_value)

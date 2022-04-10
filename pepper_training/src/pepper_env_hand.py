@@ -14,16 +14,14 @@ from geometry_msgs.msg import Pose
 from gym.utils import seeding
 from gym.envs.registration import register
 from gazebo_connection import GazeboConnection
-from moveit_pepper import MoveitPepper
-# If you want to use joint angle for action, you can use below
-# from body_action import BodyAction
-# from pepper_state_joint import PepperState  
-from pepper_state_hand import PepperState
+from pepper_moveit import PepperMoveit
+# If you want to use joint angle for action, you can use below  
+from pepper_state_hand import PepperStateHand
 from controllers_connection import ControllersConnection
 
 #register the training environment in the gym as an available one
 reg = register(
-    id='Pepper-v1',
+    id='PepperHand-v0',
     entry_point='pepper_env_hand:PepperEnvHand',
     timestep_limit=100000,
     )
@@ -48,7 +46,8 @@ class PepperEnvHand(gym.Env):
         self.joint_increment_value = rospy.get_param("/joint_increment_value")
         self.position_increment_value = rospy.get_param("/position_increment_value")
         self.done_reward = rospy.get_param("/done_reward")
-        self.alive_reward = rospy.get_param("/alive_reward")
+        self.base_reward = rospy.get_param("/base_reward")
+        self.success_reward = rospy.get_param("/success_reward")
 
         self.list_of_observations = rospy.get_param("/list_of_observations")
 
@@ -112,7 +111,7 @@ class PepperEnvHand(gym.Env):
 
         self.controllers_object = ControllersConnection(namespace="pepper_dcm")
 
-        self.pepper_state_object = PepperState(
+        self.pepper_state_object = PepperStateHand(
             min_distance=self.min_distance,
             max_distance=self.max_distance,
             max_simulation_time=self.max_simulation_time,
@@ -123,7 +122,8 @@ class PepperEnvHand(gym.Env):
             hand_limits=self.hand_limits,
             episode_done_criteria=self.episode_done_criteria,
             done_reward=self.done_reward,
-            alive_reward=self.alive_reward,
+            success_reward=self.success_reward,
+            base_reward=self.base_reward,
             weight_r1=self.weight_r1,
             weight_r2=self.weight_r2,
             discrete_division=self.discrete_division,
@@ -136,7 +136,7 @@ class PepperEnvHand(gym.Env):
                                                     self.desired_length.position.z)
 
         rospy.loginfo("koko")
-        self.pepper_moveit_object = MoveitPepper("right_arm")
+        self.pepper_moveit_object = PepperMoveit("right_arm")
 
         """
         For this version, we consider 6 actions
