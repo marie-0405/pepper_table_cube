@@ -28,7 +28,7 @@ list_of_observations: # Observations you want to use for the learning
   - distance_from_hand_to_cube
   - distance_from_cube_to_target
 
-discrete_division: 50 # Parts in which we divide each of the observations sensory range
+discrete_division: 200 # Parts in which we divide each of the observations sensory range
 
 init_joint_pose:  # Set the right arm on the table
   r_shoulder_pitch: -0.0037184561

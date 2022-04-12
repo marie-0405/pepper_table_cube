@@ -4,7 +4,7 @@ import json
 import matplotlib.pyplot as plt
 import numpy as np
 
-json_open = open('my_hopper_training/training_results/data/openaigym.episode_batch.0.19725.stats.json', 'r')
+json_open = open('pepper_training/training_results/data/openaigym.episode_batch.0.19725.stats.json', 'r')
 json_load = json.load(json_open)
 
 rewards = json_load["episode_rewards"]

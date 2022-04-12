@@ -411,7 +411,7 @@ class PepperState(object):
             # We convert to int because anyway it will be round floats. We add Right True to include limits
             # Ex: [-20, 0, 20], value=-20 ==> index=0, In right = False, would be index=1
             state_discrete[i] = int(numpy.digitize(observation[i], self._bins[i], right=True))
-            # rospy.logdebug("bin="+str(self._bins[i])+"obs="+str(observation[i])+",end_val="+str(state_discrete[i]))
+            rospy.logdebug("bin="+str(self._bins[i])+"obs="+str(observation[i])+",end_val="+str(state_discrete[i]))
 
         # rospy.logdebug(str(state_discrete))
         return state_discrete
@@ -433,13 +433,11 @@ class PepperState(object):
         for obs_name in self._list_of_observations:
             if obs_name == "distance_from_hand_to_cube":
                 # We consider the range as based on the range of distance between models
-                delta = self._max_distance - self._min_distance
-                max_value = delta
-                min_value = -delta
+                max_value = self._max_distance
+                min_value = self._min_distance
             elif obs_name == "distance_from_cube_to_target":
-                delta = self._max_distance - self._min_distance
-                max_value = delta
-                min_value = -delta
+                max_value = self._max_distance
+                min_value = self._min_distance
             else:
                 raise NameError('Observation Asked does not exist=='+str(obs_name))
 
@@ -448,23 +446,17 @@ class PepperState(object):
     def create_bins(self):
         """
         We create the Bins for the discretization of the observations
-        self.desired_world_point = Vector3(0.0, 0.0, 0.0)
-        self._min_height = min_height
-        self._max_height = max_height
-        self._abs_max_roll = abs_max_roll
-        self._abs_max_pitch = abs_max_pitch
-        self._joint_increment_value = joint_increment_value
+        self._min_distance = min_distance
+        self._max_distance = max_distance
         self._done_reward = done_reward
         self._base_reward = base_reward
-        self._desired_force = desired_force
-        self._desired_yaw = desired_yaw
+        self._success_reward = success_reward
 
         :return:bins
         """
-
         number_of_observations = len(self._list_of_observations)
         parts_we_disrcetize = self._discrete_division
-        # rospy.logdebug("Parts to discretise==>"+str(parts_we_disrcetize))
+        rospy.logdebug("Parts to discretise==>"+str(parts_we_disrcetize))
         self._bins = numpy.zeros((number_of_observations, parts_we_disrcetize))
         for counter in range(number_of_observations):
             obs_name = self._list_of_observations[counter]
@@ -472,7 +464,7 @@ class PepperState(object):
             max_value = self._obs_range_dict[obs_name][1]
             self._bins[counter] = numpy.linspace(min_value, max_value, parts_we_disrcetize)
 
-            # rospy.logdebug("bins==>" + str(self._bins[counter]))
+            rospy.logdebug("bins==>" + str(self._bins[counter]))
 
     def init_joints_pose(self, des_init_pos):
         """
