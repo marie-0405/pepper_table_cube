@@ -32,11 +32,16 @@ pose_goal = arm.get_current_pose().pose
 print "CURRENT POSE\n", pose_goal
 # print "CURRENT STATE\n", state
 
-pose_goal.position.x = 0.16
-pose_goal.position.y = -0.14
-pose_goal.position.z = 0.85
+pose_goal.position.x = -0.24196194824
+pose_goal.position.y = 0.779524193521
+pose_goal.position.z = 0.886586306529
+pose_goal.orientation.x = -0.0525654510206
+pose_goal.orientation.y = -0.0780528755984
+pose_goal.orientation.z = 0.02798770359
+pose_goal.orientation.w = 0.99516898586
 
 print "TARGET POSE\n", pose_goal
+
 
 arm.set_pose_target(pose_goal)
 
