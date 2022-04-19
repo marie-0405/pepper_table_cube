@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding: UTF-8
 
 '''
     Original Training code made by Ricardo Tellez <rtellez@theconstructsim.com>
@@ -27,7 +28,7 @@ if __name__ == '__main__':
     rospy.init_node('pepper_gym', anonymous=True, log_level=rospy.INFO)
 
     # Create the Gym environment
-    env = gym.make('PepperHand-v0')  # TODO change
+    env = gym.make('Pepper-v0')  # TODO change
     rospy.logdebug ( "Gym environment done")
     reward_pub = rospy.Publisher('/pepper/reward', Float64, queue_size=1)
     episode_reward_pub = rospy.Publisher('/pepper/episode_reward', Float64, queue_size=1)
@@ -134,4 +135,10 @@ if __name__ == '__main__':
     rospy.loginfo("Overall score: {:0.2f}".format(last_time_steps.mean()))
     rospy.loginfo("Best 100 score: {:0.2f}".format(reduce(lambda x, y: x + y, l[-100:]) / len(l[-100:])))
 
+    ## 報酬の保存
+    output_rewards = '\n'.join([str(reward) for reward in rewards])
+    outfile = outdir + '/rewards.txt'
+    with open(outfile, 'w') as f:
+        f.write(output_rewards)
+    
     env.close()
