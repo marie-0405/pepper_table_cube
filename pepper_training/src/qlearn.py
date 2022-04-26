@@ -1,3 +1,4 @@
+# coding: UTF-8
 '''
 Q-learning approach for different RL problems
 as part of the basic series on reinforcement learning @
@@ -19,6 +20,7 @@ class QLearn:
         self.actions = actions
 
     def getQ(self, state, action):
+        # (state, action)のキーが存在しない場合に、デフォルト値に0を設定
         return self.q.get((state, action), 0.0)
 
     def learnQ(self, state, action, reward, value):

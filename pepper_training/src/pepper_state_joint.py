@@ -570,19 +570,12 @@ class PepperState(object):
         We return the total reward based on the state in which we are in and if its done or not
         :return: reward, done
         """
-
-        if "simulation_time" in self._episode_done_criteria:
-            simulation_time_ok = self.simulation_time_ok()
-        else:
-            # rospy.logdebug("simulation_time_ok NOT TAKEN INTO ACCOUNT")
-            simulation_time_ok = True
         if "cube_moved_target" in self._episode_done_criteria:
             task_ok = self.task_ok()
         else:
             rospy.logdebug("cube_moved_target NOT TAKEN INTO ACCOUNT")
             task_ok = True
 
-        rospy.logdebug("simulation_time_ok="+str(simulation_time_ok))
         rospy.loginfo("task_ok="+str(task_ok))
 
         done = task_ok

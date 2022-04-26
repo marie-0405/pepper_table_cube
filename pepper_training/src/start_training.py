@@ -6,22 +6,25 @@
     Moded by Miguel Angel Rodriguez <duckfrost@theconstructsim.com>
     Visit our website at ec2-54-246-60-98.eu-west-1.compute.amazonaws.com
 '''
+
+from functools import reduce
 import gym
-import time
 import numpy
-import random
 import qlearn
-from gym import wrappers
+import random
+import sys
+import time
 from std_msgs.msg import Float64
+
 # ROS packages required
 import rospy
 import rospkg
 
-# import our training environment
-import pepper_env_hand
+# import my training environment
 import pepper_env_joint
+# import my tool
+from information import Information
 
-from functools import reduce
 
 if __name__ == '__main__':
     
@@ -57,9 +60,11 @@ if __name__ == '__main__':
                     alpha=Alpha, gamma=Gamma, epsilon=Epsilon)
     initial_epsilon = qlearn.epsilon
 
+    # Initializes the information of learning
     start_time = time.time()
     highest_reward = 0
     rewards = []
+    succeeds = []
     
     # Starts the main training loop: the one about the episodes to do
     for x in range(nepisodes):
@@ -69,6 +74,8 @@ if __name__ == '__main__':
         cumulated_reward_msg = Float64()
         episode_reward_msg = Float64()
         done = False
+        max_step = False
+
         if qlearn.epsilon > 0.05:
             qlearn.epsilon *= epsilon_discount
         
@@ -107,15 +114,19 @@ if __name__ == '__main__':
             cumulated_reward_msg.data = cumulated_reward
             reward_pub.publish(cumulated_reward_msg)
             if i == nsteps - 1:
-                done = True
+                max_step = True
 
-            if not(done):
+            # 終了判定（タスク成功 or 最大ステップ）
+            if not(done) and not(max_step):
                 state = nextState
             else:
-                rospy.logdebug ("DONE")
                 last_time_steps = numpy.append(last_time_steps, [int(i + 1)])
+                rospy.logdebug ("DONE")
+                if max_step:
+                    succeeds.append(False)
+                else:
+                    succeeds.append(True)
                 break
-
             rospy.loginfo("###################### END Step...["+str(i)+"]")
 
         m, s = divmod(int(time.time() - start_time), 60)
@@ -131,14 +142,11 @@ if __name__ == '__main__':
     l = last_time_steps.tolist()
     l.sort()
 
-
     rospy.loginfo("Overall score: {:0.2f}".format(last_time_steps.mean()))
     rospy.loginfo("Best 100 score: {:0.2f}".format(reduce(lambda x, y: x + y, l[-100:]) / len(l[-100:])))
 
-    ## 報酬の保存
-    output_rewards = '\n'.join([str(reward) for reward in rewards])
-    outfile = outdir + '/rewards.txt'
-    with open(outfile, 'w') as f:
-        f.write(output_rewards)
+    ## 結果情報の保存
+    information = Information(reward=rewards, succeed=succeeds)
+    information.write('rewards.csv')
     
     env.close()
