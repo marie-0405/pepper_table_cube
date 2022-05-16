@@ -12,7 +12,13 @@ class Link():
 
     msg = rospy.wait_for_message(self.topic, LinkStates)
     self.index = msg.name.index(self.name)
+    # rospy.Subscriber("/gazebo/link_states", LinkStates, self.links_state_callback)
+    # rospy.spin()
   
+  def links_state_callback(self, msg):
+    self.links_state = msg
+    self.index = self.links_state.name.index(self.name)
+
   def get_position(self):
     msg = rospy.wait_for_message(self.topic, LinkStates)
     return msg.pose[self.index].position

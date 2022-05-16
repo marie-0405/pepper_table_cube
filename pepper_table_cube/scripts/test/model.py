@@ -10,9 +10,15 @@ class Model():
     self.name = name
     self.topic = '/gazebo/model_states'
 
+    # rospy.Subscriber("/gazebo/model_states", ModelStates, self.models_state_callback)
     msg = rospy.wait_for_message(self.topic, ModelStates)
     self.index = msg.name.index(self.name)
+    # rospy.spin()
   
+  def models_state_callback(self, msg):
+    self.models_state = msg
+    self.index = self.models_state.name.index(self.name)
+
   def get_position(self):
     msg = rospy.wait_for_message(self.topic, ModelStates)
     return msg.pose[self.index].position
