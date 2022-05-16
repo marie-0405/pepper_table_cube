@@ -50,14 +50,17 @@ if __name__ == '__main__':
     # They are loaded at runtime by the launch file
     Alpha = rospy.get_param("/alpha")
     Epsilon = rospy.get_param("/epsilon")
+    eps_begin = rospy.get_param("/epsilon_begin")
+    eps_end = rospy.get_param("/epsilon_end")
     Gamma = rospy.get_param("/gamma")
     epsilon_discount = rospy.get_param("/epsilon_discount")
     nepisodes = rospy.get_param("/nepisodes")
     nsteps = rospy.get_param("/nsteps")
 
     # Initialises the algorithm that we are going to use for learning
-    qlearn = qlearn.QLearn(actions=range(env.action_space.n),
-                    alpha=Alpha, gamma=Gamma, epsilon=Epsilon)
+    qlearn = qlearn.QLearn(env=env, actions=range(env.action_space.n),
+                    alpha=Alpha, gamma=Gamma, epsilon=Epsilon, 
+                    eps_begin=eps_begin, eps_end=eps_end, nsteps=nsteps)
     initial_epsilon = qlearn.epsilon
 
     # Initializes the information of learning
@@ -76,8 +79,8 @@ if __name__ == '__main__':
         done = False
         max_step = False
 
-        if qlearn.epsilon > 0.05:
-            qlearn.epsilon *= epsilon_discount
+        # if qlearn.epsilon > 0.05:
+        #     qlearn.epsilon *= epsilon_discount
         
         # Initialize the environment and get first state of the robot
         rospy.logdebug("env.reset...")
@@ -90,8 +93,7 @@ if __name__ == '__main__':
         for i in range(nsteps):
 
             # Pick an action based on the current state
-            action = qlearn.chooseAction(state)
-            
+            action = qlearn.chooseAction(state, i)
             # Execute the action in the environment and get feedback
             rospy.loginfo("###################### Start Step...["+str(i)+"]")
             # rospy.logdebug("RSP+,RSP-,RSR+,RSR-,RER+,RER-,REY+,REY-,RWY+,RWY- >> [0,1,2,3,4,5,6,7,8,9]")
@@ -146,7 +148,7 @@ if __name__ == '__main__':
     rospy.loginfo("Best 100 score: {:0.2f}".format(reduce(lambda x, y: x + y, l[-100:]) / len(l[-100:])))
 
     ## 結果情報の保存
-    information = Information(reward=rewards, succeed=succeeds)
-    information.write('rewards.csv')
+    information = Information(q_matrix, reward=rewards, succeed=succeeds)
+    information.write()
     
     env.close()

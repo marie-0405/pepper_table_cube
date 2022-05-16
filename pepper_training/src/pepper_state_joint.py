@@ -263,7 +263,7 @@ class PepperState(object):
         reward: int
         """
         distance = self.get_distance_from_point_to_point(p_from, p_to)
-        reward = weight * distance
+        reward = weight * (distance - 0.025)
         return reward
 
     def calculate_reward_joint_position(self, weight=1.0):
