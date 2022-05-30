@@ -2,9 +2,11 @@
 alpha: 0.1
 gamma: 0.8
 epsilon: 0.9
+epsilon_begin: 0.9
+epsilon_end: 0.1
 epsilon_discount: 0.999 # 1098 eps to reach 0.1
-nepisodes: 50
-nsteps: 5
+nepisodes: 2
+nsteps: 2
 
 # Environment Parameters
 desired_length:
@@ -18,11 +20,11 @@ running_step: 0.001   # in seconds
 joint_increment_value: 0.5  # in radians
 position_increment_value: 0.01  # in meter
 done_reward: -1000.0 # reward
-base_reward: 100.0 # reward
+base_reward: 0.2713243687 # reward
 success_reward: 1000.0 # reward
 
-weight_r1: 100.0 # Weight for distance from hand to cube ( what hand is within a radius of 0.07 from cube is perfect )
-weight_r2: 100.0 # Weight for distance from cube to target position ( on the point is perfect )
+weight_r1: 1.0 # Weight for distance from hand to cube ( what hand is within a radius of 0.07 from cube is perfect )
+weight_r2: 1.0 # Weight for distance from cube to target position ( on the point is perfect )
 
 list_of_observations: # Observations you want to use for the learning
   - distance_from_hand_to_cube

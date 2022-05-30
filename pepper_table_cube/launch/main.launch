@@ -3,7 +3,7 @@
   <arg name="launch_control_trajectory_all" default="false"/>
   <arg name="robot" default="pepper_robot"/>
   <arg name="debug" default="false"/>
-  <arg name="gui" default="true"/>
+  <arg name="gui" default="false"/>
   <arg name="headless" default="false"/>
   <arg name="pause" default="false"/>  
   
