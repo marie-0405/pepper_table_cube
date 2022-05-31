@@ -94,8 +94,8 @@
 	<joint name="RShoulderPitch" type="revolute">
 		<parent link="torso"/>
 		<child link="RShoulder"/>
-		<origin rpy="0 0.61086523819 0" xyz="-0.057 -0.14974 0.08682"/>
-		<!-- 35 degrees -->
+		<origin rpy="0 0.6981317008 0" xyz="-0.057 -0.14974 0.08682"/>
+		<!-- 40 degrees -->
 		<axis xyz="0 1.0 0"/>
 		<limit effort="5.428" lower="-2.08567" upper="2.08567" velocity="7.33998"/>
 	</joint>
@@ -110,8 +110,8 @@
 	<joint name="RShoulderRoll" type="revolute">
 		<parent link="RShoulder"/>
 		<child link="RBicep"/>
-		<origin rpy="0 0 -0.34906585039" xyz="0 0 0"/>
-		<!-- -20 degrees -->
+		<origin rpy="0 0 -0.6981317008" xyz="0 0 0"/>
+		<!-- -40 degrees -->
 		<axis xyz="0 0 1.0"/>
 		<limit effort="2.666" lower="-1.56207" upper="-0.00872665" velocity="9.22756"/>
 	</joint>

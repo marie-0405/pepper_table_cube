@@ -25,6 +25,8 @@ import pepper_env_joint
 # import my tool
 from information import Information
 
+FILE_NAME = "reward.csv"
+
 
 if __name__ == '__main__':
     
@@ -147,8 +149,8 @@ if __name__ == '__main__':
     rospy.loginfo("Overall score: {:0.2f}".format(last_time_steps.mean()))
     rospy.loginfo("Best 100 score: {:0.2f}".format(reduce(lambda x, y: x + y, l[-100:]) / len(l[-100:])))
 
-    ## 結果情報の保存
-    information = Information(q_matrix, reward=rewards, succeed=succeeds)
-    information.write()
+    ## Save the information of results
+    information = Information(FILE_NAME, reward=rewards, succeed=succeeds)
+    information.write(q_matrix)
     
     env.close()
