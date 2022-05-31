@@ -12,6 +12,7 @@ from geometry_msgs.msg import Vector3
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryGoal
 
+import time_recorder
 
 DURATION = 0.25
 
@@ -70,6 +71,7 @@ class BodyAction(object):
 
         self.move_joints(msg.joint_state.position)
 
+    @time_recorder.time_recorder
     def move_joints(self, current_positions, next_positions):
         """
         Move joints angle by controller of action in ROS.
@@ -82,19 +84,20 @@ class BodyAction(object):
         # Set current point (type is JointTrajectoryPoint)
         current_point = JointTrajectoryPoint()
         current_point.positions = current_positions
-        current_point.time_from_start = rospy.Duration(1.0)
+        current_point.time_from_start = rospy.Duration(0.25)
 
         # Set next point (type is JointTrajectoryPoint)
         next_point = JointTrajectoryPoint()
         next_point.positions = next_positions
-        next_point.time_from_start = rospy.Duration(2.0)
+        next_point.time_from_start = rospy.Duration(0.8)
         
         # Set goal
         self.goal = FollowJointTrajectoryGoal()
         self.goal.trajectory.joint_names = self.joint_names
         self.goal.trajectory.points = [current_point, next_point]
-        self.goal.trajectory.header.stamp = rospy.Time.now() + rospy.Duration(1.0)
+        self.goal.trajectory.header.stamp = rospy.Time.now() + rospy.Duration(0.25)
 
+        rospy.loginfo("Before send goal")
         self._right_arm_action_client.send_goal(self.goal)
         rospy.loginfo("Success" if self._right_arm_action_client.wait_for_result() else "Failed")
 

@@ -11,7 +11,9 @@ Inspired by https://gym.openai.com/evaluations/eval_kWknKOkPQ7izrixdhriurA
 
 import random
 import rospy
+
 from q3_schedule import LinearExploration
+import time_recorder
 
 class QLearn:
     def __init__(self, env, actions, nsteps, epsilon, eps_begin, eps_end, alpha, gamma):
@@ -44,10 +46,7 @@ class QLearn:
         # rospy.loginfo("epsilon" + str(self.exp_strat.epsilon))
 
         if random.random() < self.exp_strat.epsilon:
-            minQ = min(q); mag = max(abs(minQ), abs(maxQ))
-            # add random values to all the actions, recalculate maxQ
-            q = [q[i] + random.random() * mag - .5 * mag for i in range(len(self.actions))] 
-            maxQ = max(q)
+            i = random.randint(0, len(self.actions))
 
         count = q.count(maxQ)
         # In case there're several state-action max values 

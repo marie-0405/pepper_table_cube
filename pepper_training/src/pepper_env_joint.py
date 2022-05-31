@@ -14,9 +14,11 @@ from geometry_msgs.msg import Pose
 from gym.utils import seeding
 from gym.envs.registration import register
 from gazebo_connection import GazeboConnection
+from controllers_connection import ControllersConnection
+
 from body_action import BodyAction
 from pepper_state_joint import PepperState
-from controllers_connection import ControllersConnection
+import time_recorder
 
 #register the training environment in the gym as an available one
 reg = register(
@@ -145,6 +147,7 @@ class PepperEnvJoint(gym.Env):
         return [seed]
         
     # Resets the state of the environment and returns an initial observation.
+    @time_recorder.time_recorder
     def _reset(self):
 
         # 0st: We pause the Simulator
@@ -191,6 +194,7 @@ class PepperEnvJoint(gym.Env):
 
         return state
 
+    @time_recorder.time_recorder
     def _step(self, action):
 
         # Given the action selected by the learning algorithm,
@@ -224,6 +228,7 @@ class PepperEnvJoint(gym.Env):
 
         return state, reward, done, {}
 
+    @time_recorder.time_recorder
     def get_state(self, observation):
         """
         We retrieve the Stringuified-Discrete version of the given observation

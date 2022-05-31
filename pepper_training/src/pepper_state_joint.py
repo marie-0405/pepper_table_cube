@@ -13,6 +13,8 @@ import tf
 import numpy
 import math
 
+import time_recorder
+
 """
  wrenches:
       -
@@ -263,6 +265,7 @@ class PepperState(object):
         reward: int
         """
         distance = self.get_distance_from_point_to_point(p_from, p_to)
+        rospy.loginfo("Distance" + str(distance))
         reward = weight * (distance - 0.025)
         return reward
 
@@ -476,7 +479,8 @@ class PepperState(object):
         self.current_joint_pose =[]
         self.current_joint_pose = copy.deepcopy(des_init_pos)
         return self.current_joint_pose
-
+    
+    @time_recorder.time_recorder
     def get_action_to_position(self, action):
         """
         Here we have the Actions number to real joint movement correspondance.
@@ -542,15 +546,15 @@ class PepperState(object):
         :return:
         """
 
-        # rospy.logdebug("Clamping current_joint_pose>>>" + str(self.current_joint_pose))
+        rospy.logdebug("Clamping current_joint_pose>>>" + str(self.current_joint_pose))
         rsp_joint_value = self.current_joint_pose[0]
         rsr_joint_value = self.current_joint_pose[1]
         rer_joint_value = self.current_joint_pose[2]
         rey_joint_value = self.current_joint_pose[3]
         rwy_joint_value = self.current_joint_pose[4]
 
-        # rospy.logdebug("rsp_min>>>" + str(self._joint_limits["rsp_min"]))
-        # rospy.logdebug("rsp_max>>>" + str(self._joint_limits["rsp_max"]))
+        rospy.logdebug("rsp_min>>>" + str(self._joint_limits["rsp_min"]))
+        rospy.logdebug("rsp_max>>>" + str(self._joint_limits["rsp_max"]))
         self.current_joint_pose[0] = max(min(rsp_joint_value, self._joint_limits["rsp_max"]),
                                          self._joint_limits["rsp_min"])
         self.current_joint_pose[1] = max(min(rsr_joint_value, self._joint_limits["rsr_max"]),
@@ -562,7 +566,7 @@ class PepperState(object):
         self.current_joint_pose[4] = max(min(rwy_joint_value, self._joint_limits["rwy_max"]),
                                          self._joint_limits["rwy_min"])
 
-        # rospy.logdebug("DONE Clamping current_joint_pose>>>" + str(self.current_joint_pose))
+        rospy.logdebug("DONE Clamping current_joint_pose>>>" + str(self.current_joint_pose))
 
 
     def process_data(self):
@@ -587,7 +591,6 @@ class PepperState(object):
             total_reward = self.calculate_total_reward()
 
         return total_reward, done
-
     def testing_loop(self):
 
         rate = rospy.Rate(50)
