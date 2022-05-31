@@ -1,12 +1,12 @@
 # Algortihm Parameters
-alpha: 0.1
-gamma: 0.8
+alpha: 0.1  # 0-1 0.5
+gamma: 0.8  # 0.8-0.99
 epsilon: 0.9
-epsilon_begin: 0.9
+epsilon_begin: 0.5
 epsilon_end: 0.1
 epsilon_discount: 0.999 # 1098 eps to reach 0.1
-nepisodes: 2
-nsteps: 2
+nepisodes: 15  # 50? 3000?
+nsteps: 10
 
 # Environment Parameters
 desired_length:
@@ -20,7 +20,7 @@ running_step: 0.001   # in seconds
 joint_increment_value: 0.5  # in radians
 position_increment_value: 0.01  # in meter
 done_reward: -1000.0 # reward
-base_reward: 0.2713243687 # reward
+base_reward: 0.0 # reward
 success_reward: 1000.0 # reward
 
 weight_r1: 1.0 # Weight for distance from hand to cube ( what hand is within a radius of 0.07 from cube is perfect )

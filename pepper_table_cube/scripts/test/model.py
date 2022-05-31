@@ -31,6 +31,9 @@ if __name__ == '__main__':
   try:
     rospy.init_node('model_state_sub', anonymous=True)
     cube = Model("cube")
+    print("cube")
+    print(cube.get_position())
+    print("target")
     print(cube.get_position())
   except rospy.ROSInterruptException: pass
   
