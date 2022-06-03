@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 import sys
 
-from information import Information
+from result_controller import ResultController
 
-file_name = sys.argv[1] if len(sys.argv)==2 else 'reward.csv'
+file_name_end = sys.argv[1] if len(sys.argv)==2 else ''
 
-information = Information(file_name)
-information.plot('reward')
+result_controller = ResultController(file_name_end)
+result_controller.plot_reward()
 
 
