@@ -35,7 +35,7 @@
   <include file="$(find pepper_table_cube)/launch/pepper_control.launch"/>
 
   <!-- Show image data -->
-  <node name="img_proc" pkg="pepper_table_cube" type="get_image.py"/>
+  <!-- <node name="img_proc" pkg="pepper_table_cube" type="get_image.py"/> -->
 
   <!-- Move Pepper with action -->
   <!-- <node name="action_pepper_moveit" pkg="pepper_table_cube" type="action_pepper_move.py"/> -->
