@@ -13,6 +13,8 @@ class ResultController():
     # Set the file path ファイルパスを設定
     rospack = rospkg.RosPack()
     pkg_path = rospack.get_path('pepper_training')
+    self.file_name_end = file_name_end
+    self.reward_fig = pkg_path + '/training_results/reward-'+ file_name_end + '.png'
     self.reward_file_path = pkg_path + '/training_results/reward-'+ file_name_end + '.csv'
     self.q_matrix_file_path = pkg_path + '/training_results/q_matrix-'+ file_name_end + '.txt'
 
@@ -50,6 +52,6 @@ class ResultController():
 
     plt.ylim([-25.0, -0.0])
     plt.legend()
-    plt.show()
+    plt.savefig(self.reward_fig)
 
 
