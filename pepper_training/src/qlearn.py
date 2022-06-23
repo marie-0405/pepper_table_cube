@@ -16,13 +16,13 @@ from q3_schedule import LinearExploration
 import time_recorder
 
 class QLearn:
-    def __init__(self, env, actions, nsteps, epsilon, eps_begin, eps_end, alpha, gamma):
+    def __init__(self, env, actions, nepisodes, epsilon, eps_begin, eps_end, alpha, gamma):
         self.q = {}
         self.epsilon = epsilon  # exploration constant
         self.alpha = alpha      # discount constant
         self.gamma = gamma      # discount factor
         self.actions = actions
-        self.exp_strat = LinearExploration(env, eps_begin, eps_end, nsteps)
+        self.exp_strat = LinearExploration(env, eps_begin, eps_end, nepisodes)
 
     def getQ(self, state, action):
         # (state, action)のキーが存在しない場合に、デフォルト値に0を設定
@@ -39,10 +39,10 @@ class QLearn:
         else:
             self.q[(state, action)] = oldv + self.alpha * (value - oldv)
 
-    def chooseAction(self, state, step, return_q=False):
+    def chooseAction(self, state, episode, return_q=False):
         q = [self.getQ(state, a) for a in self.actions]
         maxQ = max(q)
-        self.exp_strat.update(step)
+        self.exp_strat.update(episode)
         # rospy.loginfo("epsilon" + str(self.exp_strat.epsilon))
 
         if random.random() < self.exp_strat.epsilon:
