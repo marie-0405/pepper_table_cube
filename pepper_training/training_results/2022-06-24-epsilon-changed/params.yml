@@ -1,6 +1,6 @@
 # Personal
-alpha
-gamma
+epsilonの値を変化させていくのを、stepによってではなく、episodeによって変化するように
+変更した。
 
 # Common
 # Algortihm Parameters
