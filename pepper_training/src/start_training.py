@@ -25,6 +25,7 @@ import rospkg
 import pepper_env_joint
 
 # import my tool
+from hyper_parameter import HyperParameter
 from result_controller import ResultController
 
 
@@ -59,108 +60,107 @@ if __name__ == '__main__':
     nepisodes = rospy.get_param("/nepisodes")
     nsteps = rospy.get_param("/nsteps")
 
-
-
-    Gammas = [0.80]
-    # Alphas = [0.25, 0.5, 0.75, 1.0]
+    # If you want to do grid search, try this code on.
+    Alphas = HyperParameter(0.2, 0.9, 0.1)
+    Gammas = HyperParameter(0.5, 1.0, 0.1)
     
-    for g in Gammas:
+    for g in Gammas.values:
         Gamma = g
-    # for a in Alphas:
-        # Alpha = a
-        # Initialises the algorithm that we are going to use for learning
-        ql = qlearn.QLearn(env=env, actions=range(env.action_space.n),
-                        alpha=Alpha, gamma=Gamma, epsilon=Epsilon, 
-                        eps_begin=eps_begin, eps_end=eps_end, nepisodes=nepisodes)
-        initial_epsilon = ql.epsilon
+        for a in Alphas.values:
+            Alpha = a
+            # Initialises the algorithm that we are going to use for learning
+            ql = qlearn.QLearn(env=env, actions=range(env.action_space.n),
+                            alpha=Alpha, gamma=Gamma, epsilon=Epsilon, 
+                            eps_begin=eps_begin, eps_end=eps_end, nepisodes=nepisodes)
+            initial_epsilon = ql.epsilon
 
-        # Initializes the information of learning
-        start_time = time.time()
-        highest_reward = 0
-        rewards = []
-        succeeds = []
-        # Starts the main training loop: the one about the episodes to do
-        for episode in range(nepisodes):
-            rospy.loginfo ("STARTING Episode #" + str(episode))
-            
-            cumulated_reward = 0
-            cumulated_reward_msg = Float64()
-            episode_reward_msg = Float64()
-            done = False
-            max_step = False
+            # Initializes the information of learning
+            start_time = time.time()
+            highest_reward = 0
+            rewards = []
+            succeeds = []
+            # Starts the main training loop: the one about the episodes to do
+            for episode in range(nepisodes):
+                rospy.loginfo ("STARTING Episode #" + str(episode))
+                
+                cumulated_reward = 0
+                cumulated_reward_msg = Float64()
+                episode_reward_msg = Float64()
+                done = False
+                max_step = False
 
-            # if qlearn.epsilon > 0.05:
-            #     qlearn.epsilon *= epsilon_discount
-            
-            # Initialize the environment and get first state of the robot
-            rospy.logdebug("env.reset...")
-            # Now We return directly the stringuified observations called state
-            state = env.reset()
+                # if qlearn.epsilon > 0.05:
+                #     qlearn.epsilon *= epsilon_discount
+                
+                # Initialize the environment and get first state of the robot
+                rospy.logdebug("env.reset...")
+                # Now We return directly the stringuified observations called state
+                state = env.reset()
 
-            rospy.logdebug("env.get_state...==>" + str(state))
-            
-            # for each episode, we test the robot for nsteps
-            for i in range(nsteps):
+                rospy.logdebug("env.get_state...==>" + str(state))
+                
+                # for each episode, we test the robot for nsteps
+                for i in range(nsteps):
 
-                # Pick an action based on the current state
-                action = ql.chooseAction(state, episode)
-                rospy.loginfo("Epsilon" + str(ql.exp_strat.epsilon))
-                # Execute the action in the environment and get feedback
-                rospy.loginfo("###################### Start Step...["+str(i)+"]")
-                # rospy.logdebug("RSP+,RSP-,RSR+,RSR-,RER+,RER-,REY+,REY-,RWY+,RWY- >> [0,1,2,3,4,5,6,7,8,9]")
-                rospy.logdebug("Action to Perform >> "+str(action))
-                nextState, reward, done, info = env.step(action)
-                rospy.loginfo("END Step...")
-                rospy.loginfo("Reward ==> " + str(reward))
-                cumulated_reward += reward
-                if highest_reward < cumulated_reward:
-                    highest_reward = cumulated_reward
+                    # Pick an action based on the current state
+                    action = ql.chooseAction(state, episode)
+                    rospy.loginfo("Epsilon" + str(ql.exp_strat.epsilon))
+                    # Execute the action in the environment and get feedback
+                    rospy.loginfo("###################### Start Step...["+str(i)+"]")
+                    # rospy.logdebug("RSP+,RSP-,RSR+,RSR-,RER+,RER-,REY+,REY-,RWY+,RWY- >> [0,1,2,3,4,5,6,7,8,9]")
+                    rospy.logdebug("Action to Perform >> "+str(action))
+                    nextState, reward, done, info = env.step(action)
+                    rospy.loginfo("END Step...")
+                    rospy.loginfo("Reward ==> " + str(reward))
+                    cumulated_reward += reward
+                    if highest_reward < cumulated_reward:
+                        highest_reward = cumulated_reward
 
-                rospy.logdebug("env.get_state...[distance_from_cube_to_target,distance from hand to cube]==>" + str(nextState))
+                    rospy.logdebug("env.get_state...[distance_from_cube_to_target,distance from hand to cube]==>" + str(nextState))
 
-                # Make the algorithm learn based on the results
-                ql.learn(state, action, reward, nextState)
-                q_matrix = ql.get_Q_matrix()
-                rospy.logdebug(q_matrix)
+                    # Make the algorithm learn based on the results
+                    ql.learn(state, action, reward, nextState)
+                    q_matrix = ql.get_Q_matrix()
+                    rospy.logdebug(q_matrix)
 
-                # We publish the cumulated reward
-                cumulated_reward_msg.data = cumulated_reward
-                reward_pub.publish(cumulated_reward_msg)
-                if i == nsteps - 1:
-                    max_step = True
+                    # We publish the cumulated reward
+                    cumulated_reward_msg.data = cumulated_reward
+                    reward_pub.publish(cumulated_reward_msg)
+                    if i == nsteps - 1:
+                        max_step = True
 
-                # 終了判定（タスク成功 or 最大ステップ）
-                if not(done) and not(max_step):
-                    state = nextState
-                else:
-                    last_time_steps = numpy.append(last_time_steps, [int(i + 1)])
-                    rospy.logdebug ("DONE")
-                    if max_step:
-                        succeeds.append(False)
+                    # 終了判定（タスク成功 or 最大ステップ）
+                    if not(done) and not(max_step):
+                        state = nextState
                     else:
-                        succeeds.append(True)
-                    break
-                rospy.loginfo("###################### END Step...["+str(i)+"]")
+                        last_time_steps = numpy.append(last_time_steps, [int(i + 1)])
+                        rospy.logdebug ("DONE")
+                        if max_step:
+                            succeeds.append(False)
+                        else:
+                            succeeds.append(True)
+                        break
+                    rospy.loginfo("###################### END Step...["+str(i)+"]")
 
-            m, s = divmod(int(time.time() - start_time), 60)
-            h, m = divmod(m, 60)
-            rewards.append(cumulated_reward)
-            episode_reward_msg.data = cumulated_reward
-            episode_reward_pub.publish(episode_reward_msg)
-            rospy.loginfo("rewards: " + str(rewards))
-            rospy.loginfo( ("EP: "+str(episode+1)+" - [alpha: "+str(round(ql.alpha,2))+" - gamma: "+str(round(ql.gamma,2))+" - epsilon: "+str(round(ql.epsilon,2))+"] - Reward: "+str(cumulated_reward)+"     Time: %d:%02d:%02d" % (h, m, s)))
+                m, s = divmod(int(time.time() - start_time), 60)
+                h, m = divmod(m, 60)
+                rewards.append(cumulated_reward)
+                episode_reward_msg.data = cumulated_reward
+                episode_reward_pub.publish(episode_reward_msg)
+                rospy.loginfo("rewards: " + str(rewards))
+                rospy.loginfo( ("EP: "+str(episode+1)+" - [alpha: "+str(round(ql.alpha,2))+" - gamma: "+str(round(ql.gamma,2))+" - epsilon: "+str(round(ql.epsilon,2))+"] - Reward: "+str(cumulated_reward)+"     Time: %d:%02d:%02d" % (h, m, s)))
 
-        rospy.loginfo ( ("\n|"+str(nepisodes)+"|"+str(ql.alpha)+"|"+str(ql.gamma)+"|"+str(initial_epsilon)+"*"+str(epsilon_discount)+"|"+str(highest_reward)+"| PICTURE |"))
+            rospy.loginfo ( ("\n|"+str(nepisodes)+"|"+str(ql.alpha)+"|"+str(ql.gamma)+"|"+str(initial_epsilon)+"*"+str(epsilon_discount)+"|"+str(highest_reward)+"| PICTURE |"))
 
-        l = last_time_steps.tolist()
-        l.sort()
+            l = last_time_steps.tolist()
+            l.sort()
 
-        rospy.loginfo("Overall score: {:0.2f}".format(last_time_steps.mean()))
-        rospy.loginfo("Best 100 score: {:0.2f}".format(reduce(lambda x, y: x + y, l[-100:]) / len(l[-100:])))
+            rospy.loginfo("Overall score: {:0.2f}".format(last_time_steps.mean()))
+            rospy.loginfo("Best 100 score: {:0.2f}".format(reduce(lambda x, y: x + y, l[-100:]) / len(l[-100:])))
 
-        ## Save the information of results
-        result_controller = ResultController("a={}-g={}".format(Alpha, Gamma))
-        result_controller.write(rewards, succeeds, q_matrix)
-        result_controller.plot_reward() 
+            ## Save the information of results
+            result_controller = ResultController("a={}-g={}".format(Alpha, Gamma))
+            result_controller.write(rewards, succeeds, q_matrix)
+            result_controller.plot_reward() 
     
     env.close()

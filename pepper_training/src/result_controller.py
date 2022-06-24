@@ -42,6 +42,7 @@ class ResultController():
     result_df["reward"].plot(figsize=(11, 6), label="Reward")
 
     # Plot the average
+    # TODO get_average("reward")methodを作成して、平均値を算出する関数を外部アクセスできるようにする
     average = result_df["reward"].mean()
     plt.plot(np.arange(0, len(result_df)), 
              np.full(len(result_df), average),
