@@ -1,12 +1,12 @@
 # Algortihm Parameters
-alpha: 0.1  # 0-1 0.5
-gamma: 0.8  # 0.8-0.99
+alpha: 0.50  # 0-1 0.5
+gamma: 0.90  # 0.8 - 0.99
 epsilon: 0.9
 epsilon_begin: 0.5
 epsilon_end: 0.1
 epsilon_discount: 0.999 # 1098 eps to reach 0.1
-nepisodes: 15  # 50? 3000?
-nsteps: 10
+nepisodes: 300  # 50/3000
+nsteps: 30
 
 # Environment Parameters
 desired_length:
@@ -14,23 +14,23 @@ desired_length:
   y: 0.0
   z: 0.026
 max_distance: 0.5  # in meters
-min_distance: 0.0  # in meters
+min_distance: 0.025  # in meters
 max_simulation_time: 30 # in seconds
 running_step: 0.001   # in seconds
-joint_increment_value: 0.5  # in radians
+joint_increment_value: 0.2  # in radians
 position_increment_value: 0.01  # in meter
 done_reward: -1000.0 # reward
 base_reward: 0.0 # reward
-success_reward: 1000.0 # reward
+success_reward: 10.0 # reward
 
-weight_r1: 1.0 # Weight for distance from hand to cube ( what hand is within a radius of 0.07 from cube is perfect )
-weight_r2: 1.0 # Weight for distance from cube to target position ( on the point is perfect )
+weight_r1: 2.0 # Weight for distance from hand to cube ( what hand is within a radius of 0.07 from cube is perfect )
+weight_r2: 3.0 # Weight for distance from cube to target position ( on the point is perfect )
 
 list_of_observations: # Observations you want to use for the learning
   - distance_from_hand_to_cube
   - distance_from_cube_to_target
 
-discrete_division: 200 # Parts in which we divide each of the observations sensory range
+discrete_division: 20 # Parts in which we divide each of the observations sensory range
 
 init_joint_pose:  # Set the right arm on the table
   r_shoulder_pitch: -0.0037184561

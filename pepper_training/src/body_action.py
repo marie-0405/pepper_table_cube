@@ -84,12 +84,12 @@ class BodyAction(object):
         # Set current point (type is JointTrajectoryPoint)
         current_point = JointTrajectoryPoint()
         current_point.positions = current_positions
-        current_point.time_from_start = rospy.Duration(0.25)
+        current_point.time_from_start = rospy.Duration(0.20)
 
         # Set next point (type is JointTrajectoryPoint)
         next_point = JointTrajectoryPoint()
         next_point.positions = next_positions
-        next_point.time_from_start = rospy.Duration(0.8)
+        next_point.time_from_start = rospy.Duration(0.6)
         
         # Set goal
         self.goal = FollowJointTrajectoryGoal()
@@ -97,7 +97,6 @@ class BodyAction(object):
         self.goal.trajectory.points = [current_point, next_point]
         self.goal.trajectory.header.stamp = rospy.Time.now() + rospy.Duration(0.25)
 
-        rospy.loginfo("Before send goal")
         self._right_arm_action_client.send_goal(self.goal)
         rospy.loginfo("Success" if self._right_arm_action_client.wait_for_result() else "Failed")
 

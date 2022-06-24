@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import rospkg
+import sys
 
 from result import Result
 
@@ -50,8 +51,11 @@ class ResultController():
     plt.xlabel("The number of episode")
     plt.ylabel("Reward")
 
-    plt.ylim([-25.0, -0.0])
+    plt.ylim([-25.0, 15.0])
     plt.legend()
     plt.savefig(self.reward_fig)
 
-
+if __name__ == '__main__':
+  file_name_end = sys.argv[1] if len(sys.argv)==2 else ''
+  result_controller = ResultController(file_name_end)
+  result_controller.plot_reward()
