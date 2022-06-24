@@ -360,9 +360,15 @@ class PepperState(object):
         The state will be defined by an array of the:
         1) distance from cube to target
         2) distance from hand to cube
+        3-4-5-6) State of the 5 joints in radians
 
         observation = [distance_from_cube_to_target,
-                    - distance from hand to cube]
+                distance from hand to cube
+                joint_states_rsp
+                joint_states_rsr
+                joint_states_rer
+                joint_states_rey
+                joint_states_rwy]
 
         :return: observation
         """
@@ -376,6 +382,15 @@ class PepperState(object):
         distance_from_cube_to_target = \
          self.get_distance_from_point_to_point(cube_pos, target_pos)
 
+        joint_names = ["RShoulderPitch", "RShoulderRoll" ,"RElbowYaw", "RElbowRoll", "RWristYaw"]
+        joint_positions = self.get_joint_positions(joint_names)
+
+        joint_states_rsp = joint_positions[0]
+        joint_states_rsr = joint_positions[1]
+        joint_states_rer = joint_positions[2]
+        joint_states_rey = joint_positions[3]
+        joint_states_rwy = joint_positions[4]
+
         observation = []
         # rospy.logdebug("List of Observations==>"+str(self._list_of_observations))
         for obs_name in self._list_of_observations:
@@ -383,6 +398,16 @@ class PepperState(object):
                 observation.append(distance_from_hand_to_cube)
             elif obs_name == "distance_from_cube_to_target":
                 observation.append(distance_from_cube_to_target)
+            elif obs_name == "joint_states_rsp":
+                observation.append(joint_states_rsp)
+            elif obs_name == "joint_states_rsr":
+                observation.append(joint_states_rsr)
+            elif obs_name == "joint_states_rer":
+                observation.append(joint_states_rer)
+            elif obs_name == "joint_states_rey":
+                observation.append(joint_states_rey)
+            elif obs_name == "joint_states_rwy":
+                observation.append(joint_states_rwy)
             else:
                 raise NameError('Observation Asked does not exist=='+str(obs_name))
 
@@ -441,6 +466,21 @@ class PepperState(object):
             elif obs_name == "distance_from_cube_to_target":
                 max_value = self._max_distance
                 min_value = self._min_distance
+            elif obs_name == "joint_states_rsp":
+                max_value = self._joint_limits["rsp_max"]
+                min_value = self._joint_limits["rsp_min"]
+            elif obs_name == "joint_states_rsr":
+                max_value = self._joint_limits["rsr_max"]
+                min_value = self._joint_limits["rsr_min"]
+            elif obs_name == "joint_states_rer":
+                max_value = self._joint_limits["rer_max"]
+                min_value = self._joint_limits["rer_min"]
+            elif obs_name == "joint_states_rey":
+                max_value = self._joint_limits["rey_max"]
+                min_value = self._joint_limits["rey_min"]
+            elif obs_name == "joint_states_rwy":
+                max_value = self._joint_limits["rwy_max"]
+                min_value = self._joint_limits["rwy_min"]
             else:
                 raise NameError('Observation Asked does not exist=='+str(obs_name))
 
