@@ -21,7 +21,7 @@ def time_recorder(func):
     return result
   return new_function
 
-# @time_recorder
+@time_recorder
 def wait_method(sec):
     """サンプルメソッド。引数の間待ち、「Done!」をprintする"""
     time.sleep(sec)

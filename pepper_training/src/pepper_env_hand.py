@@ -135,6 +135,7 @@ class PepperEnvHand(gym.Env):
                                                     self.desired_length.position.y,
                                                     self.desired_length.position.z)
 
+        rospy.loginfo("koko")
         self.pepper_moveit_object = PepperMoveit("right_arm")
 
         """
@@ -233,6 +234,7 @@ class PepperEnvHand(gym.Env):
         observation = self.pepper_state_object.get_observations()
         # finally we get an evaluation based on what happened in the sim
         reward,done = self.pepper_state_object.process_data()
+        rospy.loginfo("reward "+str(reward))
 
         # Get the State Discrete Stringuified version of the observations
         state = self.get_state(observation)

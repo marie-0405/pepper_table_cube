@@ -71,7 +71,7 @@ class BodyAction(object):
 
         self.move_joints(msg.joint_state.position)
 
-    # @time_recorder.time_recorder
+    @time_recorder.time_recorder
     def move_joints(self, current_positions, next_positions):
         """
         Move joints angle by controller of action in ROS.
@@ -98,7 +98,7 @@ class BodyAction(object):
         self.goal.trajectory.header.stamp = rospy.Time.now() + rospy.Duration(0.25)
 
         self._right_arm_action_client.send_goal(self.goal)
-        # rospy.loginfo("Success" if self._right_arm_action_client.wait_for_result() else "Failed")
+        rospy.loginfo("Success" if self._right_arm_action_client.wait_for_result() else "Failed")
 
     def move_joints_jump(self, joints_array, do_jump = False):
 
