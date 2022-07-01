@@ -29,11 +29,6 @@ weight_r2: 3.0 # Weight for distance from cube to target position ( on the point
 list_of_observations: # Observations you want to use for the learning
   - distance_from_hand_to_cube
   - distance_from_cube_to_target
-  # - joint_states_rsp
-  # - joint_states_rsr
-  # - joint_states_rer
-  # - joint_states_rey
-  # - joint_states_rwy
 
 discrete_division: 20 # Parts in which we divide each of the observations sensory range
 
