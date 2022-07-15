@@ -480,7 +480,7 @@ class PepperState(object):
         self.current_joint_pose = copy.deepcopy(des_init_pos)
         return self.current_joint_pose
     
-    @time_recorder.time_recorder
+    # @time_recorder.time_recorder
     def get_action_to_position(self, action):
         """
         Here we have the Actions number to real joint movement correspondance.

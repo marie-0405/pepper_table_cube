@@ -71,7 +71,7 @@ class BodyAction(object):
 
         self.move_joints(msg.joint_state.position)
 
-    @time_recorder.time_recorder
+    # @time_recorder.time_recorder
     def move_joints(self, current_positions, next_positions):
         """
         Move joints angle by controller of action in ROS.
