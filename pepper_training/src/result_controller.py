@@ -1,9 +1,9 @@
 # coding: UTF-8
-from ast import literal_eval
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 import pandas as pd
-import rospkg
+# import rospkg
 import sys
 
 from result import Result
@@ -12,12 +12,17 @@ class ResultController():
 
   def __init__(self, file_name_end):
     # Set the file path ファイルパスを設定
-    rospack = rospkg.RosPack()
-    pkg_path = rospack.get_path('pepper_training')
+    # rospack = rospkg.RosPack()
+    # pkg_path = rospack.get_path('pepper_training')
+    
+    # Windows用
+    pkg_path = os.getcwd()
+    pkg_path = pkg_path[:-4]
+
     self.file_name_end = file_name_end
-    self.reward_fig = pkg_path + '/training_results/reward-'+ file_name_end + '.png'
-    self.reward_file_path = pkg_path + '/training_results/reward-'+ file_name_end + '.csv'
-    self.q_matrix_file_path = pkg_path + '/training_results/q_matrix-'+ file_name_end + '.txt'
+    self.reward_fig = pkg_path + '/training_results/2022-06-30-grid-search1/reward-'+ file_name_end + '.png'
+    self.reward_file_path = pkg_path + '/training_results/2022-06-30-grid-search1/reward-'+ file_name_end + '.csv'
+    self.q_matrix_file_path = pkg_path + '/training_results/2022-06-30-grid-search1/q_matrix-'+ file_name_end + '.txt'
 
   def write(self, rewards, succeeds, q_matrix):
     """Output result dataframe to csv"""
@@ -36,14 +41,16 @@ class ResultController():
       lines = f.read()
       return lines.count(':')
   
+  def get_average(self):
+    result_df = self._read()
+    average = result_df["reward"].mean()
+    return average
+
   def plot_reward(self):
     result_df = self._read()
     plt.figure()
     result_df["reward"].plot(figsize=(11, 6), label="Reward")
-
-    # Plot the average
-    # TODO get_average("reward")methodを作成して、平均値を算出する関数を外部アクセスできるようにする
-    average = result_df["reward"].mean()
+    average = self.get_average()
     plt.plot(np.arange(0, len(result_df)), 
              np.full(len(result_df), average),
              label="Average= {}".format(average))
