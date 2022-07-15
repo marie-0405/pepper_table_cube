@@ -10,7 +10,7 @@
 from functools import reduce
 import re
 import gym
-import numpy
+import numpy as np
 import qlearn
 import random
 import sys
@@ -46,7 +46,7 @@ if __name__ == '__main__':
     # env = wrappers.Monitor(env, outdir, force=True)
     # rospy.logdebug("Monitor Wrapper started")
     
-    last_time_steps = numpy.ndarray(0)
+    last_time_steps = np.ndarray(0)
 
     # Loads parameters from the ROS param server
     # Parameters are stored in a yaml file inside the config directory
@@ -61,12 +61,18 @@ if __name__ == '__main__':
     nsteps = rospy.get_param("/nsteps")
 
     # If you want to do grid search, try this code on.
-    Alphas = HyperParameter(0.2, 0.9, 0.1)
-    Gammas = HyperParameter(0.5, 1.0, 0.1)
+    # Alphas = [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    # Gammas = [0.9, 1.0]
+ 
+    # TODO 途中で終わってしまっていたので、後でやる！！
+    Alphas = [0.8, 0.9, 1.0]
+    Gammas = [0.8]
+    rospy.loginfo("Alphas ==> " + str(Alphas))
+    rospy.loginfo("Gammas ==> " + str(Gammas))    
     
-    for g in Gammas.values:
+    for g in Gammas:
         Gamma = g
-        for a in Alphas.values:
+        for a in Alphas:
             Alpha = a
             # Initialises the algorithm that we are going to use for learning
             ql = qlearn.QLearn(env=env, actions=range(env.action_space.n),
@@ -133,7 +139,7 @@ if __name__ == '__main__':
                     if not(done) and not(max_step):
                         state = nextState
                     else:
-                        last_time_steps = numpy.append(last_time_steps, [int(i + 1)])
+                        last_time_steps = np.append(last_time_steps, [int(i + 1)])
                         rospy.logdebug ("DONE")
                         if max_step:
                             succeeds.append(False)
