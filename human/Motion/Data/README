@@ -1,0 +1,245 @@
+########################################################################################################################
+Smartphone
+ - Kalman_Filter
+  - Test_Sensor_Fusion_Static(1).csv
+  - Test_Sensor_Fusion_Static(2).csv
+  - Test_Sensor_Fusion_Static(3).csv
+  - Test_Sensor_Fusion_Slow.csv
+  - Test_Sensor_Fusion_Middle.csv
+  - Test_Sensor_Fusion_Fast.csv
+  - Test_Sensor_Fusion_Disturbance.csv
+
+------------------------------------------------------------------------------------------------------------------------
+These data were captured by AndroSensor(http://www.fivasim.com/androsensor.html) using Android smarphone
+(Xperia XZ, SONY).
+These data are used in "Sensor_Fusion_AndroSensor.py".
+
+  - Test_Sensor_Fusion_Static(1).csv     : Keep the smartphone in a static posture
+  - Test_Sensor_Fusion_Static(2).csv     : Keep the smartphone in a static posture
+  - Test_Sensor_Fusion_Static(3).csv     : Keep the smartphone in a static posture
+  - Test_Sensor_Fusion_Slow.csv          : Rotate the smartphone at low speed along the x, y, z axis
+  - Test_Sensor_Fusion_Middle.csv        : Rotate the smartphone at middle speed along the x, y, z axis
+  - Test_Sensor_Fusion_Fast.csv          : Rotate the smartphone at high speed along the x, y, z axis
+  - Test_Sensor_Fusion_Disturbance.csv   : Reciprocate the smartphone in the axial direction (x, y, z) to add
+                                           translational acceleration disturbance
+------------------------------------------------------------------------------------------------------------------------
+
+########################################################################################################################
+
+
+
+
+
+########################################################################################################################
+Motive: These data ware captured by Optical motion capture(OptiTrack, 100Hz)
+ - Wood_plate
+  - Tetsuya_Abe
+   - Markers
+    - Rotation
+     - Rotation_None.npy
+     - WoodPlate_1202.csv*
+   - Markers_cut
+    - Rotation.npy
+    - Rotation_opt.npy
+   - Markers_cut_spline
+    - Rotation.npy
+    - Rotation_opt.npy**
+
+ -----------------------------------------------------------------------------------------------------------------------
+ *WoodPlate_1202.csv is used in "Synchronize_IMU_OMC.py".
+ Other numpy files was generated in "Synchronize_IMU_OMC.py"
+ **Rotation_opt.npy is used in "Caclulate_WoodPlate_Tetsuya.py"
+
+  - WoodPlate_1202.csv: Rotate the wood plate with 6 Shimmer2R and 5 markers
+ -----------------------------------------------------------------------------------------------------------------------
+
+ - Elbow_Motion_Tracking
+  - Tetsuya_Abe
+   - Markers
+    - Flexion_Extension
+     - Flexion_Extension_RightArm.npy
+     - Tetsuya_RightArm.csv*
+   - Markers_cut
+    - Flexion_Extension.npy
+    - Flexion_Extension_opt.npy
+   - Markers_cut_spline
+    - Flexion_Extension.npy
+    - Flexion_Extension_opt.npy**
+
+ -----------------------------------------------------------------------------------------------------------------------
+ *Tetsuya_RightArm.csv is used in "Synchronize_IMU_OMC.py".
+ Other numpy files was generated in "Synchronize_IMU_OMC.py"
+ **Flexion_Extension_opt.npy is used in "Right_Arm_OMC.py"
+
+  - Tetsuya_RightArm.csv: Perform elbow flexion/extension exercises three times each at three different speeds
+ -----------------------------------------------------------------------------------------------------------------------
+
+########################################################################################################################
+
+
+
+
+
+########################################################################################################################
+Shimmer: These data were captured by MARG sensor(Shimmer2R, 100Hz)
+         (*The end of the file name is the model number of Shimmer2R)
+
+ - Allan_variance
+  - Allan_Variance_AA1B.csv
+  - Allan_Variance_B4BF.csv
+
+ -----------------------------------------------------------------------------------------------------------------------
+ These data are used in "Calibration".
+   - Allan_Variance_AA1B.csv
+   - Allan_Variance_B4BF.csv
+   : Place the sensor in the positive direction of the z-axis vertically upward for 33 minutes and 45 seconds or more
+ -----------------------------------------------------------------------------------------------------------------------
+
+ - Calibration
+  - Calibration_Data
+    - Calibration_AA1B.csv
+  - Test_Data
+    - Calibration_static_x_AA1B.csv
+    - Calibration_static_y_AA1B.csv
+    - Calibration_static_z_AA1B.csv
+    - Calibration_motion_x_AA1B.csv
+    - Calibration_motion_x_AA1B.csv
+    - Calibration_motion_x_AA1B.csv
+  - IMUalpha.csv
+  - IMUomega.csv
+
+  ----------------------------------------------------------------------------------------------------------------------
+  These data are used in "Calibration".
+    - Calibration_Data
+    : Get data according to the flow chart(Fig.1) of the research paper(TEDALDI, D., et al., "A robust and easy to
+      implement method for IMU calibration without external equipments.")
+    - Test_Data
+    : Test data to evaluate the accuracy of the calibration.
+        - Calibration_static_
+        : Place the sensor in the positive direction of each axis vertically upward
+        - Calibration_motion_
+        : Rotation the sensor ±360 degree along each axis
+    - IMUalpha.csv
+    - IMUomega.csv
+    : Simulation data provided by research paper(TEDALDI, D., et al., "A robust and easy to implement method for IMU
+      calibration without external equipments.")
+  ----------------------------------------------------------------------------------------------------------------------
+
+  - OMC_reference
+   - OMC_reference_A833.csv
+
+  ----------------------------------------------------------------------------------------------------------------------
+  This data is used in "Sensor_Fusion_Shimmer.py".
+    - OMC_reference_A833.csv
+    : Put the Shimmer2R(A833) on the force plate around 10 seconds to get the Euler angles of
+      the optical motion capture's reference frame in the MARG sensor's coordinate space
+  ----------------------------------------------------------------------------------------------------------------------
+
+ - Static
+  - Static 1
+   - Static_1_100Hz_9397.csv
+   - Static_1_100Hz_A833.csv
+   - Static_1_100Hz_AA1B.csv
+   - Static_1_100Hz_B4BF.csv
+   - Static_1_100Hz_B15C.csv
+   - Static_1_100Hz_B532.csv
+   - Static_1_100Hz_BODF.csv
+  - Static 2
+   - Static_2_100Hz_9397.csv
+   - Static_2_100Hz_A833.csv
+   - Static_2_100Hz_AA1B.csv
+   - Static_2_100Hz_B4BF.csv
+   - Static_2_100Hz_B15C.csv
+   - Static_2_100Hz_B532.csv
+   - Static_2_100Hz_BODF.csv
+  - Static 3
+   - Static_3_100Hz_9397.csv
+   - Static_3_100Hz_A833.csv
+   - Static_3_100Hz_AA1B.csv
+   - Static_3_100Hz_B4BF.csv
+   - Static_3_100Hz_B15C.csv
+   - Static_3_100Hz_B532.csv
+   - Static_3_100Hz_BODF.csv
+
+  ----------------------------------------------------------------------------------------------------------------------
+  These data were captured by MARG sensor(Shimmer2R, 100Hz).
+  These data are used in "Sensor_Fusion_Shimmer.py".
+    - Static 1: Keep the Shimmer2R in a static posture
+    - Static 2: Keep the Shimmer2R in a static posture
+    - Static 3: Keep the Shimmer2R in a static posture
+  ----------------------------------------------------------------------------------------------------------------------
+
+ - Motion
+  - 360_Rotation
+   - Motion_360_100Hz_9397.csv
+   - Motion_360_100Hz_A833.csv
+   - Motion_360_100Hz_AA1B.csv
+   - Motion_360_100Hz_B4BF.csv
+   - Motion_360_100Hz_B15C.csv
+   - Motion_360_100Hz_B532.csv
+   - Motion_360_100Hz_BODF.csv
+
+  ----------------------------------------------------------------------------------------------------------------------
+  These data were captured by MARG sensor(Shimmer2R, 100Hz).
+  These data are used in "Sensor_Fusion_Shimmer.py".
+    - 360_Rotation: Rotate the shimmer2R 360 degrees along the x, y, z axis
+  ----------------------------------------------------------------------------------------------------------------------
+
+ - Kalman_Filter
+  - KF_test_AA1B.csv
+  - KF_test_B4BF.csv
+  ----------------------------------------------------------------------------------------------------------------------
+  These data were captured by MARG sensor(Shimmer2R, 100Hz).
+  These data are used in "IMU_Attitude_Estimation_Implementation_Tetsuya.py".
+    - KF_test_ .csv: Rotate the shimmer2R at different speed along the x, y axis
+  ----------------------------------------------------------------------------------------------------------------------
+
+ - Wood_plate
+  - Tetsuya_Abe
+   - IMU
+    - Rotation
+     - WoodPlate_20201202_A833.csv*
+     - WoodPlate_20201202_AA1B.csv*
+     - WoodPlate_20201202_B4BF.csv*
+     - WoodPlate_20201202_B15C.csv*
+     - WoodPlate_20201202_B532.csv*
+     - WoodPlate_20201202_BODF.csv*
+   - IMU_cut
+    - Rotation.npy
+    - Rotation_opt.npy
+   - IMU_cut_spline
+    - Rotation.npy
+    - Rotation_opt.npy**
+
+ -----------------------------------------------------------------------------------------------------------------------
+ *These files are used in "Synchronize_IMU_OMC.py".
+ Other numpy files was generated in "Synchronize_IMU_OMC.py"
+ **Rotation_opt.npy is used in "Sensor_Fusion_Shimmer.py"
+
+  - WoodPlate_20201202_(Shimmer2R model number).csv: Rotate the wood plate with 6 Shimmer2R and 5 markers
+ -----------------------------------------------------------------------------------------------------------------------
+
+ - Elbow_Motion_Tracking
+   - Tetsuya_Abe
+   - IMU
+    - Flexion_Extension
+     - Elbow_20201222_A833.csv*
+     - Elbow_20201222_B532.csv*
+   - IMU_cut
+    - Flexion_Extension.npy
+    - Flexion_Extension_opt.npy
+   - IMU_cut_spline
+    - Flexion_Extension.npy
+    - Flexion_Extension_opt.npy
+
+ -----------------------------------------------------------------------------------------------------------------------
+ *These files are used in "Synchronize_IMU_OMC.py".
+ Other numpy files was generated in "Synchronize_IMU_OMC.py"
+ **Rotation_opt.npy is used in "Elbow_Motion_Tracking.py"
+
+  - Elbow_20201222_(Shimmer2R model number).csv: Perform elbow flexion/extension exercises three times each
+                                                 at three different speeds
+                                                 (*A833: forearm, B532: upper arm)
+ -----------------------------------------------------------------------------------------------------------------------
+
+########################################################################################################################
