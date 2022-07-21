@@ -47,9 +47,9 @@ import time_recorder
         z: 1.0
     depths: [0.000138379966266991]
   -
-    info: "Debug:  i:(2/4)     my geom:pepper::lowerleg::lowerleg_contactsensor_link_collision_1\
+    info: "Debug:  i:(2/4)     my geom:human::lowerleg::lowerleg_contactsensor_link_collision_1\
   \   other geom:ground_plane::link::collision         time:50.405000000\n"
-    collision1_name: "pepper::lowerleg::lowerleg_contactsensor_link_collision_1"
+    collision1_name: "human::lowerleg::lowerleg_contactsensor_link_collision_1"
     collision2_name: "ground_plane::link::collision"
 
 """
@@ -91,10 +91,10 @@ gazebo_msgs/ContactState[] states
   float64[] depths
 """
 
-class PepperState(object):
+class HumanState(object):
 
     def __init__(self, min_distance, max_distance, max_simulation_time, list_of_observations, joint_limits, episode_done_criteria, joint_increment_value = 0.05, done_reward = -1000.0, base_reward=10.0, success_reward=1000.0, weight_r1=1.0, weight_r2=1.0, discrete_division=10, maximum_base_linear_acceleration=3000.0, maximum_base_angular_velocity=20.0, maximum_joint_effort=10.0):
-        rospy.logdebug("Starting pepperState Class object...")
+        rospy.logdebug("Starting humanState Class object...")
         self.desired_length = Vector3(0.0, 0.0, 0.0)
         self._min_distance = min_distance
         self._max_distance = max_distance
@@ -143,7 +143,7 @@ class PepperState(object):
         # We use the simulation_time to decide learning has been done.
         rospy.Subscriber("/clock", Clock, self.simulation_time_callback)
         # We use it to get the joints positions and calculate the reward associated to it
-        rospy.Subscriber("/pepper_dcm/joint_states", JointState, self.joints_state_callback)
+        rospy.Subscriber("/human_dcm/joint_states", JointState, self.joints_state_callback)
         # We use it to get the positions of models.
         rospy.Subscriber("/gazebo/model_states", ModelStates, self.models_state_callback)
         # We use it to get the position of hand.
@@ -157,7 +157,7 @@ class PepperState(object):
         joint_states_msg = None
         while joint_states_msg is None and not rospy.is_shutdown():
             try:
-                joint_states_msg = rospy.wait_for_message("pepper_dcm/joint_states", JointState, timeout=0.1)
+                joint_states_msg = rospy.wait_for_message("human_dcm/joint_states", JointState, timeout=0.1)
                 self.joints_state = joint_states_msg
                 # rospy.logdebug("Current joint_states READY")
             except Exception as e:
@@ -337,7 +337,7 @@ class PepperState(object):
         """
         cube_pos = self.get_model_position("cube")
         target_pos = self.get_model_position("target")
-        hand_pos = self.get_link_position("pepper::r_gripper")
+        hand_pos = self.get_link_position("human::r_gripper")
 
         r1 = self.calculate_reward_distance(self._weight_r1, hand_pos, cube_pos)
         r2 = self.calculate_reward_distance(self._weight_r2, cube_pos, target_pos)
@@ -369,7 +369,7 @@ class PepperState(object):
         
         cube_pos = self.get_model_position("cube")
         target_pos = self.get_model_position("target")
-        hand_pos = self.get_link_position("pepper::r_gripper")
+        hand_pos = self.get_link_position("human::r_gripper")
 
         distance_from_hand_to_cube = \
          self.get_distance_from_point_to_point(hand_pos, cube_pos)
