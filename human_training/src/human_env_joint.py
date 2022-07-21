@@ -17,18 +17,18 @@ from gazebo_connection import GazeboConnection
 from controllers_connection import ControllersConnection
 
 from body_action import BodyAction
-from pepper_state_joint import PepperState
-import time_recorder
+from human_state_joint import HumanState
+
 
 #register the training environment in the gym as an available one
 reg = register(
-    id='Pepper-v0',
-    entry_point='pepper_env_joint:PepperEnvJoint',
+    id='human-v0',
+    entry_point='human_env_joint:humanEnvJoint',
     timestep_limit=100000,
     )
 
 
-class PepperEnvJoint(gym.Env):
+class HumanEnvJoint(gym.Env):
 
     def __init__(self):
         
@@ -98,9 +98,9 @@ class PepperEnvJoint(gym.Env):
         # stablishes connection with simulator
         self.gazebo = GazeboConnection()
 
-        self.controllers_object = ControllersConnection(namespace="pepper_dcm")
+        self.controllers_object = ControllersConnection(namespace="human_dcm")
 
-        self.pepper_state_object = PepperState(
+        self.human_state_object = HumanState(
             min_distance=self.min_distance,
             max_distance=self.max_distance,
             max_simulation_time=self.max_simulation_time,
@@ -119,12 +119,12 @@ class PepperEnvJoint(gym.Env):
             maximum_joint_effort=self.maximum_joint_effort,
         )
         self.joint_names = ["RShoulderRoll", "RShoulderPitch","RElbowYaw", "RElbowRoll", "RWristYaw"]
-        self.pepper_state_object.set_desired_length(self.desired_length.position.x,
+        self.human_state_object.set_desired_length(self.desired_length.position.x,
                                                     self.desired_length.position.y,
                                                     self.desired_length.position.z)
 
-        self.pepper_body_action_object = BodyAction(self.joint_names, 
-            "/pepper_dcm/RightArm_controller/follow_joint_trajectory")
+        self.human_body_action_object = BodyAction(self.joint_names, 
+            "/human_dcm/RightArm_controller/follow_joint_trajectory")
         
 
 
@@ -164,20 +164,20 @@ class PepperEnvJoint(gym.Env):
         self.gazebo.change_gravity(0.0, 0.0, 0.0)
 
         # EXTRA: Reset JoinStateControlers because sim reset doesnt reset TFs, generating time problems
-        # rospy.logdebug("reset_pepper_joint_controllers...")
-        self.controllers_object.reset_pepper_joint_controllers()
+        # rospy.logdebug("reset_human_joint_controllers...")
+        self.controllers_object.reset_human_joint_controllers()
 
         # 3rd: resets the robot to initial conditions
         # rospy.logdebug("set_init_pose init variable...>>>" + str(self.init_joint_pose))
         # We save that position as the current joint desired position
-        init_pos = self.pepper_state_object.init_joints_pose(self.init_joint_pose)
+        init_pos = self.human_state_object.init_joints_pose(self.init_joint_pose)
 
 
         # 4th: Check all scribers work.
         # Get the state of the Robot defined by its RPY orientation, distance from
         # desired point, contact force and JointState of the three joints
         rospy.logdebug("check_all_systems_ready...")
-        self.pepper_state_object.check_all_systems_ready()
+        self.human_state_object.check_all_systems_ready()
 
         # 5th: We restore the gravity to original
         # rospy.logdebug("Restore Gravity...")
@@ -189,7 +189,7 @@ class PepperEnvJoint(gym.Env):
 
         # 7th: Get the State Discrete Stringuified version of the observations
         rospy.logdebug("get_observations...")
-        observation = self.pepper_state_object.get_observations()
+        observation = self.human_state_object.get_observations()
         state = self.get_state(observation)
 
         return state
@@ -201,15 +201,15 @@ class PepperEnvJoint(gym.Env):
         # we perform the corresponding movement of the robot
 
         # 1st, decide which action corresponds to which position is incremented
-        next_positions = self.pepper_state_object.get_action_to_position(action)
+        next_positions = self.human_state_object.get_action_to_position(action)
 
         # We move it to that pos
         self.gazebo.unpauseSim()
         ## Using Action
         # Get current positions of joint
-        current_positions = self.pepper_state_object.get_joint_positions(self.joint_names)
+        current_positions = self.human_state_object.get_joint_positions(self.joint_names)
         # Then we send the command to the robot and let it go
-        self.pepper_body_action_object.move_joints(current_positions, next_positions)
+        self.human_body_action_object.move_joints(current_positions, next_positions)
     
         # for running_step seconds
         time.sleep(self.running_step)
@@ -219,9 +219,9 @@ class PepperEnvJoint(gym.Env):
         # the state and the rewards. This way we guarantee that they work
         # with the same exact data.
         # Generate State based on observations
-        observation = self.pepper_state_object.get_observations()
+        observation = self.human_state_object.get_observations()
         # finally we get an evaluation based on what happened in the sim
-        reward,done = self.pepper_state_object.process_data()
+        reward,done = self.human_state_object.process_data()
 
         # Get the State Discrete Stringuified version of the observations
         state = self.get_state(observation)
@@ -234,4 +234,4 @@ class PepperEnvJoint(gym.Env):
         We retrieve the Stringuified-Discrete version of the given observation
         :return: state
         """
-        return self.pepper_state_object.get_state_as_string(observation)
+        return self.human_state_object.get_state_as_string(observation)
