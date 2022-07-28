@@ -65,7 +65,7 @@ if __name__ == '__main__':
     # Gammas = [0.9, 1.0]
  
     # TODO 途中で終わってしまっていたので、後でやる！！
-    Alphas = [0.8, 0.9, 1.0]
+    Alphas = [0.5]
     Gammas = [0.8]
     rospy.loginfo("Alphas ==> " + str(Alphas))
     rospy.loginfo("Gammas ==> " + str(Gammas))    
@@ -77,7 +77,7 @@ if __name__ == '__main__':
             # Initialises the algorithm that we are going to use for learning
             ql = qlearn.QLearn(env=env, actions=range(env.action_space.n),
                             alpha=Alpha, gamma=Gamma, epsilon=Epsilon, 
-                            eps_begin=eps_begin, eps_end=eps_end, nepisodes=nepisodes)
+                            eps_begin=eps_begin, eps_end=eps_end, nsteps=nsteps)
             initial_epsilon = ql.epsilon
 
             # Initializes the information of learning
@@ -109,7 +109,7 @@ if __name__ == '__main__':
                 for i in range(nsteps):
 
                     # Pick an action based on the current state
-                    action = ql.chooseAction(state, episode)
+                    action = ql.chooseAction(state, i)
                     rospy.loginfo("Epsilon" + str(ql.exp_strat.epsilon))
                     # Execute the action in the environment and get feedback
                     rospy.loginfo("###################### Start Step...["+str(i)+"]")

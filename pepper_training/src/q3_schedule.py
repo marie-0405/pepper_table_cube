@@ -21,14 +21,14 @@ class LinearSchedule(object):
 		Args:
 			eps_begin (float): initial exploration
 			eps_end (float): end exploration
-			nepisodes (int): number of episodes between the two values of eps
+			nsteps (int): number of steps between the two values of eps
 	"""
-	def __init__(self, eps_begin, eps_end, nepisodes):
+	def __init__(self, eps_begin, eps_end, nsteps):
 		
 		self.epsilon = eps_begin
 		self.eps_begin = eps_begin
 		self.eps_end = eps_end
-		self.nepisodes = nepisodes
+		self.nsteps = nsteps
 
 	def update(self, t):
 		"""
@@ -39,12 +39,12 @@ class LinearSchedule(object):
 
 		TODO: 
 			modify self.epsilon such that it is a linear interpolation from 
-			self.eps_begin to self.eps_end as t goes from 0 to self.nepisodes.
-			For t > self.nepisodes self.epsilon remains constant.
+			self.eps_begin to self.eps_end as t goes from 0 to self.nsteps.
+			For t > self.nsteps self.epsilon remains constant.
 		"""
 		### START CODE HERE ###
-		if t <= self.nepisodes:
-			self.epsilon = self.eps_begin + (self.eps_end - self.eps_begin) * t / self.nepisodes
+		if t <= self.nsteps:
+			self.epsilon = self.eps_begin + (self.eps_end - self.eps_begin) * t / self.nsteps
 		else:
 			self.epsilon = self.eps_end
 			# self.epsilon = np.linspace(self.eps_begin,self.eps_end,self.nepisodes+1)[t]
@@ -63,11 +63,11 @@ class LinearExploration(LinearSchedule):
 			env (object): gym environment
 			eps_begin (float): initial exploration rate
 			eps_end (float): final exploration rate
-			nepisodes (int): number of nepisodes taken to linearly decay eps_begin to eps_end
+			nsteps (int): number of nsteps taken to linearly decay eps_begin to eps_end
 	"""
-	def __init__(self, env, eps_begin, eps_end, nepisodes):
+	def __init__(self, env, eps_begin, eps_end, nsteps):
 		self.env = env
-		super(LinearExploration, self).__init__(eps_begin, eps_end, nepisodes)
+		super(LinearExploration, self).__init__(eps_begin, eps_end, nsteps)
 
 
 	def get_action(self, best_action):
@@ -76,7 +76,7 @@ class LinearExploration(LinearSchedule):
 
 		Args:
 			best_action (int): best action according some policy
-		
+		j
 		Returns:
 			(int) action
 
