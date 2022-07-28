@@ -18,6 +18,8 @@ import numpy
 import wrappers # TODO
 import qlearn
 import random
+import rospy
+import rospkg
 import sys
 import time
 from std_msgs.msg import Float64
@@ -37,6 +39,7 @@ if __name__ == '__main__':
     # Create the Gym environment
     env = gym.make('human-v0')  # TODO change
     rospy.logdebug ( "Gym environment done")
+    reward_pub = rospy.Publisher('/human/reward', Float64, queue_size=1)
     episode_reward_pub = rospy.Publisher('/human/episode_reward', Float64, queue_size=1)
 
     # Set the logging system
