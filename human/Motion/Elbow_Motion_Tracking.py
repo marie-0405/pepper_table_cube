@@ -3,6 +3,7 @@ from Classes.Info import Data_info
 from Classes.Data import Data_IMU_offline
 from Classes.Calibration import Calibration
 import numpy as np
+import os
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
 import pandas as pd
@@ -101,7 +102,8 @@ def get_the_calibrated_output(shimmer_name, data_info, calibration):
     data = Data_IMU_offline()
     data.set_obj(data_info=data_info, calibration=calibration)
 
-    path_file = 'Data\\Shimmer\\Elbow_Motion_Tracking\\Tetsuya_Abe\\IMU_cut_spline\\Flexion_Extension_opt.npy'
+    current_dir = os.getcwd()
+    path_file = current_dir + '\\Motion\\Data\\Shimmer\\Elbow_Motion_Tracking\\Tetsuya_Abe\\IMU_cut_spline\\Flexion_Extension_opt.npy'
     data_uncal = np.load(path_file)
     data_uncal = data_uncal[:, :, number]
 
@@ -1158,13 +1160,14 @@ for i in range(length):
     global_R_body_U = UA.rotation[i]
     global_R_body_F = FA.rotation[i]
 
-
     # OMC
+    print(global_R_body_U)
     body_U_R_body_F_OMC = np.dot(np.linalg.inv(global_R_body_U), global_R_body_F)
     euler_anlge_OMC = Convertion_angles_rotation_matrix.convert_R_to_euler_angles(sequence=sequence, R=body_U_R_body_F_OMC)
 
     device_U_R_device_F_OMC = np.dot(np.linalg.inv(global_R_device_U), global_R_device_F)
     euler_anlge_OMC_device = Convertion_angles_rotation_matrix.convert_R_to_euler_angles(sequence=sequence, R=device_U_R_device_F_OMC)
+
 
     elbow_euler_angle_OMC[i] = euler_anlge_OMC.T
     elbow_euler_angle_OMC_device[i] = euler_anlge_OMC_device.T
