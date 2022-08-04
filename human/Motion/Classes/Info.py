@@ -16,9 +16,9 @@ class Data_info():
         self.path_python = self.cwd
 
         self.path_desktop = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
-        self.path_calibration = self.path_python + "\\Data_calibrations\\"
+        self.path_calibration = self.path_python + "\\Motion\\Data_calibrations\\"
 
-        self.path_test = self.path_python + "\\Data\\"
+        self.path_test = self.path_python + "\\Motion\\Data\\"
         self.IMU_frequencies = [0, 10, 50, 100, 125, 166, 200]
 
     def current_IMU_display(self, IMU_name):

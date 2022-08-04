@@ -1,2 +1,2 @@
 class MotionCaptureData():
-  def __init__(self):
+  def __init__(self, labels):

@@ -23,7 +23,7 @@ class CreateIKdata():
         self.euler = Convertion_angles_rotation_matrix.convert_R_to_euler_angles(sequence=sequence, R=self.rotation)
 
     def run(self):
-        path_file = "Data\\Motive\\Elbow_Motion_Tracking\\Tetsuya_Abe\\Markers_cut_spline\\Flexion_Extension_opt.npy"
+        path_file = "Motion\\Data\\Motive\\Elbow_Motion_Tracking\\Tetsuya_Abe\\Markers_cut_spline\\Flexion_Extension_opt.npy"
         self.marker_data = np.load(path_file)
 
         self.marker_dict = {}
