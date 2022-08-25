@@ -1,0 +1,8 @@
+prefix=/home/marie/research_pepper/install
+
+Name: pepper_table_cube
+Description: Description of pepper_table_cube
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

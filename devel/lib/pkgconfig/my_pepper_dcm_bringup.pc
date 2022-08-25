@@ -1,0 +1,8 @@
+prefix=/home/marie/research_pepper/devel
+
+Name: my_pepper_dcm_bringup
+Description: Description of my_pepper_dcm_bringup
+Version: 0.0.5
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: rospy naoqi_dcm_driver

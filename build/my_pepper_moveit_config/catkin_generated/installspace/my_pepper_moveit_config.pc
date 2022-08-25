@@ -1,0 +1,8 @@
+prefix=/home/marie/research_pepper/install
+
+Name: my_pepper_moveit_config
+Description: Description of my_pepper_moveit_config
+Version: 0.0.8
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

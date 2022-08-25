@@ -1,0 +1,2 @@
+set(pepper_training_MESSAGE_FILES "msg/QLearnPoint.msg;msg/QLearnElement.msg;msg/QLearnMatrix.msg")
+set(pepper_training_SERVICE_FILES "")

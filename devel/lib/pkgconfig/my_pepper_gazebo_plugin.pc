@@ -1,0 +1,8 @@
+prefix=/home/marie/research_pepper/devel
+
+Name: my_pepper_gazebo_plugin
+Description: Description of my_pepper_gazebo_plugin
+Version: 0.0.4
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

@@ -1,0 +1,2 @@
+human:human_training:my_pepper_dcm_bringup:my_pepper_description:my_pepper_moveit_config:my_pepper_virtual/my_pepper_control:my_pepper_virtual/my_pepper_gazebo_plugin:pepper_table_cube:pepper_training
+-DCATKIN_DEVEL_PREFIX=/home/marie/research_pepper/devel -DCMAKE_INSTALL_PREFIX=/home/marie/research_pepper/install -G Unix Makefiles

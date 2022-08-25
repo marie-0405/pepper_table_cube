@@ -1,0 +1,8 @@
+prefix=/home/marie/research_pepper/install
+
+Name: my_pepper_description
+Description: Description of my_pepper_description
+Version: 0.1.10
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

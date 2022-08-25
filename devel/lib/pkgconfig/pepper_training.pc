@@ -1,0 +1,8 @@
+prefix=/home/marie/research_pepper/devel
+
+Name: pepper_training
+Description: Description of pepper_training
+Version: 0.0.0
+Cflags: -I/home/marie/research_pepper/devel/include
+Libs: -L${prefix}/lib 
+Requires: rospy message_runtime
