@@ -94,20 +94,17 @@ if __name__ == '__main__':
       # Starts the main training loop: the one about the episodes to do
       for episode in range(nepisodes):
           rospy.loginfo ("STARTING Episode #" + str(episode))
-          
           cumulated_reward = 0
-          cumulated_reward_msg = Float64()
-          episode_reward_msg = Float64()
+          # cumulated_reward_msg = Float64()
+          # episode_reward_msg = Float64()
           done = False
           max_step = False
-
-          # if qlearn.epsilon > 0.05:
-          #     qlearn.epsilon *= epsilon_discount
           
           # Initialize the environment and get first state of the robot
           rospy.logdebug("env.reset...")
           # Now We return directly the stringuified observations called state
           state = env.reset()
+          pub.publish({'state': state})
 
           rospy.logdebug("env.get_state...==>" + str(state))
           
