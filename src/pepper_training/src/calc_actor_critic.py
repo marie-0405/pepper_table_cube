@@ -1,3 +1,4 @@
+import nep
 import os
 import gym
 from itertools import count
@@ -10,13 +11,25 @@ from critic import Critic
 
 from pepper_env_joint import PepperEnvJoint
 
+# Create a new nep node
+node = nep.node("Calculator")     
+# Set a direct connection using port <3000> and in <'one2many'> mode
+# Important: 	You need to change the IP address <'127.0.0.1'> by 
+# 		the IP address of you PC running the publisher node                                                   
+conf = node.hybrid("192.168.0.101")                         
+# Create a new nep subscriber with the topic <'test'>
+sub = node.new_sub("env", "json", conf)
+pub = node.new_pub("calc", "json", conf) 
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 env = gym.make('Pepper-v0')
-state_size = env.observation_space.shape[0]
-action_size = env.action_space.n
-print(state_size)
-print(action_size)
 lr = 0.0001  # 学習率
+s, msg = sub.listen()
+if s:
+  state_size, action_size = msg
+  print(msg)
+  print(state_size)
+  print(action_size)
 
 def compute_returns(next_value, rewards, masks, gamma=0.99):
   R = next_value

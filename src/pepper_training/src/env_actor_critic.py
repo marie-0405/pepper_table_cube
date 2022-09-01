@@ -4,6 +4,7 @@
 
 from functools import reduce
 import gym
+import nep
 import numpy as np
 import qlearn
 import random
@@ -26,12 +27,15 @@ if __name__ == '__main__':
     
   rospy.init_node('pepper_gym', anonymous=True, log_level=rospy.INFO)
 
+  node = nep.node("Environment")    # Create a new nep node
+  conf = node.hybrid('192.168.0.101')
+  sub = node.new_sub("calc","json", conf)      # Set the topic and message type 
+  pub = node.new_pub("env", "json", conf)
+
   # Create the Gym environment
   env = gym.make('Pepper-v0')
   state_size = env.observation_space.shape[0]
   action_size = env.action_space.n
-  print(state_size)
-  print(action_size)
   lr = 0.0001  # 学習率
   
   rospy.logdebug ( "Gym environment done")
