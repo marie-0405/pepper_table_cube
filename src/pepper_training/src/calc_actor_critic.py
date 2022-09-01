@@ -1,15 +1,14 @@
+from itertools import count
+import gym
 import nep
 import os
-import gym
-from itertools import count
+import time
 
 import torch
 import torch.optim as optim
 
 from actor import Actor
 from critic import Critic
-
-from pepper_env_joint import PepperEnvJoint
 
 # Create a new nep node
 node = nep.node("Calculator")     
@@ -22,14 +21,16 @@ sub = node.new_sub("env", "json", conf)
 pub = node.new_pub("calc", "json", conf) 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-env = gym.make('Pepper-v0')
 lr = 0.0001  # 学習率
-s, msg = sub.listen()
-if s:
-  state_size, action_size = msg
-  print(msg)
-  print(state_size)
-  print(action_size)
+
+while True:
+  s, msg = sub.listen()
+  if s:
+    state_size, action_size = msg.values()
+    break
+  else:
+    time.sleep(.0001)
+
 
 def compute_returns(next_value, rewards, masks, gamma=0.99):
   R = next_value
