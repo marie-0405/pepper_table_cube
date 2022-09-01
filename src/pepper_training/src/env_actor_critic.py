@@ -34,8 +34,12 @@ if __name__ == '__main__':
 
   # Create the Gym environment
   env = gym.make('Pepper-v0')
+
+  # Get space from environment and publish it
   state_size = env.observation_space.shape[0]
   action_size = env.action_space.n
+  msg = {'state_size': state_size, 'action_size': action_size}
+  pub.publish(msg)
   lr = 0.0001  # 学習率
   
   rospy.logdebug ( "Gym environment done")
