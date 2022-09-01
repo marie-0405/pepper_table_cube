@@ -137,9 +137,14 @@ class PepperEnvJoint(gym.Env):
         9-10) Increment/Decrement RWristYaw
         """
         self.action_space = spaces.Discrete(10)
+        self.observation_space = gym.spaces.Box(
+            low=self.min_distance,
+            high=self.max_distance,
+            shape=(2,)
+        )
         self.reward_range = (-np.inf, np.inf)
 
-        self._seed()
+        self._seed()  # TODO ランダムシードは固定しないほうがいいかも
 
     # A function to iline 49, in _initialize the random generator
     def _seed(self, seed=None):

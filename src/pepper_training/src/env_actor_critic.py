@@ -27,7 +27,13 @@ if __name__ == '__main__':
   rospy.init_node('pepper_gym', anonymous=True, log_level=rospy.INFO)
 
   # Create the Gym environment
-  env = gym.make('Pepper-v0')  # TODO change
+  env = gym.make('Pepper-v0')
+  state_size = env.observation_space.shape[0]
+  action_size = env.action_space.n
+  print(state_size)
+  print(action_size)
+  lr = 0.0001  # 学習率
+  
   rospy.logdebug ( "Gym environment done")
   reward_pub = rospy.Publisher('/pepper/reward', Float64, queue_size=1)
   episode_reward_pub = rospy.Publisher('/pepper/episode_reward', Float64, queue_size=1)

@@ -8,11 +8,14 @@ import torch.optim as optim
 from actor import Actor
 from critic import Critic
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-env = gym.make("CartPole-v0").unwrapped
+from pepper_env_joint import PepperEnvJoint
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+env = gym.make('Pepper-v0')
 state_size = env.observation_space.shape[0]
 action_size = env.action_space.n
+print(state_size)
+print(action_size)
 lr = 0.0001  # 学習率
 
 def compute_returns(next_value, rewards, masks, gamma=0.99):
@@ -109,4 +112,7 @@ if __name__ == '__main__':
     print('Critic Model loaded')
   else:
     critic = Critic(state_size, action_size).to(device)
-  trainIters(actor, critic, n_iters=50)
+  # trainIters(actor, critic, n_iters=50)
+  env = gym.make('CartPole-v0')
+  state_size = env.observation_space
+  print(state_size.shape)
