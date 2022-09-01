@@ -110,13 +110,12 @@ if __name__ == '__main__':
 
                     # Pick an action based on the current state
                     action = ql.chooseAction(state, i)
-                    rospy.loginfo("Epsilon" + str(ql.exp_strat.epsilon))
                     # Execute the action in the environment and get feedback
                     rospy.loginfo("###################### Start Step...["+str(i)+"]")
+                    rospy.loginfo("Epsilon" + str(ql.exp_strat.epsilon))
                     # rospy.logdebug("RSP+,RSP-,RSR+,RSR-,RER+,RER-,REY+,REY-,RWY+,RWY- >> [0,1,2,3,4,5,6,7,8,9]")
                     rospy.logdebug("Action to Perform >> "+str(action))
                     nextState, reward, done, info = env.step(action)
-                    rospy.loginfo("END Step...")
                     rospy.loginfo("Reward ==> " + str(reward))
                     cumulated_reward += reward
                     if highest_reward < cumulated_reward:

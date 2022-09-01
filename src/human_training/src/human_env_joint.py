@@ -24,7 +24,7 @@ from human_state_joint import HumanState
 reg = register(
     id='human-v0',
     entry_point='human_env_joint:humanEnvJoint',
-    timestep_limit=100000,
+    max_episode_steps=100000,
     )
 
 

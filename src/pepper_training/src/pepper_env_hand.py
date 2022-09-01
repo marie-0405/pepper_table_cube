@@ -23,7 +23,7 @@ from controllers_connection import ControllersConnection
 reg = register(
     id='PepperHand-v0',
     entry_point='pepper_env_hand:PepperEnvHand',
-    timestep_limit=100000,
+    max_episode_steps=100000,
     )
 
 
