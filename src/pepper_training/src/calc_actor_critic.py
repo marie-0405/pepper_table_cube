@@ -1,7 +1,8 @@
+from itertools import count
+import gym
 import nep
 import os
-import gym
-from itertools import count
+import time
 
 import torch
 import torch.optim as optim
@@ -9,27 +10,24 @@ import torch.optim as optim
 from actor import Actor
 from critic import Critic
 
-from pepper_env_joint import PepperEnvJoint
+def get_msg():
+  while True:
+    s, msg = sub.listen()
+    if s:
+      print(msg.values())
+      return msg.values()
+    else:
+      time.sleep(.0001)
 
 # Create a new nep node
-node = nep.node("Calculator")     
-# Set a direct connection using port <3000> and in <'one2many'> mode
-# Important: 	You need to change the IP address <'127.0.0.1'> by 
-# 		the IP address of you PC running the publisher node                                                   
+node = nep.node("Calculator")                                                       
 conf = node.hybrid("192.168.0.101")                         
-# Create a new nep subscriber with the topic <'test'>
 sub = node.new_sub("env", "json", conf)
 pub = node.new_pub("calc", "json", conf) 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-env = gym.make('Pepper-v0')
+state_size, action_size = get_msg()
 lr = 0.0001  # 学習率
-s, msg = sub.listen()
-if s:
-  state_size, action_size = msg
-  print(msg)
-  print(state_size)
-  print(action_size)
 
 def compute_returns(next_value, rewards, masks, gamma=0.99):
   R = next_value
@@ -39,22 +37,21 @@ def compute_returns(next_value, rewards, masks, gamma=0.99):
     returns.insert(0, R)
   return returns
 
-
 def trainIters(actor, critic, n_iters):
   # parameters()の中身はtensorがいくつかある
   optimizerA = optim.Adam(actor.parameters())
   optimizerC = optim.Adam(critic.parameters())
   for iter in range(n_iters):
-    state = env.reset()
     log_probs = []
     values = []
     rewards = []
     masks = []
     entropy = 0
-    env.reset()
+
+    # TODO 現在、stateは離散値にして文字列として渡しているが、そのまま離散値を渡すように変更する必要がある
+    state = get_msg()
 
     for i in count():
-      env.render()
       # stateの生の値をfloat型のテンソルに変換している
       state = torch.FloatTensor(state).to(device)
       # ここで入力データが渡されているので、トレーニングが実行されて、forward関数が実行される
@@ -125,7 +122,4 @@ if __name__ == '__main__':
     print('Critic Model loaded')
   else:
     critic = Critic(state_size, action_size).to(device)
-  # trainIters(actor, critic, n_iters=50)
-  env = gym.make('CartPole-v0')
-  state_size = env.observation_space
-  print(state_size.shape)
+  trainIters(actor, critic, n_iters=50)
