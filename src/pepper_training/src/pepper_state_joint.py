@@ -362,7 +362,7 @@ class PepperState(object):
         2) distance from hand to cube
 
         observation = [distance_from_cube_to_target,
-                    - distance from hand to cube]
+                       distance from hand to cube]
 
         :return: observation
         """
@@ -480,7 +480,7 @@ class PepperState(object):
         self.current_joint_pose = copy.deepcopy(des_init_pos)
         return self.current_joint_pose
     
-    @time_recorder.time_recorder
+    # @time_recorder.time_recorder
     def get_action_to_position(self, action):
         """
         Here we have the Actions number to real joint movement correspondance.
@@ -580,7 +580,7 @@ class PepperState(object):
             rospy.logdebug("cube_moved_target NOT TAKEN INTO ACCOUNT")
             task_ok = True
 
-        rospy.loginfo("task_ok="+str(task_ok))
+        rospy.logdebug("task_ok="+str(task_ok))
 
         done = task_ok
         if done:

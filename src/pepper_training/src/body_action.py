@@ -98,7 +98,7 @@ class BodyAction(object):
         self.goal.trajectory.header.stamp = rospy.Time.now() + rospy.Duration(0.25)
 
         self._right_arm_action_client.send_goal(self.goal)
-        rospy.loginfo("Success" if self._right_arm_action_client.wait_for_result() else "Failed")
+        rospy.logdebug("Success" if self._right_arm_action_client.wait_for_result() else "Failed")
 
     def move_joints_jump(self, joints_array, do_jump = False):
 
