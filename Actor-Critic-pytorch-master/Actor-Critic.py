@@ -106,7 +106,7 @@ def trainIters(actor, critic, n_iters):
 
     for i in count():
       env.render()
-      # stateの生の値をfloat型のテンソルに変換している
+      # state(4つの値を持つ配列)の生の値をfloat型のテンソルに変換している
       state = torch.FloatTensor(state).to(device)
       # ここで入力データが渡されているので、トレーニングが実行されて、forward関数が実行される
       # actorからはdistribution(状態に対する行動の確率分布)が出力される
@@ -140,9 +140,11 @@ def trainIters(actor, critic, n_iters):
     next_state = torch.FloatTensor(next_state).to(device)
     next_value = critic(next_state)
     returns = compute_returns(next_value, rewards, masks)
-
     log_probs = torch.cat(log_probs)
+    # print(returns)  # cat前は、「tensor([58.7051], device='cuda:0', grad_fn=<AddBackward0>), 」がたくさんある
+    # detachによって、同一のテンソルを持つ新しいテンソルがgrad等はfalseで作成される
     returns = torch.cat(returns).detach()
+    # print(returns)  # cat後は、余計な情報がない「tensor([58.7051, 58.2879, 57.8666, 57.4410,,,)」状態になる
     values = torch.cat(values)
 
     advantage = returns - values
