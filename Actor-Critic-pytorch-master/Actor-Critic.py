@@ -83,6 +83,7 @@ class Critic(nn.Module):
 
 
 def compute_returns(next_value, rewards, masks, gamma=0.99):
+  # 報酬値から収益を計算する
   R = next_value
   returns = []
   for step in reversed(range(len(rewards))):
@@ -179,6 +180,5 @@ if __name__ == '__main__':
   else:
     critic = Critic(state_size, action_size).to(device)
   print(actor)
-  print([i for i in actor.parameters()])
   print(critic)
   trainIters(actor, critic, n_iters=100)

@@ -10,6 +10,7 @@ import torch.optim as optim
 
 from actor import Actor
 from critic import Critic
+from result_controller import ResultController
 
 def get_msg():
   while True:
@@ -31,7 +32,7 @@ action_size, state_size = get_msg().values()
 lr = 0.0001  # 学習率
 
 def compute_returns(next_value, rewards, masks, gamma=0.99):
-  # TD法を用いて、報酬から期待値（価値）を算出する
+  # TD法を用いて、報酬から期待収益を算出する
   R = next_value
   returns = []
   for step in reversed(range(len(rewards))):
@@ -43,7 +44,9 @@ def trainIters(actor, critic, n_iters):
   # parameters()の中身はtensorがいくつかある
   optimizerA = optim.Adam(actor.parameters())
   optimizerC = optim.Adam(critic.parameters())
+  cumulated_rewards = []
   for iter in range(n_iters):
+    cumulated_rewards.append(0)
     log_probs = []
     values = []
     rewards = []
@@ -52,7 +55,7 @@ def trainIters(actor, critic, n_iters):
 
     state = get_msg()['state']
 
-    for i in range(5):
+    for i in range(30):
       # stateの生の値をfloat型のテンソルに変換している
       state = torch.FloatTensor(state).to(device)
       # ここで入力データが渡されているので、トレーニングが実行されて、forward関数が実行される
@@ -80,6 +83,7 @@ def trainIters(actor, critic, n_iters):
       values.append(value)
       rewards.append(torch.tensor([reward], dtype=torch.float, device=device))
       masks.append(torch.tensor([1-done], dtype=torch.float, device=device))
+      cumulated_rewards[-1] += reward
 
       state = next_state
 
@@ -113,6 +117,10 @@ def trainIters(actor, critic, n_iters):
     optimizerC.step()
   torch.save(actor, 'model/actor.pkl')
   torch.save(critic, 'model/critic.pkl')
+  ## Save the information of results
+  result_controller = ResultController("actor-critic")
+  result_controller.write(cumulated_rewards, [False for _ in range(n_iters)])
+  result_controller.plot_reward()
 
 
 if __name__ == '__main__':
@@ -127,4 +135,4 @@ if __name__ == '__main__':
     print('Critic Model loaded')
   else:
     critic = Critic(state_size, action_size).to(device)
-  trainIters(actor, critic, n_iters=2)
+  trainIters(actor, critic, n_iters=180)
