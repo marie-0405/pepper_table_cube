@@ -24,7 +24,7 @@ class ResultController():
     self.reward_file_path = pkg_path + '/training_results/reward-'+ file_name_end + '.csv'
     self.q_matrix_file_path = pkg_path + '/training_results/q_matrix-'+ file_name_end + '.txt'
 
-  def write(self, rewards, succeeds, q_matrix):
+  def write(self, rewards, succeeds, q_matrix=''):
     """Output result dataframe to csv"""
     result = Result(rewards, succeeds, q_matrix)
     result.df.to_csv(self.reward_file_path)

@@ -1,5 +1,6 @@
 from itertools import count
 import gym
+import json
 import nep
 import os
 import time
@@ -14,8 +15,8 @@ def get_msg():
   while True:
     s, msg = sub.listen()
     if s:
-      print(msg.values())
-      return msg.values()
+      print(msg)
+      return msg
     else:
       time.sleep(.0001)
 
@@ -26,10 +27,11 @@ sub = node.new_sub("env", "json", conf)
 pub = node.new_pub("calc", "json", conf) 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-state_size, action_size = get_msg()
+action_size, state_size = get_msg().values()
 lr = 0.0001  # 学習率
 
 def compute_returns(next_value, rewards, masks, gamma=0.99):
+  # TD法を用いて、報酬から期待値（価値）を算出する
   R = next_value
   returns = []
   for step in reversed(range(len(rewards))):
@@ -48,10 +50,9 @@ def trainIters(actor, critic, n_iters):
     masks = []
     entropy = 0
 
-    # TODO 現在、stateは離散値にして文字列として渡しているが、そのまま離散値を渡すように変更する必要がある
-    state = get_msg()
+    state = get_msg()['state']
 
-    for i in count():
+    for i in range(5):
       # stateの生の値をfloat型のテンソルに変換している
       state = torch.FloatTensor(state).to(device)
       # ここで入力データが渡されているので、トレーニングが実行されて、forward関数が実行される
@@ -66,7 +67,11 @@ def trainIters(actor, critic, n_iters):
       # action.cpu(): tensor(0)
       # action.cpu().numpy(): 1
       # cpu().numpy()によって、テンソルはnumpyに変換されて、cpuに格納される
-      next_state, reward, done, _ = env.step(action.cpu().numpy())
+      pub.publish({'action': action.cpu().numpy().tolist()})  # numpyのままだと送信できないので、tolist()が必要
+      msg = get_msg()
+      next_state = msg['next_state']
+      reward = msg['reward']
+      done = msg['done']
 
       log_prob = dist.log_prob(action).unsqueeze(0)
       entropy += dist.entropy().mean()
@@ -85,6 +90,7 @@ def trainIters(actor, critic, n_iters):
 
     next_state = torch.FloatTensor(next_state).to(device)
     next_value = critic(next_state)
+    # エピソードごとに期待値を算出する
     returns = compute_returns(next_value, rewards, masks)
 
     log_probs = torch.cat(log_probs)
@@ -107,7 +113,6 @@ def trainIters(actor, critic, n_iters):
     optimizerC.step()
   torch.save(actor, 'model/actor.pkl')
   torch.save(critic, 'model/critic.pkl')
-  env.close()
 
 
 if __name__ == '__main__':
@@ -122,4 +127,4 @@ if __name__ == '__main__':
     print('Critic Model loaded')
   else:
     critic = Critic(state_size, action_size).to(device)
-  trainIters(actor, critic, n_iters=50)
+  trainIters(actor, critic, n_iters=2)
