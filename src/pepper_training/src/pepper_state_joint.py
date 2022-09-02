@@ -244,7 +244,8 @@ class PepperState(object):
         target_pos = self.get_model_position("target")
         distance_from_cube_to_target = \
             self.get_distance_from_point_to_point(cube_pos, target_pos)
-        task_ok = distance_from_cube_to_target <= 0.03
+        task_ok = bool(distance_from_cube_to_target <= 0.03)
+        print(task_ok)
         return task_ok
 
     def calculate_reward_distance(self, weight, p_from, p_to):

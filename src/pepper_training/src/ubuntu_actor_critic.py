@@ -4,6 +4,7 @@
 
 from functools import reduce
 import gym
+import json
 import nep
 import numpy as np
 import qlearn
@@ -20,7 +21,8 @@ import rospkg
 from hyper_parameter import HyperParameter
 from result_controller import ResultController
 
-from pepper_env_joint import PepperEnvJoint
+from pepper_env_actor_critic import PepperEnvActorCritic
+
 
 
 if __name__ == '__main__':
@@ -32,13 +34,23 @@ if __name__ == '__main__':
   sub = node.new_sub("calc","json", conf)      # Set the topic and message type 
   pub = node.new_pub("env", "json", conf)
 
+  # define getting method for message
+  def get_msg():
+    while True:
+      s, msg = sub.listen()
+      if s:
+        print(msg)
+        return msg
+      else:
+        time.sleep(.0001)
+
   # Create the Gym environment
-  env = gym.make('Pepper-v0')
+  env = gym.make('Pepper-v1')
 
   # Get space from environment and publish it
   state_size = env.observation_space.shape[0]
   action_size = env.action_space.n
-  msg = {'state_size': state_size, 'action_size': action_size}
+  msg = {'action_size': action_size, 'state_size': state_size}
   pub.publish(msg)
   lr = 0.0001  # 学習率
   
@@ -80,11 +92,6 @@ if __name__ == '__main__':
     Gamma = g
     for a in Alphas:
       Alpha = a
-      # Initialises the algorithm that we are going to use for learning
-      ql = qlearn.QLearn(env=env, actions=range(env.action_space.n),
-                          alpha=Alpha, gamma=Gamma, epsilon=Epsilon, 
-                          eps_begin=eps_begin, eps_end=eps_end, nsteps=nsteps)
-      initial_epsilon = ql.epsilon
 
       # Initializes the information of learning
       start_time = time.time()
@@ -94,55 +101,44 @@ if __name__ == '__main__':
       # Starts the main training loop: the one about the episodes to do
       for episode in range(nepisodes):
           rospy.loginfo ("STARTING Episode #" + str(episode))
-          
           cumulated_reward = 0
-          cumulated_reward_msg = Float64()
-          episode_reward_msg = Float64()
+          # cumulated_reward_msg = Float64()
+          # episode_reward_msg = Float64()
           done = False
           max_step = False
-
-          # if qlearn.epsilon > 0.05:
-          #     qlearn.epsilon *= epsilon_discount
           
           # Initialize the environment and get first state of the robot
           rospy.logdebug("env.reset...")
-          # Now We return directly the stringuified observations called state
+          # Now We return directly the observations called state
           state = env.reset()
+          pub.publish({'state': state})
 
           rospy.logdebug("env.get_state...==>" + str(state))
           
           # for each episode, we test the robot for nsteps
           for i in range(nsteps):
 
-              # Pick an action based on the current state
-              action = ql.chooseAction(state, i)
+              # Get an action based on the current state from Actor's distribution
+              action = np.array(get_msg()['action'])
               # Execute the action in the environment and get feedback
               rospy.loginfo("###################### Start Step...["+str(i)+"]")
-              rospy.loginfo("Epsilon" + str(ql.exp_strat.epsilon))
               # rospy.logdebug("RSP+,RSP-,RSR+,RSR-,RER+,RER-,REY+,REY-,RWY+,RWY- >> [0,1,2,3,4,5,6,7,8,9]")
               rospy.logdebug("Action to Perform >> "+str(action))
-              nextState, reward, done, info = env.step(action)
+              next_state, reward, done, info = env.step(action)
+              pub.publish({'done': done, 'info': info, 'next_state': next_state, 'reward': reward})
               rospy.loginfo("Reward ==> " + str(reward))
               cumulated_reward += reward
               if highest_reward < cumulated_reward:
                   highest_reward = cumulated_reward
 
-              rospy.logdebug("env.get_state...[distance_from_cube_to_target,distance from hand to cube]==>" + str(nextState))
+              rospy.logdebug("env.get_state...[distance_from_cube_to_target,distance from hand to cube]==>" + str(next_state))
 
-              # Make the algorithm learn based on the results
-              ql.learn(state, action, reward, nextState)
-              q_matrix = ql.get_Q_matrix()
-              rospy.logdebug(q_matrix)
-
-              # We publish the cumulated reward
-              cumulated_reward_msg.data = cumulated_reward
-              reward_pub.publish(cumulated_reward_msg)
               if i == nsteps - 1:
                   max_step = True
 
               # 終了判定（タスク成功 or 最大ステップ）
               if not(done) and not(max_step):
-                  state = nextState
+                  state = next_state
               else:
                   last_time_steps = np.append(last_time_steps, [int(i + 1)])
                   rospy.logdebug ("DONE")
@@ -156,12 +152,10 @@ if __name__ == '__main__':
           m, s = divmod(int(time.time() - start_time), 60)
           h, m = divmod(m, 60)
           rewards.append(cumulated_reward)
-          episode_reward_msg.data = cumulated_reward
-          episode_reward_pub.publish(episode_reward_msg)
           rospy.loginfo("rewards: " + str(rewards))
-          rospy.loginfo( ("EP: "+str(episode+1)+" - [alpha: "+str(round(ql.alpha,2))+" - gamma: "+str(round(ql.gamma,2))+" - epsilon: "+str(round(ql.epsilon,2))+"] - Reward: "+str(cumulated_reward)+"     Time: %d:%02d:%02d" % (h, m, s)))
+          rospy.loginfo( ("EP: "+str(episode+1)+" - [alpha: "+str(round(Alpha,2))+" - gamma: "+str(round(Gamma,2))+"] - Reward: "+str(cumulated_reward)+"     Time: %d:%02d:%02d" % (h, m, s)))
 
-      rospy.loginfo ( ("\n|"+str(nepisodes)+"|"+str(ql.alpha)+"|"+str(ql.gamma)+"|"+str(initial_epsilon)+"*"+str(epsilon_discount)+"|"+str(highest_reward)+"| PICTURE |"))
+      rospy.loginfo ( ("\n|"+str(nepisodes)+"|"+str(Alpha)+"|"+str(Gamma)+"|"+str(highest_reward)+"| PICTURE |"))
 
       l = last_time_steps.tolist()
       l.sort()
@@ -170,8 +164,8 @@ if __name__ == '__main__':
       rospy.loginfo("Best 100 score: {:0.2f}".format(reduce(lambda x, y: x + y, l[-100:]) / len(l[-100:])))
 
       ## Save the information of results
-      result_controller = ResultController("a={}-g={}".format(Alpha, Gamma))
-      result_controller.write(rewards, succeeds, q_matrix)
-      result_controller.plot_reward() 
+      # result_controller = ResultController("a={}-g={}".format(Alpha, Gamma))
+      # result_controller.write(rewards, succeeds)
+      # result_controller.plot_reward() 
     
-    env.close()
+  env.close()

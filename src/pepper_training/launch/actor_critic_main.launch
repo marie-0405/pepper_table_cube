@@ -1,0 +1,8 @@
+<launch>
+
+    <!-- Load the parameters for the algorithm -->
+    <rosparam command="load" file="$(find pepper_training)/config/qlearn_params.yaml" />
+
+    <!-- Launch the training system -->
+    <node pkg="pepper_training" name="pepper_gym" type="ubuntu_actor_critic.py" output="screen"/>
+</launch>

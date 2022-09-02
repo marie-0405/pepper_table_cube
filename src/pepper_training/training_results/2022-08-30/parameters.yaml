@@ -1,11 +1,14 @@
+# Personal
+epsilonの値を変化させていくのを、stepによってではなく、episodeによって変化するように
+変更した。
+
+# Common
 # Algortihm Parameters
-alpha: 0.50  # 0-1 0.5
-gamma: 0.90  # 0.8 - 0.99
 epsilon: 0.9
 epsilon_begin: 0.5
 epsilon_end: 0.1
 epsilon_discount: 0.999 # 1098 eps to reach 0.1
-nepisodes: 300  # 50/3000
+nepisodes: 400  # 50/3000
 nsteps: 30
 
 # Environment Parameters
@@ -13,11 +16,11 @@ desired_length:
   x: 0.0
   y: 0.0
   z: 0.026
-max_distance: 0.2  # in meters
+max_distance: 0.5  # in meters
 min_distance: 0.025  # in meters
 max_simulation_time: 30 # in seconds
 running_step: 0.001   # in seconds
-joint_increment_value: 0.5  # in radians
+joint_increment_value: 0.2  # in radians
 position_increment_value: 0.01  # in meter
 done_reward: -1000.0 # reward
 base_reward: 0.0 # reward
