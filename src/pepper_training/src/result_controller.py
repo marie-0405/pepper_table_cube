@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import pandas as pd
-import rospkg
+# import rospkg
 import sys
 
 from result import Result
@@ -12,12 +12,12 @@ class ResultController():
 
   def __init__(self, file_name_end):
     # Set the file path ファイルパスを設定
-    rospack = rospkg.RosPack()
-    pkg_path = rospack.get_path('pepper_training')
+    # rospack = rospkg.RosPack()
+    # pkg_path = rospack.get_path('pepper_training')
     
     # Windows用
-    # pkg_path = os.getcwd()
-    # pkg_path = pkg_path[:-4]
+    pkg_path = os.getcwd()
+    pkg_path = pkg_path[:-4]
 
     self.file_name_end = file_name_end
     self.reward_fig = pkg_path + '/training_results/reward-'+ file_name_end + '.png'
