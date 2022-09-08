@@ -1,3 +1,5 @@
+# coding: UTF-8
+
 import gym, os
 from itertools import count
 import torch

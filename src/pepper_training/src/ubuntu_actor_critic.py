@@ -21,7 +21,8 @@ import rospkg
 from hyper_parameter import HyperParameter
 from result_controller import ResultController
 
-from pepper_env_actor_critic import PepperEnvActorCritic
+# import my training environment
+import pepper_env_actor_critic
 
 
 
@@ -30,7 +31,7 @@ if __name__ == '__main__':
   rospy.init_node('pepper_gym', anonymous=True, log_level=rospy.INFO)
 
   node = nep.node("Environment")    # Create a new nep node
-  conf = node.hybrid('192.168.0.101')
+  conf = node.hybrid('192.168.3.14')
   sub = node.new_sub("calc","json", conf)      # Set the topic and message type 
   pub = node.new_pub("env", "json", conf)
 
@@ -123,7 +124,7 @@ if __name__ == '__main__':
               # Execute the action in the environment and get feedback
               rospy.loginfo("###################### Start Step...["+str(i)+"]")
               # rospy.logdebug("RSP+,RSP-,RSR+,RSR-,RER+,RER-,REY+,REY-,RWY+,RWY- >> [0,1,2,3,4,5,6,7,8,9]")
-              rospy.logdebug("Action to Perform >> "+str(action))
+              rospy.loginfo("Action to Perform >> "+str(action))
               next_state, reward, done, info = env.step(action)
               pub.publish({'done': done, 'info': info, 'next_state': next_state, 'reward': reward})
               rospy.loginfo("Reward ==> " + str(reward))
