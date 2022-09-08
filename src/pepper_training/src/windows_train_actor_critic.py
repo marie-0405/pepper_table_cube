@@ -38,21 +38,21 @@ def compute_returns(next_value, rewards, masks):
   return returns
 
 def trainIters(actor, critic):
-  optimizerA = optim.Adam(actor.parameters())
-  optimizerC = optim.Adam(critic.parameters())
+  optimizerA = optim.Adam(actor.parameters(), lr=settings.lr)
+  optimizerC = optim.Adam(critic.parameters(), lr=settings.lr)
 
   # Initialize the result data
   cumulated_rewards = []
   succeeds = []
   actor_losses = []
   critic_losses = []
+  masks = []
 
   for iter in range(settings.nepisodes):
     cumulated_rewards.append(0)
     log_probs = []
     values = []
     rewards = []
-    masks = []
     entropy = 0
 
     state = get_msg()['state']
@@ -95,7 +95,6 @@ def trainIters(actor, critic):
     next_value = critic(next_state)
 
     returns = compute_returns(next_value, rewards, masks)
-
     log_probs = torch.cat(log_probs)
     returns = torch.cat(returns).detach()
     values = torch.cat(values)
@@ -128,7 +127,6 @@ def trainIters(actor, critic):
 
 
 if __name__ == '__main__':
-  # .pklファイルがどうやらモデルらしい。モデルがあったら、それをloadして、なかったらActorクラスから作成している
   if os.path.exists('model/actor.pkl'):
     actor = torch.load('model/actor.pkl')
     print('Actor Model loaded')
