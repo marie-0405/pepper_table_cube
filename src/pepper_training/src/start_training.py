@@ -166,6 +166,6 @@ if __name__ == '__main__':
             ## Save the information of results
             result_controller = ResultController("a={}-g={}".format(Alpha, Gamma))
             result_controller.write(rewards, succeeds, q_matrix)
-            result_controller.plot_reward() 
+            result_controller.plot('reward') 
     
     env.close()

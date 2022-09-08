@@ -19,7 +19,7 @@ class HyperParameterController():
         graph_z_row = []
         for gamma in self.gammas:
           result_controller = ResultController("a={:.1f}-g={:.1f}".format(alpha, gamma))
-          average = result_controller.get_average()
+          average = result_controller.get_average('reward')
           positive_average = average + 20
           graph_x_row.append(alpha)
           graph_y_row.append(gamma)

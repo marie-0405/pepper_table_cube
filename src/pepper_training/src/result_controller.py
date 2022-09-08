@@ -20,50 +20,57 @@ class ResultController():
     pkg_path = pkg_path[:-4]
 
     self.file_name_end = file_name_end
-    self.reward_fig = pkg_path + '/training_results/reward-'+ file_name_end + '.png'
-    self.reward_file_path = pkg_path + '/training_results/reward-'+ file_name_end + '.csv'
-    self.q_matrix_file_path = pkg_path + '/training_results/q_matrix-'+ file_name_end + '.txt'
+    self.file_path = {
+      'results': pkg_path + '/training_results/results-'+ file_name_end + '.csv',
+      'reward': pkg_path + '/training_results/reward-'+ file_name_end + '.png',
+      'q_matrix': pkg_path + '/training_results/q_matrix-'+ file_name_end + '.txt',
+      'actor_loss': pkg_path + '/training_results/actor-loss-'+ file_name_end + '.png',
+      'critic_loss': pkg_path + '/training_results/critic-loss-'+ file_name_end + '.png',
+    }
 
-  def write(self, rewards, succeeds, q_matrix=''):
+  def write(self, rewards, succeeds, q_matrix='', actor_losses='', critic_losses=''):
     """Output result dataframe to csv"""
-    result = Result(rewards, succeeds, q_matrix)
-    result.df.to_csv(self.reward_file_path)
-    with open(self.q_matrix_file_path, "w") as f:
+    if not actor_losses:
+      actor_losses = [0 for _ in range(len(rewards))]
+    if not critic_losses:
+      actor_losses = [0 for _ in range(len(rewards))]
+    result = Result(rewards, succeeds, q_matrix, actor_losses, critic_losses)
+    result.df.to_csv(self.file_path['results'])
+    with open(self.file_path['q_matrix'], "w") as f:
       f.write(str(result.q_matrix))
   
   def _read(self):
-    result_df = pd.read_csv(self.reward_file_path, engine="python")
+    result_df = pd.read_csv(self.file_path['results'], engine="python")
     return result_df
 
   def count_q_matrix(self):
-    q_matrix = {}
-    with open(self.q_matrix_file_path) as f:
+    with open(self.file_path['q_matrix']) as f:
       lines = f.read()
       return lines.count(':')
   
-  def get_average(self):
+  def get_average(self, label):
     result_df = self._read()
-    average = result_df["reward"].mean()
+    average = result_df[label].mean()
     return average
 
-  def plot_reward(self):
+  def plot(self, label):
     result_df = self._read()
     plt.figure()
-    result_df["reward"].plot(figsize=(11, 6), label="Reward")
-    average = self.get_average()
+    result_df[label].plot(figsize=(11, 6), label=label.capitalize())
+    average = self.get_average(label)
     plt.plot(np.arange(0, len(result_df)), 
              np.full(len(result_df), average),
              label="Average= {}".format(average))
 
     # Axis label
     plt.xlabel("The number of episode")
-    plt.ylabel("Reward")
+    plt.ylabel(label.capitalize().replace('_', ' '))
 
     plt.ylim([-25.0, 15.0])
     plt.legend()
-    plt.savefig(self.reward_fig)
+    plt.savefig(self.file_path[label])
 
 if __name__ == '__main__':
   file_name_end = sys.argv[1] if len(sys.argv)==2 else ''
   result_controller = ResultController(file_name_end)
-  result_controller.plot_reward()
+  result_controller.plot('reward')

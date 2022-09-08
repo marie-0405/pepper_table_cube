@@ -119,12 +119,16 @@ def trainIters(actor, critic, n_iters):
       # actionは、Actorモデルから出力されたdistribution(ex: [0.5, 0.5])の中からサンプリングする
       # action: tensor(0, device='cuda:0') or action=tensor(1, device='cuda:0')
       # actionのテンソルはgpuに格納されている
+      # ここでランダムに行動をサンプリングしているのは、モデルの学習時のデータを偏らせないようにするため
+      # 最大確率の行動を選択していると、偏る
       action = dist.sample()
       # action.cpu(): tensor(0)
       # action.cpu().numpy(): 1
       # cpu().numpy()によって、テンソルはnumpyに変換されて、cpuに格納される
       next_state, reward, done, _ = env.step(action.cpu().numpy())
 
+      # torchでは、distributionsに対して、log_prob関数が用意されており、サンプリングされたアクションを引数とすることで
+      # 損失関数に必要なlog(pi(state))が求められる
       log_prob = dist.log_prob(action).unsqueeze(0)
       entropy += dist.entropy().mean()
 
@@ -145,14 +149,18 @@ def trainIters(actor, critic, n_iters):
     returns = compute_returns(next_value, rewards, masks)
     log_probs = torch.cat(log_probs)
     # print(returns)  # cat前は、「tensor([58.7051], device='cuda:0', grad_fn=<AddBackward0>), 」がたくさんある
+    # catによって複数あったtensorが一つに統一される「tensor([58, 59], device='cuda:0', grad_fn=<AddBackward0>)」
     # detachによって、同一のテンソルを持つ新しいテンソルがgrad等はfalseで作成される
     returns = torch.cat(returns).detach()
-    # print(returns)  # cat後は、余計な情報がない「tensor([58.7051, 58.2879, 57.8666, 57.4410,,,)」状態になる
+    # print(returns)
     values = torch.cat(values)
 
     advantage = returns - values
 
+    # actor_loss: tensor(-1.4582, device='cuda:0', grad_fn=<NegBackward0>) 
+    # tensorでできており、値があるのと、勾配を計算するためのgrad_fnがある
     actor_loss = -(log_probs * advantage.detach()).mean()
+    # ciritcの損失関数には、平均二乗誤差を用いている
     critic_loss = advantage.pow(2).mean()
 
     # 最適化されたすべての勾配を0にする（初期化してるってことかな）

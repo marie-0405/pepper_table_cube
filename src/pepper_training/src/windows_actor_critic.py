@@ -1,5 +1,4 @@
 from itertools import count
-import gym
 import json
 import nep
 import os
@@ -11,6 +10,7 @@ import torch.optim as optim
 from actor import Actor
 from critic import Critic
 from result_controller import ResultController
+import settings
 
 def get_msg():
   while True:
@@ -18,34 +18,36 @@ def get_msg():
     if s:
       print(msg)
       return msg
-    else:
-      time.sleep(.0001)
 
 # Create a new nep node
 node = nep.node("Calculator")                                                       
-conf = node.hybrid("192.168.0.101")                         
+conf = node.hybrid("192.168.3.14")                         
 sub = node.new_sub("env", "json", conf)
 pub = node.new_pub("calc", "json", conf) 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 action_size, state_size = get_msg().values()
-lr = 0.0001  # 学習率
 
-def compute_returns(next_value, rewards, masks, gamma=0.99):
-  # TD法を用いて、報酬から期待収益を算出する
+def compute_returns(next_value, rewards, masks):
+  # compute returns with rewards and next value bu Temporal Differential method
   R = next_value
   returns = []
   for step in reversed(range(len(rewards))):
-    R = rewards[step] + gamma * R * masks[step]
+    R = rewards[step] + settings.gamma * R * masks[step]
     returns.insert(0, R)
   return returns
 
-def trainIters(actor, critic, n_iters):
-  # parameters()の中身はtensorがいくつかある
+def trainIters(actor, critic):
   optimizerA = optim.Adam(actor.parameters())
   optimizerC = optim.Adam(critic.parameters())
+
+  # Initialize the result data
   cumulated_rewards = []
-  for iter in range(n_iters):
+  succeeds = []
+  actor_losses = []
+  critic_losses = []
+
+  for iter in range(settings.nepisodes):
     cumulated_rewards.append(0)
     log_probs = []
     values = []
@@ -55,22 +57,12 @@ def trainIters(actor, critic, n_iters):
 
     state = get_msg()['state']
 
-    for i in range(30):
-      # stateの生の値をfloat型のテンソルに変換している
+    for i in range(settings.nsteps):
       state = torch.FloatTensor(state).to(device)
-      # ここで入力データが渡されているので、トレーニングが実行されて、forward関数が実行される
-      # actorからはdistribution(状態に対する行動の確率分布)が出力される
-      # criticからはvalue(行動価値関数？)が出力される
       dist, value = actor(state), critic(state)
-
-      # actionは、Actorモデルから出力されたdistribution(ex: [0.5, 0.5])の中からサンプリングする
-      # action: tensor(0, device='cuda:0') or action=tensor(1, device='cuda:0')
-      # actionのテンソルはgpuに格納されている
       action = dist.sample()
-      # action.cpu(): tensor(0)
-      # action.cpu().numpy(): 1
-      # cpu().numpy()によって、テンソルはnumpyに変換されて、cpuに格納される
-      pub.publish({'action': action.cpu().numpy().tolist()})  # numpyのままだと送信できないので、tolist()が必要
+
+      pub.publish({'action': action.cpu().numpy().tolist()})  # need tolist for sending message as json
       msg = get_msg()
       next_state = msg['next_state']
       reward = msg['reward']
@@ -85,16 +77,23 @@ def trainIters(actor, critic, n_iters):
       masks.append(torch.tensor([1-done], dtype=torch.float, device=device))
       cumulated_rewards[-1] += reward
 
-      state = next_state
-
       if done:
         print('Iteration: {}, Score: {}'.format(iter, i))
         break
-
+      
+      # Judgement for End or Not
+      if done:
+        succeeds.append(True)
+        break
+      else:
+        if i == settings.nsteps - 1:
+          succeeds.append(False)
+        else:
+          state = next_state
 
     next_state = torch.FloatTensor(next_state).to(device)
     next_value = critic(next_state)
-    # エピソードごとに期待値を算出する
+
     returns = compute_returns(next_value, rewards, masks)
 
     log_probs = torch.cat(log_probs)
@@ -102,25 +101,30 @@ def trainIters(actor, critic, n_iters):
     values = torch.cat(values)
 
     advantage = returns - values
-
     actor_loss = -(log_probs * advantage.detach()).mean()
     critic_loss = advantage.pow(2).mean()
 
-    # 最適化されたすべての勾配を0にする（初期化してるってことかな）
+    # Save the losses for plot
+    actor_losses.append(actor_loss.detach().item())
+    critic_losses.append(critic_loss.detach().item())
+
+    # Optimize the weight parameters
     optimizerA.zero_grad()
     optimizerC.zero_grad()
-    # stepを呼び出す前にbackward()を呼び出して勾配を計算する必要がある
-    actor_loss.backward()
+    actor_loss.backward()  # calculate gradient
     critic_loss.backward()
-    # stepメソッドによって、パラメータを更新する
     optimizerA.step()
     optimizerC.step()
+
   torch.save(actor, 'model/actor.pkl')
   torch.save(critic, 'model/critic.pkl')
-  ## Save the information of results
+
+  ## Save the results
   result_controller = ResultController("actor-critic")
-  result_controller.write(cumulated_rewards, [False for _ in range(n_iters)])
-  result_controller.plot_reward()
+  result_controller.write(cumulated_rewards, succeeds=succeeds, actor_losses=actor_losses, critic_losses=critic_losses)
+  result_controller.plot('reward')
+  result_controller.plot('actor_loss')
+  result_controller.plot('critic_loss')
 
 
 if __name__ == '__main__':
@@ -135,4 +139,4 @@ if __name__ == '__main__':
     print('Critic Model loaded')
   else:
     critic = Critic(state_size, action_size).to(device)
-  trainIters(actor, critic, n_iters=180)
+  trainIters(actor, critic)
