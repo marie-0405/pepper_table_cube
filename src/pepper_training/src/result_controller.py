@@ -24,19 +24,22 @@ class ResultController():
       'results': pkg_path + '/training_results/results-'+ file_name_end + '.csv',
       'reward': pkg_path + '/training_results/reward-'+ file_name_end + '.png',
       'q_matrix': pkg_path + '/training_results/q_matrix-'+ file_name_end + '.txt',
+      'experience': pkg_path + '/training_results/experience-'+ file_name_end + '.csv',
       'actor_loss': pkg_path + '/training_results/actor-loss-'+ file_name_end + '.png',
       'critic_loss': pkg_path + '/training_results/critic-loss-'+ file_name_end + '.png',
     }
 
-  def write(self, rewards, succeeds, q_matrix='', actor_losses='', critic_losses=''):
-    """Output result dataframe to csv"""
+  def write(self, rewards, succeeds, experiences='', q_matrix='', actor_losses='', critic_losses=''):
     if not actor_losses:
       actor_losses = [0 for _ in range(len(rewards))]
     if not critic_losses:
       actor_losses = [0 for _ in range(len(rewards))]
-    result = Result(rewards, succeeds, q_matrix, actor_losses, critic_losses)
+
+    result = Result(rewards, succeeds, experiences, q_matrix, actor_losses, critic_losses)
+
     result.df.to_csv(self.file_path['results'])
-    with open(self.file_path['q_matrix'], "w") as f:
+    result.experiences.to_csv(self.file_path['experience'])
+    with open(self.file_path['q_matrix'], 'w') as f:
       f.write(str(result.q_matrix))
   
   def _read(self):
