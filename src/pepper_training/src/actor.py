@@ -23,5 +23,5 @@ class Actor(nn.Module):
     output = F.relu(self.linear1(state))
     output = F.relu(self.linear2(output))
     output = self.linear3(output)
-    distribution = Categorical(F.softmax(output, dim=-1))
-    return distribution
+    probs = F.softmax(output, dim=-1)
+    return probs
