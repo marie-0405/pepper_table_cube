@@ -42,7 +42,7 @@ def compute_returns(next_value, rewards, masks):
     returns.insert(0, R)
   return returns
 
-def save_results(file_name_end, cumulated_rewards, succeeds, experiences, actor_losses, critic_losses):
+def save_results(file_name_end, cumulated_rewards, succeeds, experiences='', actor_losses='', critic_losses=''):
   ## Save the results
   result_controller = ResultController(file_name_end)
   result_controller.write(cumulated_rewards,
@@ -59,13 +59,15 @@ def select_action(probs, epsilon):
   if random.random() < epsilon:
     print('random is choiced')
     dist = Categorical(probs)
-    action = dist.sample()
+    action = torch.tensor(random.randint(0, action_size-1)).to(device='cuda:0')
+    print(action)
     return action, dist
   print('maximum is choiced')
+  print(probs.argmax())
   # probs.argmax() = tensor(3, device='cuda:0')
   return probs.argmax(), Categorical(probs)
 
-def trainIters(actor, critic, file_name_end, epsilon):
+def trainIters(actor, critic, file_name_end):
   optimizerA = optim.Adam(actor.parameters(), lr=settings.lr)
   optimizerC = optim.Adam(critic.parameters(), lr=settings.lr)
 
@@ -76,9 +78,10 @@ def trainIters(actor, critic, file_name_end, epsilon):
   critic_losses = []
   masks = []
   cols = ['state', 'action', 'reward', 'next_state']
+  test_rewards = []
   experiences = pd.DataFrame(columns=cols)
 
-  for iter in range(settings.nepisodes):
+  for nepisode in range(1):
     cumulated_rewards.append(0)
     log_probs = []
     values = []
@@ -86,6 +89,12 @@ def trainIters(actor, critic, file_name_end, epsilon):
     entropy = 0
 
     state = get_msg()['state']
+    if nepisode < settings.nepisodes - 1:
+      epsilon = settings.epsilon_begin + (settings.epsilon_end - settings.epsilon_begin) * nepisode / settings.nepisodes
+    else:
+      epsilon = settings.epsilon_end
+    print(epsilon)
+    epsilon = 0.0
 
     for i in range(settings.nsteps):
       state = torch.FloatTensor(state).to(device)
@@ -106,12 +115,13 @@ def trainIters(actor, critic, file_name_end, epsilon):
       rewards.append(torch.tensor([reward], dtype=torch.float, device=device))
       masks.append(torch.tensor([1-done], dtype=torch.float, device=device))
       cumulated_rewards[-1] += reward
+      test_rewards.append(reward)
       experience = pd.DataFrame({'state': ','.join(map(str, state.cpu().numpy())), 'action': action.cpu().numpy(), 
                                 'reward': reward, 'next_state': ','.join(map(str, next_state))}, index=[0])
       experiences = pd.concat([experiences, experience], ignore_index=True)
 
       if done:
-        print('Iteration: {}, Score: {}'.format(iter, i))
+        print('Iteration: {}, Score: {}'.format(nepisode, i))
         break
       
       # Judgement for End or Not
@@ -148,10 +158,13 @@ def trainIters(actor, critic, file_name_end, epsilon):
     optimizerA.step()
     optimizerC.step()
 
-  torch.save(actor, 'model/actor.pkl')
-  torch.save(critic, 'model/critic.pkl')
+  # TODO When you run test, comment out below two lines
+  # torch.save(actor, 'model/actor.pkl')
+  # torch.save(critic, 'model/critic.pkl')
 
-  save_results(file_name_end, cumulated_rewards, succeeds, experiences, actor_losses, critic_losses)
+  # TODO when you run train and test, switch the below two lines
+  # save_results(file_name_end, cumulated_rewards, succeeds, experiences, actor_losses, critic_losses)
+  save_results(file_name_end, test_rewards, succeeds=[False for _ in range(settings.nsteps)], experiences=experiences)
 
 
 if __name__ == '__main__':
@@ -165,5 +178,5 @@ if __name__ == '__main__':
     print('Critic Model loaded')
   else:
     critic = Critic(state_size, action_size).to(device)
-  trainIters(actor, critic, settings.file_name_end, epsilon=settings.epsilon)
-  # trainIters(actor, critic, 'test', epsilon=0.0)
+  # trainIters(actor, critic, settings.file_name_end)
+  trainIters(actor, critic, 'test')
