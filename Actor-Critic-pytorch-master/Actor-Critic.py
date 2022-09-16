@@ -2,11 +2,14 @@
 
 import gym, os
 from itertools import count
+import pandas as pd
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 from torch.distributions import Categorical
+
+from result_controller import ResultController
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -93,11 +96,30 @@ def compute_returns(next_value, rewards, masks, gamma=0.99):
     returns.insert(0, R)
   return returns
 
+def save_results(file_name_end, cumulated_rewards, succeeds, experiences='', actor_losses='', critic_losses=''):
+  ## Save the results
+  result_controller = ResultController(file_name_end)
+  result_controller.write(cumulated_rewards,
+                          succeeds=succeeds,
+                          experiences=experiences,
+                          actor_losses=actor_losses,
+                          critic_losses=critic_losses)
+  result_controller.plot('reward')
+  result_controller.plot('actor_loss')
+  result_controller.plot('critic_loss')
 
 def trainIters(actor, critic, n_iters):
   # parameters()の中身はtensorがいくつかある
   optimizerA = optim.Adam(actor.parameters())
   optimizerC = optim.Adam(critic.parameters())
+  cumulated_rewards = []
+  succeeds = []
+  actor_losses = []
+  critic_losses = []
+  cols = ['state', 'action', 'reward', 'next_state']
+  experiences = pd.DataFrame(columns=cols)
+
+
   for iter in range(n_iters):
     state = env.reset()
     log_probs = []
@@ -106,8 +128,13 @@ def trainIters(actor, critic, n_iters):
     masks = []
     entropy = 0
     env.reset()
+    cumulated_rewards.append(0)
 
     for i in count():
+      # 最適化されたすべての勾配を0にする（初期化してるってことかな）
+      optimizerA.zero_grad()
+      optimizerC.zero_grad()
+
       env.render()
       # state(4つの値を持つ配列)の生の値をfloat型のテンソルに変換している
       state = torch.FloatTensor(state).to(device)
@@ -136,11 +163,15 @@ def trainIters(actor, critic, n_iters):
       values.append(value)
       rewards.append(torch.tensor([reward], dtype=torch.float, device=device))
       masks.append(torch.tensor([1-done], dtype=torch.float, device=device))
-
+      cumulated_rewards[-1] += reward
+      experience = pd.DataFrame({'state': ','.join(map(str, state.cpu().numpy())), 'action': action.cpu().numpy(), 
+                                'reward': reward, 'next_state': ','.join(map(str, next_state))}, index=[0])
+      experiences = pd.concat([experiences, experience], ignore_index=True)
       state = next_state
 
       if done:
         print('Iteration: {}, Score: {}'.format(iter, i))
+        succeeds.append(True)
         break
 
 
@@ -148,7 +179,7 @@ def trainIters(actor, critic, n_iters):
     next_value = critic(next_state)
     returns = compute_returns(next_value, rewards, masks)
     log_probs = torch.cat(log_probs)
-    # print(returns)  # cat前は、「tensor([58.7051], device='cuda:0', grad_fn=<AddBackward0>), 」がたくさんある
+    # print(returns)  # cat前は、「[tensor([58.7051], device='cuda:0', grad_fn=<AddBackward0>), tensor([59])], 」がたくさんある
     # catによって複数あったtensorが一つに統一される「tensor([58, 59], device='cuda:0', grad_fn=<AddBackward0>)」
     # detachによって、同一のテンソルを持つ新しいテンソルがgrad等はfalseで作成される
     returns = torch.cat(returns).detach()
@@ -163,9 +194,10 @@ def trainIters(actor, critic, n_iters):
     # ciritcの損失関数には、平均二乗誤差を用いている
     critic_loss = advantage.pow(2).mean()
 
-    # 最適化されたすべての勾配を0にする（初期化してるってことかな）
-    optimizerA.zero_grad()
-    optimizerC.zero_grad()
+    # Save the losses for plot
+    actor_losses.append(actor_loss.detach().item())
+    critic_losses.append(critic_loss.detach().item())
+
     # stepを呼び出す前にbackward()を呼び出して勾配を計算する必要がある
     actor_loss.backward()
     critic_loss.backward()
@@ -174,6 +206,8 @@ def trainIters(actor, critic, n_iters):
     optimizerC.step()
   torch.save(actor, 'model/actor.pkl')
   torch.save(critic, 'model/critic.pkl')
+  save_results('train', cumulated_rewards, succeeds, experiences, actor_losses, critic_losses)
+
   env.close()
 
 
