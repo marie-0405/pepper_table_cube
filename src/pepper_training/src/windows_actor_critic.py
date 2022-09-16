@@ -26,7 +26,8 @@ def get_msg():
 
 # Create a new nep node
 node = nep.node("Calculator")                                                       
-conf = node.hybrid("192.168.3.14")                         
+conf = node.hybrid("192.168.0.102")                         
+# conf = node.hybrid("192.168.3.14")                         
 sub = node.new_sub("env", "json", conf)
 pub = node.new_pub("calc", "json", conf) 
 
@@ -54,18 +55,16 @@ def save_results(file_name_end, cumulated_rewards, succeeds, experiences='', act
   result_controller.plot('actor_loss')
   result_controller.plot('critic_loss')
 
-def select_action(probs, epsilon):
+def select_action(dist, epsilon):
   # probs = tensor([5.0393e-03, 3.0475e-01,... 2.6321e-01], device='cuda:0', grad_fn=<SoftmaxBackward0>)
   if random.random() < epsilon:
-    print('random is choiced')
-    dist = Categorical(probs)
+    print('random is chosen')
     action = torch.tensor(random.randint(0, action_size-1)).to(device='cuda:0')
     print(action)
-    return action, dist
-  print('maximum is choiced')
-  print(probs.argmax())
-  # probs.argmax() = tensor(3, device='cuda:0')
-  return probs.argmax(), Categorical(probs)
+  print('maximum is chosen')
+  action = dist.sample()
+  print(dist.sample())
+  return action, dist
 
 def trainIters(actor, critic, file_name_end):
   optimizerA = optim.Adam(actor.parameters(), lr=settings.lr)
@@ -81,7 +80,7 @@ def trainIters(actor, critic, file_name_end):
   test_rewards = []
   experiences = pd.DataFrame(columns=cols)
 
-  for nepisode in range(1):
+  for nepisode in range(settings.nepisodes):
     cumulated_rewards.append(0)
     log_probs = []
     values = []
@@ -94,12 +93,13 @@ def trainIters(actor, critic, file_name_end):
     else:
       epsilon = settings.epsilon_end
     print(epsilon)
-    epsilon = 0.0
 
     for i in range(settings.nsteps):
+      optimizerA.zero_grad()
+      optimizerC.zero_grad()
       state = torch.FloatTensor(state).to(device)
-      probs, value = actor(state), critic(state)
-      action, dist = select_action(probs, epsilon)
+      dist, value = actor(state), critic(state)
+      action = select_action(dist, epsilon)
 
       pub.publish({'action': action.cpu().numpy().tolist()})  # need tolist for sending message as json
       msg = get_msg()
@@ -151,8 +151,6 @@ def trainIters(actor, critic, file_name_end):
     critic_losses.append(critic_loss.detach().item())
 
     # Optimize the weight parameters
-    optimizerA.zero_grad()
-    optimizerC.zero_grad()
     actor_loss.backward()  # calculate gradient
     critic_loss.backward()
     optimizerA.step()
@@ -163,8 +161,8 @@ def trainIters(actor, critic, file_name_end):
   # torch.save(critic, 'model/critic.pkl')
 
   # TODO when you run train and test, switch the below two lines
-  # save_results(file_name_end, cumulated_rewards, succeeds, experiences, actor_losses, critic_losses)
-  save_results(file_name_end, test_rewards, succeeds=[False for _ in range(settings.nsteps)], experiences=experiences)
+  save_results(file_name_end, cumulated_rewards, succeeds, experiences, actor_losses, critic_losses)
+  # save_results(file_name_end, test_rewards, succeeds=[False for _ in range(settings.nsteps)], experiences=experiences)
 
 
 if __name__ == '__main__':
@@ -178,5 +176,5 @@ if __name__ == '__main__':
     print('Critic Model loaded')
   else:
     critic = Critic(state_size, action_size).to(device)
-  # trainIters(actor, critic, settings.file_name_end)
-  trainIters(actor, critic, 'test')
+  trainIters(actor, critic, settings.file_name_end)
+  # trainIters(actor, critic, 'test')

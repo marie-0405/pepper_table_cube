@@ -345,6 +345,10 @@ class PepperState(object):
 
         # The sign depend on its function.
         total_reward = self._base_reward - r1 - r2
+        ## TODO reward 2 
+        # TODO try to opposite weight 
+        # TODO add additional reward when hand reaches cube
+        # total_reward2
 
         rospy.logdebug("########################")
         rospy.logdebug("base_reward=" + str(self._base_reward))
