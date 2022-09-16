@@ -1,4 +1,5 @@
 import json
+from multiprocessing import resource_sharer
 from turtle import st
 import nep
 import numpy as np
@@ -9,12 +10,17 @@ import time
 
 import torch
 import torch.optim as optim
+from ray import tune
+from ray.tune import CLIReporter
+from ray.tune.search.bayesopt import BayesOptSearch
+from ray.tune.search import ConcurrencyLimiter
+from ray.tune.schedulers import ASHAScheduler
+from functools import partial
 
 from actor import Actor
 from critic import Critic
 from result_controller import ResultController
 import settings
-from torch.distributions import Categorical
 
 
 def get_msg():
@@ -26,7 +32,7 @@ def get_msg():
 
 # Create a new nep node
 node = nep.node("Calculator")                                                       
-conf = node.hybrid("192.168.0.102")                         
+conf = node.hybrid("192.168.0.101")                         
 # conf = node.hybrid("192.168.3.14")                         
 sub = node.new_sub("env", "json", conf)
 pub = node.new_pub("calc", "json", conf) 
@@ -34,12 +40,12 @@ pub = node.new_pub("calc", "json", conf)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 action_size, state_size = get_msg().values()
 
-def compute_returns(next_value, rewards, masks):
+def compute_returns(config, next_value, rewards, masks):
   # compute returns with rewards and next value bu Temporal Differential method
   R = next_value
   returns = []
   for step in reversed(range(len(rewards))):
-    R = rewards[step] + settings.gamma * R * masks[step]
+    R = rewards[step] + config['gamma'] * R * masks[step]
     returns.insert(0, R)
   return returns
 
@@ -66,9 +72,13 @@ def select_action(dist, epsilon):
   print(dist.sample())
   return action, dist
 
-def trainIters(actor, critic, file_name_end):
-  optimizerA = optim.Adam(actor.parameters(), lr=settings.lr)
-  optimizerC = optim.Adam(critic.parameters(), lr=settings.lr)
+def trainIters(config, options):
+  file_name_end = settings.file_name_end
+  actor = Actor(state_size, action_size, config['L1'], config['L2']).to(device)
+  critic = Critic(state_size, action_size, config['L1'], config['L2']).to(device)
+
+  optimizerA = optim.Adam(actor.parameters(), lr=config['lr'])
+  optimizerC = optim.Adam(critic.parameters(), lr=config['lr'])
 
   # Initialize the result data
   cumulated_rewards = []
@@ -80,7 +90,7 @@ def trainIters(actor, critic, file_name_end):
   test_rewards = []
   experiences = pd.DataFrame(columns=cols)
 
-  for nepisode in range(settings.nepisodes):
+  for nepisode in range(options['nepisodes']):
     cumulated_rewards.append(0)
     log_probs = []
     values = []
@@ -94,7 +104,7 @@ def trainIters(actor, critic, file_name_end):
       epsilon = settings.epsilon_end
     print(epsilon)
 
-    for i in range(settings.nsteps):
+    for i in range(options['nsteps']):
       optimizerA.zero_grad()
       optimizerC.zero_grad()
       state = torch.FloatTensor(state).to(device)
@@ -129,7 +139,7 @@ def trainIters(actor, critic, file_name_end):
         succeeds.append(True)
         break
       else:
-        if i == settings.nsteps - 1:
+        if i == options['nsteps'] - 1:
           succeeds.append(False)
         else:
           state = next_state
@@ -164,17 +174,59 @@ def trainIters(actor, critic, file_name_end):
   save_results(file_name_end, cumulated_rewards, succeeds, experiences, actor_losses, critic_losses)
   # save_results(file_name_end, test_rewards, succeeds=[False for _ in range(settings.nsteps)], experiences=experiences)
 
+def main():
+  # hyper-paprameter configurations
+  config = {
+    'L1': tune.choice([16, 32, 128, 256]),
+    'L2': tune.choice([16, 32, 128, 256]),
+    'lr': tune.qloguniform(1e-6, 5e-1, 1e-6),
+    'gamma': tune.quniform(0.1, 1.0, 0.1),
+    'critic_loss_fn': tune.choice(['mse_loss', 'smooth_l1_loss']),
+  }
+
+  options = {
+    'device': 'cuda',
+    'nepisodes': 100,
+    'nsteps': 30,
+  }
+
+  # scheduler
+  scheduler = ASHAScheduler(
+    metric='cumulated_rewards',  # ??
+    mode='max',
+    max_t=options['nepisodes'],
+    grace_period=10
+  )
+
+  # search algorithm
+  search_alg = BayesOptSearch(metric='cumulated_rewards', mode='max')
+  search_alg = ConcurrencyLimiter(search_alg, max_concurrent=4)
+
+  # Progress reporter
+  reporter = CLIReporter(
+    metric_columns=['actor_loss', 'critic_loss', 'cumulated_rewards', 'episode'],
+    max_progress_rows=10,
+    max_report_frequency=5
+  )
+
+  # optimization
+  result = tune.run(
+    partial(trainIters, options=options),
+    resources_per_trial={"cpu": 8, "gpu": 1},
+    config=config,
+    num_samples=10,
+    scheduler=scheduler,
+    progress_reporter=reporter
+  )
+
+  best_trial = result.get_best_trial("cumulated_rewards", "max", "last")
+  print("Best trial config: {}".format(best_trial.config))
+  print("Best trial final validation cumulated_rewards: {}".format(
+      best_trial.last_result["cumulated_rewards"]))
+
+  best_trained_actor = Actor(best_trial.config["L1"], best_trial.config["L2"])
+  best_trained_critic = Critic(best_trial.config["L1"], best_trial.config["L2"])
+
 
 if __name__ == '__main__':
-  if os.path.exists('model/actor.pkl'):
-    actor = torch.load('model/actor.pkl')
-    print('Actor Model loaded')
-  else:
-    actor = Actor(state_size, action_size).to(device)
-  if os.path.exists('model/critic.pkl'):
-    critic = torch.load('model/critic.pkl')
-    print('Critic Model loaded')
-  else:
-    critic = Critic(state_size, action_size).to(device)
-  trainIters(actor, critic, settings.file_name_end)
-  # trainIters(actor, critic, 'test')
+  main()
