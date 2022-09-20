@@ -20,7 +20,7 @@ running_step: 0.001   # in seconds
 joint_increment_value: 0.4  # in radians
 position_increment_value: 0.01  # in meter
 done_reward: -1000.0 # reward
-base_reward: 0.0 # reward
+base_reward: 10.0 # reward
 success_reward: 10.0 # reward
 
 weight_r1: 2.0 # Weight for distance from hand to cube ( what hand is within a radius of 0.07 from cube is perfect )
