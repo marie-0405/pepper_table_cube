@@ -14,7 +14,6 @@ from actor import Actor
 from critic import Critic
 from result_controller import ResultController
 import settings
-from torch.distributions import Categorical
 
 
 def get_msg():
@@ -26,8 +25,8 @@ def get_msg():
 
 # Create a new nep node
 node = nep.node("Calculator")                                                       
-conf = node.hybrid("192.168.0.102")                         
-# conf = node.hybrid("192.168.3.14")                         
+# conf = node.hybrid("192.168.0.102")                         
+conf = node.hybrid("192.168.3.14")                         
 sub = node.new_sub("env", "json", conf)
 pub = node.new_pub("calc", "json", conf) 
 
@@ -60,11 +59,10 @@ def select_action(dist, epsilon):
   if random.random() < epsilon:
     print('random is chosen')
     action = torch.tensor(random.randint(0, action_size-1)).to(device='cuda:0')
-    print(action)
   print('maximum is chosen')
   action = dist.sample()
-  print(dist.sample())
-  return action, dist
+  print(action)
+  return action
 
 def trainIters(actor, critic, file_name_end):
   optimizerA = optim.Adam(actor.parameters(), lr=settings.lr)
@@ -170,11 +168,11 @@ if __name__ == '__main__':
     actor = torch.load('model/actor.pkl')
     print('Actor Model loaded')
   else:
-    actor = Actor(state_size, action_size).to(device)
+    actor = Actor(state_size, action_size, 16, 32).to(device)
   if os.path.exists('model/critic.pkl'):
     critic = torch.load('model/critic.pkl')
     print('Critic Model loaded')
   else:
-    critic = Critic(state_size, action_size).to(device)
+    critic = Critic(state_size, action_size, 16, 32).to(device)
   trainIters(actor, critic, settings.file_name_end)
   # trainIters(actor, critic, 'test')
