@@ -167,11 +167,11 @@ if __name__ == '__main__':
     actor = torch.load('model/actor.pkl')
     print('Actor Model loaded')
   else:
-    actor = Actor(state_size, action_size, 256, 512).to(device)
+    actor = Actor(state_size, action_size, 16, 32).to(device)
   if os.path.exists('model/critic.pkl'):
     critic = torch.load('model/critic.pkl')
     print('Critic Model loaded')
   else:
-    critic = Critic(state_size, action_size, 256, 512).to(device)
+    critic = Critic(state_size, action_size, 16, 32).to(device)
   # trainIters(actor, critic, settings.file_name_end)
   trainIters(actor, critic, 'test3')
