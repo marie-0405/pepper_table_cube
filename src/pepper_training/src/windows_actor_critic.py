@@ -25,8 +25,8 @@ def get_msg():
 
 # Create a new nep node
 node = nep.node("Calculator")                                                       
-# conf = node.hybrid("192.168.0.102")                         
-conf = node.hybrid("192.168.3.14")                         
+conf = node.hybrid("192.168.0.105")                         
+# conf = node.hybrid("192.168.3.14")                         
 sub = node.new_sub("env", "json", conf)
 pub = node.new_pub("calc", "json", conf) 
 
@@ -159,20 +159,19 @@ def trainIters(actor, critic, file_name_end):
   # torch.save(critic, 'model/critic.pkl')
 
   # TODO when you run train and test, switch the below two lines
-  save_results(file_name_end, cumulated_rewards, succeeds, experiences, actor_losses, critic_losses)
-  # save_results(file_name_end, test_rewards, succeeds=[False for _ in range(settings.nsteps)], experiences=experiences)
-
+  # save_results(file_name_end, cumulated_rewards, succeeds, experiences, actor_losses, critic_losses)
+  save_results(file_name_end, test_rewards, succeeds=[False for _ in range(settings.nsteps)], experiences=experiences)
 
 if __name__ == '__main__':
   if os.path.exists('model/actor.pkl'):
     actor = torch.load('model/actor.pkl')
     print('Actor Model loaded')
   else:
-    actor = Actor(state_size, action_size, 16, 32).to(device)
+    actor = Actor(state_size, action_size, 256, 512).to(device)
   if os.path.exists('model/critic.pkl'):
     critic = torch.load('model/critic.pkl')
     print('Critic Model loaded')
   else:
-    critic = Critic(state_size, action_size, 16, 32).to(device)
-  trainIters(actor, critic, settings.file_name_end)
-  # trainIters(actor, critic, 'test')
+    critic = Critic(state_size, action_size, 256, 512).to(device)
+  # trainIters(actor, critic, settings.file_name_end)
+  trainIters(actor, critic, 'test3')
