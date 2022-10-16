@@ -1,4 +1,4 @@
-,reward,succeed,actor_loss,critic_loss
+,cumulated_reward,succeed,actor_loss,critic_loss
 0,-0.42368231538704404,False,0,
 1,-0.39588862707934924,False,0,
 2,-0.3959398575781934,False,0,
