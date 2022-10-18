@@ -28,15 +28,15 @@ def get_msg():
 
 # Create a new nep node
 node = nep.node("Calculator")                                                       
-conf = node.hybrid("192.168.0.103")                         
-# conf = node.hybrid("192.168.3.14")                         
+# conf = node.hybrid("192.168.0.103")                         
+conf = node.hybrid("192.168.3.14")                         
 sub = node.new_sub("env", "json", conf)
 pub = node.new_pub("calc", "json", conf) 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 action_size, state_size = get_msg().values()  # TODO NEP
-# action_size = 10
-# state_size = 2
+# action_size = 10  # TODO csv
+# state_size = 2  # TODO csv
 
 def compute_returns(next_value, rewards, masks):
   # compute returns with rewards and next value bu Temporal Differential method
@@ -47,7 +47,7 @@ def compute_returns(next_value, rewards, masks):
     returns.insert(0, R)
   return returns
 
-def save_results(result_file_name_end, cumulated_rewards, succeeds, experiences='', actor_losses='', critic_losses=''):
+def save_results(result_file_name_end, cumulated_rewards, succeeds, experiences, actor_losses='', critic_losses=''):
   ## Save the results
   result_controller = ResultController(result_file_name_end)
   result_controller.write(cumulated_rewards,
@@ -55,9 +55,29 @@ def save_results(result_file_name_end, cumulated_rewards, succeeds, experiences=
                           experiences=experiences,
                           actor_losses=actor_losses,
                           critic_losses=critic_losses)
-  result_controller.plot('reward')
+
+def save_fig(result_file_name_end):
+  result_controller = ResultController(result_file_name_end)
+  result_controller.plot('cumulated_reward')
   result_controller.plot('actor_loss')
   result_controller.plot('critic_loss')
+
+def load_results(result_file_name_end):
+  if os.path.exists('../training_results/results-{}.csv'.format(result_file_name_end)):
+    result_controller = ResultController(result_file_name_end)
+    cumulated_rewards = result_controller.get_data('cumulated_reward')
+    succeeds = result_controller.get_data('succeed')
+    actor_losses = result_controller.get_data('actor_loss')
+    critic_losses = result_controller.get_data('critic_loss')
+    # print('cumulated_reward', cumulated_rewards)
+    # print(type(cumulated_rewards))
+
+  else:
+    cumulated_rewards = []
+    succeeds = []
+    actor_losses = []
+    critic_losses = []
+  return cumulated_rewards, succeeds, actor_losses, critic_losses
 
 def select_action(dist, epsilon):
   # probs = tensor([5.0393e-03, 3.0475e-01,... 2.6321e-01], device='cuda:0', grad_fn=<SoftmaxBackward0>)
@@ -76,16 +96,15 @@ def trainIters(actor, critic, result_file_name_end):
   optimizerC = optim.Adam(critic.parameters(), lr=settings.lr)
 
   # Initialize the result data
-  cumulated_rewards = []
-  succeeds = []
-  actor_losses = []
-  critic_losses = []
+  cumulated_rewards, succeeds, actor_losses, critic_losses = load_results(result_file_name_end)
+  # print('succ', succeeds)
   masks = []
   cols = ['state', 'action', 'reward', 'next_state']
   test_rewards = []
   experiences = pd.DataFrame(columns=cols)
 
-  for nepisode in range(settings.nepisodes):
+  for nepisode in range(len(cumulated_rewards), settings.nepisodes):
+    print("Episode: " + str(nepisode))
     cumulated_rewards.append(0)
     log_probs = []
     values = []
@@ -154,6 +173,7 @@ def trainIters(actor, critic, result_file_name_end):
     # 毎エピソードでSAVE
     # STATE_DICTをつけると、余計なものを除いて、loadできる
     # optimizerもsaveしたほうが良い
+    # TODO train
     torch.save(actor.state_dict(), 'model/actor.pkl')
     torch.save(critic.state_dict(), 'model/critic.pkl')
 
@@ -174,6 +194,8 @@ def trainIters(actor, critic, result_file_name_end):
     actor_losses.append(actor_loss.detach().item())
     critic_losses.append(critic_loss.detach().item())
 
+    save_results(result_file_name_end, cumulated_rewards, succeeds, experiences, actor_losses, critic_losses)
+
     # Optimize the weight parameters
     actor_loss.backward()  # calculate gradient
     critic_loss.backward()
@@ -181,29 +203,33 @@ def trainIters(actor, critic, result_file_name_end):
     optimizerC.step()
 
   # TODO When you run test, comment out below two lines
-  torch.save(actor, 'model/actor.pkl')
-  torch.save(critic, 'model/critic.pkl')
+  torch.save(actor.state_dict(), 'model/actor.pkl')
+  torch.save(critic.state_dict(), 'model/critic.pkl')
 
   # TODO when you run train and test, switch the below two lines
   save_results(result_file_name_end, cumulated_rewards, succeeds, experiences, actor_losses, critic_losses)
+  save_fig(result_file_name_end)
   # save_results(result_file_name_end, test_rewards, succeeds=[False for _ in range(NSTEP)], experiences=experiences)
+  # save_fig(result_file_name_end)
 
 if __name__ == '__main__':
   if os.path.exists('model/actor.pkl'):
-    actor = torch.load('model/actor.pkl')
-    # actor = Actor(state_size, action_size, 256, 512).to(device)
-    # actor.load_state_dict(torch.load(PATH))
-    # actor.train()  # trainに変更する
+    actor = Actor(state_size, action_size, 256, 512).to(device)
+    actor.load_state_dict(torch.load('model/actor.pkl'))
+    # actor = torch.load('model/actor.pkl')
+    # actor.train()  # trainに変更する  evalもある
+    actor.test()  # TODO test
     print('Actor Model loaded')
   else:
     actor = Actor(state_size, action_size, 256, 512).to(device)
   if os.path.exists('model/critic.pkl'):
-    critic = torch.load('model/critic.pkl')
-    # model.load_state_dict(torch.load(PATH))
-    # model.train()  # trainに変更する
-
+    critic = Critic(state_size, action_size, 256, 512).to(device)
+    critic.load_state_dict(torch.load('model/critic.pkl'))
+    # critic = torch.load('model/critic.pkl')
+    # critic.train()  # trainに変更する
+    critic.test()  # TODO test
     print('Critic Model loaded')
   else:
     critic = Critic(state_size, action_size, 256, 512).to(device)
-  trainIters(actor, critic, settings.result_file_name_end)
-  # trainIters(actor, critic, 'test3')
+  # trainIters(actor, critic, settings.result_file_name_end)
+  trainIters(actor, critic, 'test1')

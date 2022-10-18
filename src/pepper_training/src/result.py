@@ -12,4 +12,4 @@ class Result(object):
     self.experiences = experiences
     self.actor_losses = actor_losses
     self.critic_losses = critic_losses
-    self.df = pd.DataFrame({"reward": rewards, "succeed": succeeds, "actor_loss": actor_losses, "critic_loss": critic_losses})
+    self.df = pd.DataFrame({"cumulated_reward": rewards, "succeed": succeeds, "actor_loss": actor_losses, "critic_loss": critic_losses})

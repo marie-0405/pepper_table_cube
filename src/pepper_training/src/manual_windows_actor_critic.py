@@ -67,8 +67,12 @@ def select_action(dist, epsilon):
   return action, dist
 
 def trainIters(actor, critic, file_name_end):
+  actor = Actor(state_size, action_size, config['L1'], config['L2']).to(device)
+  critic = Critic(state_size, action_size, config['L1'], config['L2']).to(device)
+  
   optimizerA = optim.Adam(actor.parameters(), lr=settings.lr)
   optimizerC = optim.Adam(critic.parameters(), lr=settings.lr)
+
 
   # Initialize the result data
   cumulated_rewards = []
