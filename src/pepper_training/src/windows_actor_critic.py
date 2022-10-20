@@ -28,8 +28,8 @@ def get_msg():
 
 # Create a new nep node
 node = nep.node("Calculator")                                                       
-# conf = node.hybrid("192.168.0.103")                         
-conf = node.hybrid("192.168.3.14")                         
+conf = node.hybrid("192.168.0.100")                         
+# conf = node.hybrid("192.168.3.14")                         
 sub = node.new_sub("env", "json", conf)
 pub = node.new_pub("calc", "json", conf) 
 
@@ -92,8 +92,6 @@ def select_action(dist, epsilon):
 
 def trainIters(actor, critic, result_file_name_end):
   human_data_controller = HumanDataController(FILE_NAME)
-  optimizerA = optim.Adam(actor.parameters(), lr=settings.lr)
-  optimizerC = optim.Adam(critic.parameters(), lr=settings.lr)
 
   # Initialize the result data
   cumulated_rewards, succeeds, actor_losses, critic_losses = load_results(result_file_name_end)
@@ -170,12 +168,12 @@ def trainIters(actor, critic, result_file_name_end):
           succeeds.append(False)
         else:
           state = next_state
-    # 毎エピソードでSAVE
-    # STATE_DICTをつけると、余計なものを除いて、loadできる
-    # optimizerもsaveしたほうが良い
+    # save the model and optimizer by episodes
     # TODO train
     torch.save(actor.state_dict(), 'model/actor.pkl')
     torch.save(critic.state_dict(), 'model/critic.pkl')
+    torch.save(optimizerA.state_dict(), 'optimizer/optimizerA.pkl')
+    torch.save(optimizerC.state_dict(), 'optimizer/optimizerC.pkl')
 
     next_state = torch.FloatTensor(next_state).to(device)
     next_value = critic(next_state)
@@ -205,6 +203,8 @@ def trainIters(actor, critic, result_file_name_end):
   # TODO When you run test, comment out below two lines
   torch.save(actor.state_dict(), 'model/actor.pkl')
   torch.save(critic.state_dict(), 'model/critic.pkl')
+  torch.save(optimizerA.state_dict(), 'optimizer/optimizerA.pkl')
+  torch.save(optimizerC.state_dict(), 'optimizer/optimizerC.pkl')
 
   # TODO when you run train and test, switch the below two lines
   save_results(result_file_name_end, cumulated_rewards, succeeds, experiences, actor_losses, critic_losses)
@@ -216,20 +216,28 @@ if __name__ == '__main__':
   if os.path.exists('model/actor.pkl'):
     actor = Actor(state_size, action_size, 256, 512).to(device)
     actor.load_state_dict(torch.load('model/actor.pkl'))
-    # actor = torch.load('model/actor.pkl')
-    # actor.train()  # trainに変更する  evalもある
-    actor.test()  # TODO test
+    actor.train()
+    # actor.eval()  # TODO test
     print('Actor Model loaded')
+
+    optimizerA = optim.Adam(actor.parameters(), lr=settings.lr)
+    optimizerA.load_state_dict(torch.load('optimizer/optimizerA.pkl'))
+    print('Actor Optimizer loaded')
   else:
     actor = Actor(state_size, action_size, 256, 512).to(device)
+    optimizerA = optim.Adam(actor.parameters(), lr=settings.lr)
   if os.path.exists('model/critic.pkl'):
     critic = Critic(state_size, action_size, 256, 512).to(device)
     critic.load_state_dict(torch.load('model/critic.pkl'))
-    # critic = torch.load('model/critic.pkl')
-    # critic.train()  # trainに変更する
-    critic.test()  # TODO test
+    critic.train()
+    # critic.eval()  # TODO test
     print('Critic Model loaded')
+
+    optimizerC = optim.Adam(critic.parameters(), lr=settings.lr)
+    optimizerC.load_state_dict(torch.load('optimizer/optimizerC.pkl'))
+    print('Critic Optimizer loaded')
   else:
     critic = Critic(state_size, action_size, 256, 512).to(device)
-  # trainIters(actor, critic, settings.result_file_name_end)
-  trainIters(actor, critic, 'test1')
+    optimizerC = optim.Adam(critic.parameters(), lr=settings.lr)
+  trainIters(actor, critic, settings.result_file_name_end)
+  # trainIters(actor, critic, 'test1')
