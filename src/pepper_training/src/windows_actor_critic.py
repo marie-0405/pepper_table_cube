@@ -17,7 +17,10 @@ from human_data_controller import HumanDataController
 import settings
 
 NSTEP = settings.nsteps
-FILE_NAME = settings.data_file_name
+FILE_NAME_END = settings.file_name_end
+
+result_data_controller = ResultController(FILE_NAME_END)
+experience_controller = ResultController(FILE_NAME_END, 'experiences')
 
 def get_msg():
   while True:
@@ -42,42 +45,42 @@ def compute_returns(next_value, rewards, masks):
   # compute returns with rewards and next value bu Temporal Differential method
   R = next_value
   returns = []
+  print(len(rewards))
+  print(len(masks))
   for step in reversed(range(len(rewards))):
     R = rewards[step] + settings.gamma * R * masks[step]
     returns.insert(0, R)
   return returns
 
-def save_results(result_file_name_end, cumulated_rewards, succeeds, experiences, actor_losses='', critic_losses=''):
-  ## Save the results
-  result_controller = ResultController(result_file_name_end)
-  result_controller.write(cumulated_rewards,
-                          succeeds=succeeds,
-                          experiences=experiences,
-                          actor_losses=actor_losses,
-                          critic_losses=critic_losses)
+def save_fig(labels):
+  for label in labels:
+    result_data_controller.plot('cumulative_reward')
+    result_data_controller.plot('actor_loss')
+    result_data_controller.plot('critic_loss')
 
-def save_fig(result_file_name_end):
-  result_controller = ResultController(result_file_name_end)
-  result_controller.plot('cumulated_reward')
-  result_controller.plot('actor_loss')
-  result_controller.plot('critic_loss')
-
-def load_results(result_file_name_end):
-  if os.path.exists('../training_results/results-{}.csv'.format(result_file_name_end)):
-    result_controller = ResultController(result_file_name_end)
-    cumulated_rewards = result_controller.get_data('cumulated_reward')
-    succeeds = result_controller.get_data('succeed')
-    actor_losses = result_controller.get_data('actor_loss')
-    critic_losses = result_controller.get_data('critic_loss')
-    # print('cumulated_reward', cumulated_rewards)
-    # print(type(cumulated_rewards))
-
+def load_results_and_experiences(file_name_end):
+  if os.path.exists('../training_results/results-{}.csv'.format(file_name_end)):
+    cumulative_rewards = result_data_controller.get_data('cumulative_reward')
+    succeeds = result_data_controller.get_data('succeed')
+    actor_losses = result_data_controller.get_data('actor_loss')
+    critic_losses = result_data_controller.get_data('critic_loss')
   else:
-    cumulated_rewards = []
+    cumulative_rewards = []
     succeeds = []
     actor_losses = []
     critic_losses = []
-  return cumulated_rewards, succeeds, actor_losses, critic_losses
+
+  if os.path.exists('../training_results/experiences-{}.csv'.format(file_name_end)):
+    states = experience_controller.get_data('state')
+    actions = experience_controller.get_data('action')
+    rewards = experience_controller.get_data('reward')
+    next_states = experience_controller.get_data('next_state')
+  else:
+    states = []
+    actions = []
+    rewards = []
+    next_states = [] 
+  return cumulative_rewards, succeeds, actor_losses, critic_losses, states, actions, rewards, next_states
 
 def select_action(dist, epsilon):
   # probs = tensor([5.0393e-03, 3.0475e-01,... 2.6321e-01], device='cuda:0', grad_fn=<SoftmaxBackward0>)
@@ -90,24 +93,21 @@ def select_action(dist, epsilon):
   print('action', action)
   return action
 
-def trainIters(actor, critic, result_file_name_end):
-  human_data_controller = HumanDataController(FILE_NAME)
-
+def trainIters(actor, critic, file_name_end):
   # Initialize the result data
-  cumulated_rewards, succeeds, actor_losses, critic_losses = load_results(result_file_name_end)
+  cumulative_rewards, succeeds, actor_losses, critic_losses, \
+    states, actions, rewards, next_states = load_results_and_experiences(file_name_end)
   # print('succ', succeeds)
-  masks = []
-  cols = ['state', 'action', 'reward', 'next_state']
   test_rewards = []
-  experiences = pd.DataFrame(columns=cols)
 
-  for nepisode in range(len(cumulated_rewards), settings.nepisodes):
+  for nepisode in range(len(cumulative_rewards), settings.nepisodes):
     print("Episode: " + str(nepisode))
-    cumulated_rewards.append(0)
+    cumulative_rewards.append(0)
     log_probs = []
     values = []
-    rewards = []
     entropy = 0
+    tensor_rewards = []
+    masks = []
 
     print("state")
     state = get_msg()['state']  # TODO NEP
@@ -146,14 +146,15 @@ def trainIters(actor, critic, result_file_name_end):
 
       log_probs.append(log_prob)
       values.append(value)
-      rewards.append(torch.tensor([reward], dtype=torch.float, device=device))
+      tensor_rewards.append(torch.tensor([reward], dtype=torch.float, device=device))
       masks.append(torch.tensor([1-done], dtype=torch.float, device=device))
-      cumulated_rewards[-1] += reward
+      cumulative_rewards[-1] += reward
       test_rewards.append(reward)
+      states.append(state.cpu().tolist())
       action_num = action.cpu().numpy()
-      experience = pd.DataFrame({'state': ','.join(map(str, state.cpu().numpy())), 'action': action_num, 
-                                'reward': reward, 'next_state': ','.join(map(str, next_state))}, index=[0])
-      experiences = pd.concat([experiences, experience], ignore_index=True)
+      actions.append(action_num)
+      rewards.append(reward)
+      next_states.append(next_state)
 
       if done:
         print('Iteration: {}, Score: {}'.format(nepisode, i))
@@ -168,7 +169,9 @@ def trainIters(actor, critic, result_file_name_end):
           succeeds.append(False)
         else:
           state = next_state
-    # save the model and optimizer by episodes
+      ## Save the experiences
+      experience_controller.write('experiences', state=states, action=actions, reward=rewards, next_state=next_states)   
+    # Save the model and optimizer by episodes
     # TODO train
     torch.save(actor.state_dict(), 'model/actor.pkl')
     torch.save(critic.state_dict(), 'model/critic.pkl')
@@ -178,7 +181,7 @@ def trainIters(actor, critic, result_file_name_end):
     next_state = torch.FloatTensor(next_state).to(device)
     next_value = critic(next_state)
 
-    returns = compute_returns(next_value, rewards, masks)
+    returns = compute_returns(next_value, tensor_rewards, masks)
     log_probs = torch.cat(log_probs)  # TODO NEP
     # log_probs = torch.tensor(log_probs, device=device, requires_grad=True)  # TODO csv
     returns = torch.cat(returns).detach()
@@ -192,7 +195,11 @@ def trainIters(actor, critic, result_file_name_end):
     actor_losses.append(actor_loss.detach().item())
     critic_losses.append(critic_loss.detach().item())
 
-    save_results(result_file_name_end, cumulated_rewards, succeeds, experiences, actor_losses, critic_losses)
+    # TODO when you run train and test, switch the below two lines
+    ## Save the results
+    result_data_controller.write('results', cumulative_reward=cumulative_rewards, succeed=succeeds, actor_loss=actor_losses, critic_loss=critic_losses)
+    # result_data_controller.write('results', cumulative_reward=cumulative_rewards, succeed=succeeds, actor_loss=actor_losses, critic_loss=critic_losses)
+
 
     # Optimize the weight parameters
     actor_loss.backward()  # calculate gradient
@@ -200,17 +207,14 @@ def trainIters(actor, critic, result_file_name_end):
     optimizerA.step()
     optimizerC.step()
 
-  # TODO When you run test, comment out below two lines
   torch.save(actor.state_dict(), 'model/actor.pkl')
   torch.save(critic.state_dict(), 'model/critic.pkl')
   torch.save(optimizerA.state_dict(), 'optimizer/optimizerA.pkl')
   torch.save(optimizerC.state_dict(), 'optimizer/optimizerC.pkl')
 
   # TODO when you run train and test, switch the below two lines
-  save_results(result_file_name_end, cumulated_rewards, succeeds, experiences, actor_losses, critic_losses)
-  save_fig(result_file_name_end)
-  # save_results(result_file_name_end, test_rewards, succeeds=[False for _ in range(NSTEP)], experiences=experiences)
-  # save_fig(result_file_name_end)
+  save_fig(['cumulative_reward', 'actor_loss', 'critic_loss'])
+  save_fig(['cumulative_reward'])
 
 if __name__ == '__main__':
   if os.path.exists('model/actor.pkl'):
@@ -239,5 +243,5 @@ if __name__ == '__main__':
   else:
     critic = Critic(state_size, action_size, 256, 512).to(device)
     optimizerC = optim.Adam(critic.parameters(), lr=settings.lr)
-  trainIters(actor, critic, settings.result_file_name_end)
+  trainIters(actor, critic, FILE_NAME_END)
   # trainIters(actor, critic, 'test1')
