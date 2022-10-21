@@ -22,15 +22,10 @@ FILE_NAME_END = settings.file_name_end
 result_data_controller = ResultController(FILE_NAME_END)
 experience_controller = ResultController(FILE_NAME_END, 'experiences')
 
-def get_msg():
-  while True:
-    s, msg = sub.listen()
-    if s:
-      print(msg)
-      return msg
-    
-# env_controller = PepperEnvController()
-env_controller = HumanEnvController('test2')
+# TODO switch below
+env_controller = PepperEnvController()
+# env_controller = HumanEnvController('test2')
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 action_size, state_size = env_controller.get_action_and_state_size()
 
@@ -81,7 +76,6 @@ def select_action(dist, epsilon):
   else:
     print('maximum is chosen')
     action = dist.sample()
-  print('action', action)
   return action
 
 def trainIters(actor, critic, file_name_end):
@@ -99,14 +93,13 @@ def trainIters(actor, critic, file_name_end):
     tensor_rewards = []
     masks = []
 
-    print("state")
     state = env_controller.get_state()
-    print(state)
+    print("State\n", state)
     if nepisode < settings.nepisodes - 1:
       epsilon = settings.epsilon_begin + (settings.epsilon_end - settings.epsilon_begin) * nepisode / settings.nepisodes
     else:
       epsilon = settings.epsilon_end
-    print(epsilon)
+    print("Epsilon", epsilon)
 
     for i in range(NSTEP):
       optimizerA.zero_grad()
@@ -116,11 +109,11 @@ def trainIters(actor, critic, file_name_end):
       action = select_action(dist, epsilon)  # TODO NEP
       # action, log_prob = human_data_controller.get_action(i) # TODO csv
 
-      # env_controller.publish_action(action)  TODO NEP
+      env_controller.publish_action(action)  # TODO NEP
       next_state, reward, done = env_controller.step(i)
-      print('next_state', next_state)
-      print('reward', reward)
-      print('done', done)
+      print('Next_state\n', next_state)
+      print('Reward', reward)
+      print('Done', done)
   
       log_prob = dist.log_prob(action).unsqueeze(0)
       entropy += dist.entropy().mean()
