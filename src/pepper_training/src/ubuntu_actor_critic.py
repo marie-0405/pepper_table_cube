@@ -31,8 +31,8 @@ if __name__ == '__main__':
   rospy.init_node('pepper_gym', anonymous=True, log_level=rospy.INFO)
 
   node = nep.node("Environment")    # Create a new nep node
-  # conf = node.hybrid('192.168.0.101')
-  conf = node.hybrid('192.168.3.14')
+  conf = node.hybrid('192.168.11.62')
+  # conf = node.hybrid('192.168.3.14')
   sub = node.new_sub("calc","json", conf)      # Set the topic and message type
   pub = node.new_pub("env", "json", conf)
 
@@ -110,7 +110,7 @@ if __name__ == '__main__':
         max_step = False
 
         # Initialize the environment and get first state of the robot
-        rospy.logdebug("env.reset...")
+        rospy.loginfo("env.reset...")
         # Now We return directly the observations called state
         state = env.reset()
         pub.publish({'state': state})
