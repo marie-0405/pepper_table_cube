@@ -1,6 +1,5 @@
 import json
 from turtle import st
-import nep
 import numpy as np
 import os
 import random
@@ -13,7 +12,8 @@ import torch.optim as optim
 from actor import Actor
 from critic import Critic
 from result_controller import ResultController
-from human_data_controller import HumanDataController
+from human_env_controller import HumanEnvController
+from pepper_env_controller import PepperEnvController
 import settings
 
 NSTEP = settings.nsteps
@@ -28,16 +28,11 @@ def get_msg():
     if s:
       print(msg)
       return msg
-
-# Create a new nep node
-node = nep.node("Calculator")                                                       
-conf = node.hybrid("192.168.0.100")                         
-# conf = node.hybrid("192.168.3.14")                         
-sub = node.new_sub("env", "json", conf)
-pub = node.new_pub("calc", "json", conf) 
-
+    
+env_controller = PepperEnvController()
+env_controller = HumanEnvController()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-action_size, state_size = get_msg().values()  # TODO NEP
+action_size, state_size = env_controller.get_action_and_state_size()
 # action_size = 10  # TODO csv
 # state_size = 2  # TODO csv
 
@@ -108,7 +103,7 @@ def trainIters(actor, critic, file_name_end):
     masks = []
 
     print("state")
-    state = get_msg()['state']  # TODO NEP
+    state = env_controller.get_state()
     # state = human_data_controller.get_data(['Distance1', 'Distance2'], index=0)  # TODO csv
     print(state)
     if nepisode < settings.nepisodes - 1:
@@ -125,12 +120,14 @@ def trainIters(actor, critic, file_name_end):
       action = select_action(dist, epsilon)  # TODO NEP
       # action, log_prob = human_data_controller.get_action(i) # TODO csv
 
+      env_controller.publish_action(action)
+      next_state, reward, done = env_controller.step()
       ## TODO NEP begin
-      pub.publish({'action': action.cpu().numpy().tolist()})  # need tolist for sending message as json
-      msg = get_msg()
-      next_state = msg['next_state']
-      reward = msg['reward']
-      done = msg['done']
+      # pub.publish({'action': action.cpu().numpy().tolist()})  # need tolist for sending message as json
+      # msg = get_msg()
+      # next_state = msg['next_state']
+      # reward = msg['reward']
+      # done = msg['done']
       ## NEP end
 
       ## TODO csv begin
