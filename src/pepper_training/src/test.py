@@ -1,3 +1,0 @@
-def optimizer():
-  print('yes')
-

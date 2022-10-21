@@ -45,8 +45,6 @@ def compute_returns(next_value, rewards, masks):
   # compute returns with rewards and next value bu Temporal Differential method
   R = next_value
   returns = []
-  print(len(rewards))
-  print(len(masks))
   for step in reversed(range(len(rewards))):
     R = rewards[step] + settings.gamma * R * masks[step]
     returns.insert(0, R)
@@ -54,9 +52,9 @@ def compute_returns(next_value, rewards, masks):
 
 def save_fig(labels):
   for label in labels:
-    result_data_controller.plot('cumulative_reward')
-    result_data_controller.plot('actor_loss')
-    result_data_controller.plot('critic_loss')
+    result_data_controller.plot(label)
+    result_data_controller.plot(label)
+    result_data_controller.plot(label)
 
 def load_results_and_experiences(file_name_end):
   if os.path.exists('../training_results/results-{}.csv'.format(file_name_end)):
