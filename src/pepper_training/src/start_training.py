@@ -63,8 +63,7 @@ if __name__ == '__main__':
     # If you want to do grid search, try this code on.
     # Alphas = [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
     # Gammas = [0.9, 1.0]
- 
-    # TODO 途中で終わってしまっていたので、後でやる！！
+
     Alphas = [0.5]
     Gammas = [0.8]
     rospy.loginfo("Alphas ==> " + str(Alphas))
@@ -103,7 +102,7 @@ if __name__ == '__main__':
                 # Now We return directly the stringuified observations called state
                 state = env.reset()
 
-                rospy.logdebug("env.get_state...==>" + str(state))
+                rospy.loginfo("env.get_state...==>" + str(state))
                 
                 # for each episode, we test the robot for nsteps
                 for i in range(nsteps):
@@ -165,7 +164,7 @@ if __name__ == '__main__':
 
             ## Save the information of results
             result_controller = ResultController("a={}-g={}".format(Alpha, Gamma))
-            result_controller.write('results', rewards, succeeds, q_matrix)
-            result_controller.plot('reward') 
+            result_controller.write('results', cumulative_reward=rewards, succeed=succeeds)
+            result_controller.plot('cumulative_reward') 
     
     env.close()

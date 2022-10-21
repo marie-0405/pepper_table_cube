@@ -136,11 +136,12 @@ class PepperEnvJoint(gym.Env):
         7-8) Increment/Decrement RElbowYaw
         9-10) Increment/Decrement RWristYaw
         """
+        state_num = len(self.list_of_observations)
         self.action_space = spaces.Discrete(10)
         self.observation_space = gym.spaces.Box(
             low=self.min_distance,
             high=self.max_distance,
-            shape=(2,)
+            shape=(state_num,)
         )
         self.reward_range = (-np.inf, np.inf)
 
@@ -196,7 +197,6 @@ class PepperEnvJoint(gym.Env):
         rospy.logdebug("get_observations...")
         observation = self.pepper_state_object.get_observations()
         state = self.get_state(observation)
-
         return state
 
     # @time_recorder.time_recorder
@@ -230,13 +230,15 @@ class PepperEnvJoint(gym.Env):
 
         # Get the State Discrete Stringuified version of the observations
         state = self.get_state(observation)
-
         return state, reward, done, {}
 
     # @time_recorder.time_recorder
-    def get_state(self, observation):
+    def get__state(self, observation):
         """
         We retrieve the Stringuified-Discrete version of the given observation
         :return: state
         """
         return self.pepper_state_object.get_state_as_string(observation)
+    
+    def _render(self, human, close=True):
+        pass

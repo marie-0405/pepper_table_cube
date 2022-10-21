@@ -19,10 +19,10 @@ import rospkg
 
 # import my tool
 from hyper_parameter import HyperParameter
-from result_controller import ResultController
 
 # import my training environment
-import pepper_env_actor_critic
+# import pepper_env_actor_critic
+import pepper_env_joint
 
 
 
@@ -47,7 +47,7 @@ if __name__ == '__main__':
         time.sleep(.0001)
 
   # Create the Gym environment
-  env = gym.make('Pepper-v1')
+  env = gym.make('Pepper-v1')  # TODO
 
   # Get space from environment and publish it
   state_size = env.observation_space.shape[0]
@@ -115,7 +115,7 @@ if __name__ == '__main__':
         state = env.reset()
         pub.publish({'state': state})
 
-        rospy.logdebug("env.get_state...==>" + str(state))
+        rospy.logdebug("env.get_state => " + str(state))
 
         # for each episode, we test the robot for nsteps
         for i in range(nsteps):
@@ -128,12 +128,13 @@ if __name__ == '__main__':
           rospy.loginfo("Action to Perform >> "+str(action))
           next_state, reward, done, info = env.step(action)
           pub.publish({'done': done, 'info': info, 'next_state': next_state, 'reward': reward})
-          rospy.loginfo("Reward ==> " + str(reward))
+          rospy.loginfo("Reward => " + str(reward))
+          rospy.loginfo('Done => ' + str(done))
           cumulated_reward += reward
           if highest_reward < cumulated_reward:
             highest_reward = cumulated_reward
 
-          rospy.logdebug("env.get_state...[distance_from_cube_to_target,distance from hand to cube]==>" + str(next_state))
+          rospy.loginfo("env.get_state => " + str(next_state))
 
           if i == nsteps - 1:
             max_step = True
@@ -164,10 +165,4 @@ if __name__ == '__main__':
 
       rospy.loginfo("Overall score: {:0.2f}".format(last_time_steps.mean()))
       rospy.loginfo("Best 100 score: {:0.2f}".format(reduce(lambda x, y: x + y, l[-100:]) / len(l[-100:])))
-
-    ## Save the information of results
-    # result_controller = ResultController("a={}-g={}".format(Alpha, Gamma))
-    # result_controller.write('results', rewards, succeeds)
-    # result_controller.plot_reward()
-
   env.close()

@@ -3,19 +3,19 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import pandas as pd
-# import rospkg
+import rospkg
 import sys
 
 class ResultController():
 
   def __init__(self, file_name_end, file_name='results'):
-    # Set the file path ファイルパスを設定
-    # rospack = rospkg.RosPack()
-    # pkg_path = rospack.get_path('pepper_training')
+    # TODO Set the file path ファイルパスを設定
+    rospack = rospkg.RosPack()
+    pkg_path = rospack.get_path('pepper_training')
     
-    # Windows用
-    pkg_path = os.getcwd()
-    pkg_path = pkg_path[:-4]
+    # TODO Windows用
+    # pkg_path = os.getcwd()
+    # pkg_path = pkg_path[:-4]
 
     self.file_name_end = file_name_end
     self.file_name = file_name

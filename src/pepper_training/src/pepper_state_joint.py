@@ -129,7 +129,7 @@ class PepperState(object):
         self._discrete_division = discrete_division
 
         # We init the observation ranges and We create the bins now for all the observations
-        self.init_bins()
+        # self.init_bins()  # TODO if you use qlearn, please comment in
 
         self.base_position = Point()
         self.base_orientation = Quaternion()
@@ -207,6 +207,16 @@ class PepperState(object):
         distance = numpy.linalg.norm(a - b)
 
         return distance
+    
+    def get_vector_from_point_to_point(self, p_from, p_to):
+        """
+        Given a Vector3 Object, get vector from point to point
+        """
+        a = numpy.array((p_from.x, p_from.y, p_from.z))
+        b = numpy.array((p_to.x, p_to.y, p_to.z))
+
+        vector = b - a
+        return vector
 
     def get_joint_states(self):
         return self.joints_state
@@ -245,7 +255,6 @@ class PepperState(object):
         distance_from_cube_to_target = \
             self.get_distance_from_point_to_point(cube_pos, target_pos)
         task_ok = bool(distance_from_cube_to_target <= 0.03)
-        print(task_ok)
         return task_ok
 
     def calculate_reward_distance(self, weight, p_from, p_to):
@@ -348,6 +357,7 @@ class PepperState(object):
 
         # Add additional reward when hand reaches cube
         if self.get_distance_from_point_to_point(hand_pos, cube_pos) <= 0.03:
+            rospy.loginfo("Additional reward is added")
             total_reward += 1
 
         ## TODO reward 2 
@@ -365,13 +375,7 @@ class PepperState(object):
     def get_observations(self):
         """
         Returns the state of the robot needed for OpenAI QLearn Algorithm
-        The state will be defined by an array of the:
-        1) distance from cube to target
-        2) distance from hand to cube
-
-        observation = [distance_from_cube_to_target,
-                       distance from hand to cube]
-
+        The state will be defined by an array
         :return: observation
         """
         
@@ -380,9 +384,14 @@ class PepperState(object):
         hand_pos = self.get_link_position("pepper::r_gripper")
 
         distance_from_hand_to_cube = \
-         self.get_distance_from_point_to_point(hand_pos, cube_pos)
+            self.get_distance_from_point_to_point(hand_pos, cube_pos)
         distance_from_cube_to_target = \
-         self.get_distance_from_point_to_point(cube_pos, target_pos)
+            self.get_distance_from_point_to_point(cube_pos, target_pos)
+        vector_from_hand_to_cube = self.get_vector_from_point_to_point(hand_pos, cube_pos)
+        vector_from_cube_to_target = self.get_vector_from_point_to_point(cube_pos, target_pos)
+        
+
+        print("RShoulderPitch", self.get_joint_positions(['RShoulderPitch'])[0])
 
         observation = []
         # rospy.logdebug("List of Observations==>"+str(self._list_of_observations))
@@ -391,6 +400,28 @@ class PepperState(object):
                 observation.append(distance_from_hand_to_cube)
             elif obs_name == "distance_from_cube_to_target":
                 observation.append(distance_from_cube_to_target)
+            elif obs_name == "r_shoulder_pitch":
+                observation.append(self.get_joint_positions(['RShoulderPitch'])[0])
+            elif obs_name == "r_shoulder_roll":
+                observation.append(self.get_joint_positions(['RShoulderRoll'])[0])
+            elif obs_name == "r_elbow_roll":
+                observation.append(self.get_joint_positions(['RElbowRoll'])[0])
+            elif obs_name == "r_elbow_yaw":
+                observation.append(self.get_joint_positions(['RElbowYaw'])[0])
+            elif obs_name == "r_wrist_yaw":
+                observation.append(self.get_joint_positions(['RWristYaw'])[0])
+            elif obs_name == "x_vector_hand_to_cube":
+                observation.append(vector_from_hand_to_cube[0])
+            elif obs_name == "y_vector_hand_to_cube":
+                observation.append(vector_from_hand_to_cube[1])
+            elif obs_name == "z_vector_hand_to_cube":
+                observation.append(vector_from_hand_to_cube[2])
+            elif obs_name == "x_vector_cube_to_target":
+                observation.append(vector_from_cube_to_target[0])
+            elif obs_name == "y_vector_cube_to_target":
+                observation.append(vector_from_cube_to_target[1])
+            elif obs_name == "z_vector_cube_to_target":
+                observation.append(vector_from_cube_to_target[2])
             else:
                 raise NameError('Observation Asked does not exist=='+str(obs_name))
 

@@ -136,11 +136,12 @@ class PepperEnvActorCritic(gym.Env):
         7-8) Increment/Decrement RElbowYaw
         9-10) Increment/Decrement RWristYaw
         """
+        action_num = len(self.list_of_observations)
         self.action_space = spaces.Discrete(10)
         self.observation_space = gym.spaces.Box(
             low=self.min_distance,
             high=self.max_distance,
-            shape=(2,)
+            shape=(action_num,)
         )
         self.reward_range = (-np.inf, np.inf)
 
@@ -234,11 +235,3 @@ class PepperEnvActorCritic(gym.Env):
 
     def _render(self, human, close):
         return 'aaa'
-
-    # @time_recorder.time_recorder
-    def get_state(self, observation):
-        """
-        We retrieve the Stringuified-Discrete version of the given observation
-        :return: state
-        """
-        return self.pepper_state_object.get_state_as_string(observation)
