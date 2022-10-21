@@ -29,12 +29,10 @@ def get_msg():
       print(msg)
       return msg
     
-env_controller = PepperEnvController()
-env_controller = HumanEnvController()
+# env_controller = PepperEnvController()
+env_controller = HumanEnvController('test2')
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 action_size, state_size = env_controller.get_action_and_state_size()
-# action_size = 10  # TODO csv
-# state_size = 2  # TODO csv
 
 def compute_returns(next_value, rewards, masks):
   # compute returns with rewards and next value bu Temporal Differential method
@@ -90,7 +88,6 @@ def trainIters(actor, critic, file_name_end):
   # Initialize the result data
   cumulative_rewards, succeeds, actor_losses, critic_losses, \
     states, actions, rewards, next_states = load_results_and_experiences(file_name_end)
-  # print('succ', succeeds)
   test_rewards = []
 
   for nepisode in range(len(cumulative_rewards), settings.nepisodes):
@@ -104,7 +101,6 @@ def trainIters(actor, critic, file_name_end):
 
     print("state")
     state = env_controller.get_state()
-    # state = human_data_controller.get_data(['Distance1', 'Distance2'], index=0)  # TODO csv
     print(state)
     if nepisode < settings.nepisodes - 1:
       epsilon = settings.epsilon_begin + (settings.epsilon_end - settings.epsilon_begin) * nepisode / settings.nepisodes
@@ -120,21 +116,11 @@ def trainIters(actor, critic, file_name_end):
       action = select_action(dist, epsilon)  # TODO NEP
       # action, log_prob = human_data_controller.get_action(i) # TODO csv
 
-      env_controller.publish_action(action)
-      next_state, reward, done = env_controller.step()
-      ## TODO NEP begin
-      # pub.publish({'action': action.cpu().numpy().tolist()})  # need tolist for sending message as json
-      # msg = get_msg()
-      # next_state = msg['next_state']
-      # reward = msg['reward']
-      # done = msg['done']
-      ## NEP end
-
-      ## TODO csv begin
-      # next_state = human_data_controller.get_data(['Distance1', 'Distance2'], index=i)
-      # reward, done = human_data_controller.calculate_reward_done(next_state[0], next_state[1])
-      ## csv end
-
+      # env_controller.publish_action(action)  TODO NEP
+      next_state, reward, done = env_controller.step(i)
+      print('next_state', next_state)
+      print('reward', reward)
+      print('done', done)
   
       log_prob = dist.log_prob(action).unsqueeze(0)
       entropy += dist.entropy().mean()

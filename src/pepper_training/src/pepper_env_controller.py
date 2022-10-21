@@ -32,7 +32,7 @@ class PepperEnvController(IEnvController):
     print("ACTION", action.cpu().tolist())
     self.pub.publish({'action': action.cpu().tolist()})  # need tolist for sending message as json
   
-  def step(self):
+  def step(self, index):
     """
     return next_state, reward, and done.
     """
@@ -44,7 +44,6 @@ class PepperEnvController(IEnvController):
   
   def _get_reward(self):
     pass
-
   
   def _get_done(self):
     pass
