@@ -1,0 +1,17 @@
+default:
+  networksize: [128, 256]
+  states: ["distance1", "distance2"]
+
+medium-size:
+  networksize: [128, 256]
+  states: ["distance1", "distance2"]
+
+distance-to-vector:
+  networksize: [256, 512]
+  changed_values:
+    states: ["vector1", "vector2"]
+
+add-joints:
+  networksize: [256, 512]
+  changed_values:
+    states: ["ditance1", "distance2", "five of joints"]
