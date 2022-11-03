@@ -3,19 +3,19 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import pandas as pd
-import rospkg
+# import rospkg
 import sys
 
 class ResultController():
 
   def __init__(self, file_name_end, file_name='results'):
     # TODO Set the file path ファイルパスを設定
-    rospack = rospkg.RosPack()
-    pkg_path = rospack.get_path('pepper_training')
+    # rospack = rospkg.RosPack()
+    # pkg_path = rospack.get_path('pepper_training')
     
     # TODO Windows用
-    # pkg_path = os.getcwd()
-    # pkg_path = pkg_path[:-4]
+    pkg_path = os.getcwd()
+    pkg_path = pkg_path[:-4]
 
     self.file_name_end = file_name_end
     self.file_name = file_name
@@ -26,6 +26,7 @@ class ResultController():
       'experiences': pkg_path + '/training_results/experiences-'+ file_name_end + '.csv',
       'actor_loss': pkg_path + '/training_results/actor-loss-'+ file_name_end + '.png',
       'critic_loss': pkg_path + '/training_results/critic-loss-'+ file_name_end + '.png',
+      'distribution': pkg_path + '/training_results/distribution-'+ file_name_end + '.png',
     }
 
   def write(self, file_name='results', **kwargs):
@@ -67,6 +68,30 @@ class ResultController():
     # plt.ylabel("Reward")  # TODO test
 
     plt.ylim([-30.0, 0.0])
+    plt.legend(edgecolor="black")
+    plt.savefig(self.file_path[label])
+  
+  def plot_arrays(self, label):
+    """
+    plot the data of array
+    """
+    result_df = self._read()
+    plt.rcParams["font.family"] = "Times New Roman"
+    plt.rcParams["font.size"] = 18
+    plt.figure(figsize=(11, 6))
+    
+    df = result_df[label].str.strip('[]')
+    df = df.str.split(pat=',', n=-1, expand=True)
+    df = df.astype(float)
+    
+    for i in range(df.shape[1]):
+      df[i].astype(float).plot(label=i)
+
+    # Axis label
+    plt.xlabel("The number of steps")
+    plt.ylabel(label.capitalize().replace('_', ' '))
+    
+    plt.ylim([0.0, 1.0])
     plt.legend(edgecolor="black")
     plt.savefig(self.file_path[label])
 

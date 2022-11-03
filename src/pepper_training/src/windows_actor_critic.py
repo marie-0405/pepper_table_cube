@@ -1,3 +1,4 @@
+from importlib.metadata import distribution
 import json
 from turtle import st
 import numpy as np
@@ -27,7 +28,6 @@ env_controller = PepperEnvController()
 # env_controller = HumanEnvController('test2')
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-action_size, state_size = env_controller.get_action_and_state_size()
 
 def compute_returns(next_value, rewards, masks):
   # compute returns with rewards and next value bu Temporal Differential method
@@ -40,8 +40,6 @@ def compute_returns(next_value, rewards, masks):
 
 def save_fig(labels):
   for label in labels:
-    result_data_controller.plot(label)
-    result_data_controller.plot(label)
     result_data_controller.plot(label)
 
 def load_results_and_experiences(file_name_end):
@@ -61,12 +59,14 @@ def load_results_and_experiences(file_name_end):
     actions = experience_controller.get_data('action')
     rewards = experience_controller.get_data('reward')
     next_states = experience_controller.get_data('next_state')
+    dists = experience_controller.get_data('distribution')
   else:
     states = []
     actions = []
     rewards = []
-    next_states = [] 
-  return cumulative_rewards, succeeds, actor_losses, critic_losses, states, actions, rewards, next_states
+    next_states = []
+    dists = []
+  return cumulative_rewards, succeeds, actor_losses, critic_losses, states, actions, rewards, next_states, dists
 
 def select_action(dist, epsilon):
   # probs = tensor([5.0393e-03, 3.0475e-01,... 2.6321e-01], device='cuda:0', grad_fn=<SoftmaxBackward0>)
@@ -81,9 +81,9 @@ def select_action(dist, epsilon):
 def trainIters(actor, critic, file_name_end):
   # Initialize the result data
   cumulative_rewards, succeeds, actor_losses, critic_losses, \
-    states, actions, rewards, next_states = load_results_and_experiences(file_name_end)
+    states, actions, rewards, next_states, dists = load_results_and_experiences(file_name_end)
   test_rewards = []
-
+  
   for nepisode in range(len(cumulative_rewards), settings.nepisodes):
     print("Episode: " + str(nepisode))
     cumulative_rewards.append(0)
@@ -129,6 +129,7 @@ def trainIters(actor, critic, file_name_end):
       actions.append(action_num)
       rewards.append(reward)
       next_states.append(next_state)
+      dists.append(dist.probs.cpu().tolist())
 
       if done:
         print('Iteration: {}, Score: {}'.format(nepisode, i))
@@ -144,7 +145,7 @@ def trainIters(actor, critic, file_name_end):
         else:
           state = next_state
       ## Save the experiences
-      experience_controller.write('experiences', state=states, action=actions, reward=rewards, next_state=next_states)   
+      experience_controller.write('experiences', state=states, action=actions, reward=rewards, next_state=next_states, distribution=dists)   
     # Save the model and optimizer by episodes
     # TODO train
     torch.save(actor.state_dict(), 'model/actor.pkl')
@@ -188,14 +189,16 @@ def trainIters(actor, critic, file_name_end):
 
   # TODO when you run train and test, switch the below two lines
   save_fig(['cumulative_reward', 'actor_loss', 'critic_loss'])
-  save_fig(['cumulative_reward'])
+  # save_fig(['cumulative_reward'])
+  experience_controller.plot_arrays('distribution')
 
 if __name__ == '__main__':
+  action_size, state_size = env_controller.get_action_and_state_size()
   if os.path.exists('model/actor.pkl'):
     actor = Actor(state_size, action_size, 256, 512).to(device)
     actor.load_state_dict(torch.load('model/actor.pkl'))
-    actor.train()
-    # actor.eval()  # TODO test
+    # actor.train()
+    actor.eval()  # TODO test
     print('Actor Model loaded')
 
     optimizerA = optim.Adam(actor.parameters(), lr=settings.lr)
@@ -207,8 +210,8 @@ if __name__ == '__main__':
   if os.path.exists('model/critic.pkl'):
     critic = Critic(state_size, action_size, 256, 512).to(device)
     critic.load_state_dict(torch.load('model/critic.pkl'))
-    critic.train()
-    # critic.eval()  # TODO test
+    # critic.train()
+    critic.eval()  # TODO test
     print('Critic Model loaded')
 
     optimizerC = optim.Adam(critic.parameters(), lr=settings.lr)
