@@ -561,7 +561,7 @@ class PepperState(object):
             rospy.loginfo("Action Decided:Decrement RWristYaw>>>")
             self.current_joint_pose[4] -= self._joint_increment_value
 
-        # rospy.logdebug("action to move joint states>>>" + str(self.current_joint_pose))
+        rospy.logdebug("action to move joint states>>>" + str(self.current_joint_pose))
 
         self.clamp_to_joint_limits()
 
@@ -604,9 +604,9 @@ class PepperState(object):
                                          self._joint_limits["rey_min"])
         self.current_joint_pose[4] = max(min(rwy_joint_value, self._joint_limits["rwy_max"]),
                                          self._joint_limits["rwy_min"])
-
-        rospy.logdebug("DONE Clamping current_joint_pose>>>" + str(self.current_joint_pose))
-
+        for i in range(5):
+            if self.current_joint_pose[i] != self.current_joint_pose[i]:
+                rospy.loginfo("The {} joint reaches limits")
 
     def process_data(self):
         """
