@@ -15,3 +15,8 @@ add-joints:
   networksize: [256, 512]
   changed_values:
     states: ["ditance1", "distance2", "five of joints"]
+
+joints-vector:
+  networksize: [256, 512].                    
+  changed_values:
+    states: ["vector1", "vector2", "five of joints"]
