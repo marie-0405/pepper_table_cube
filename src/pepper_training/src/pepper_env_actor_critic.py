@@ -216,6 +216,8 @@ class PepperEnvActorCritic(gym.Env):
         current_positions = self.pepper_state_object.get_joint_positions(self.joint_names)
         # Then we send the command to the robot and let it go
         self.pepper_body_action_object.move_joints(current_positions, next_positions)
+        print('Before', current_positions)
+        print('After', next_positions)
     
         # for running_step seconds
         time.sleep(self.running_step)

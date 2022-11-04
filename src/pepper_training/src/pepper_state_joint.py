@@ -217,9 +217,6 @@ class PepperState(object):
 
         vector = b - a
         return vector
-
-    def get_joint_states(self):
-        return self.joints_state
     
     def get_joint_positions(self, joint_names):
         positions = []
@@ -389,9 +386,6 @@ class PepperState(object):
             self.get_distance_from_point_to_point(cube_pos, target_pos)
         vector_from_hand_to_cube = self.get_vector_from_point_to_point(hand_pos, cube_pos)
         vector_from_cube_to_target = self.get_vector_from_point_to_point(cube_pos, target_pos)
-        
-
-        print("RShoulderPitch", self.get_joint_positions(['RShoulderPitch'])[0])
 
         observation = []
         # rospy.logdebug("List of Observations==>"+str(self._list_of_observations))
@@ -526,8 +520,9 @@ class PepperState(object):
         :param action: Integer that goes from 0 to 9, because we have 10 actions.
         :return:
         """
-
-        rospy.logdebug("current joint pose>>>"+str(self.current_joint_pose))
+        right_arms = ["RShoulderPitch", "RShoulderRoll", "RElbowYaw", "RElbowRoll", "RWristYaw"]
+        self.current_joint_pose = self.get_joint_positions(right_arms)
+        print("current joint pose>>>"+str(self.current_joint_pose))
         rospy.logdebug("Action Number>>>"+str(action))
 
         if action == 0: #Increment RShoulderPitch
@@ -604,9 +599,6 @@ class PepperState(object):
                                          self._joint_limits["rey_min"])
         self.current_joint_pose[4] = max(min(rwy_joint_value, self._joint_limits["rwy_max"]),
                                          self._joint_limits["rwy_min"])
-        for i in range(5):
-            if self.current_joint_pose[i] != self.current_joint_pose[i]:
-                rospy.loginfo("The {} joint reaches limits")
 
     def process_data(self):
         """

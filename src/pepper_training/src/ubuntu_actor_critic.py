@@ -21,8 +21,8 @@ import rospkg
 from hyper_parameter import HyperParameter
 
 # import my training environment
-# import pepper_env_actor_critic
-import pepper_env_joint
+import pepper_env_actor_critic
+# import pepper_env_joint
 
 
 
@@ -31,8 +31,8 @@ if __name__ == '__main__':
   rospy.init_node('pepper_gym', anonymous=True, log_level=rospy.INFO)
 
   node = nep.node("Environment")    # Create a new nep node
-  conf = node.hybrid('192.168.11.62')
-  # conf = node.hybrid('192.168.3.14')
+  # conf = node.hybrid('192.168.11.62')
+  conf = node.hybrid('192.168.3.7')
   sub = node.new_sub("calc","json", conf)      # Set the topic and message type
   pub = node.new_pub("env", "json", conf)
 
@@ -41,7 +41,6 @@ if __name__ == '__main__':
     while True:
       s, msg = sub.listen()
       if s:
-        print(msg)
         return msg
       else:
         time.sleep(.0001)
