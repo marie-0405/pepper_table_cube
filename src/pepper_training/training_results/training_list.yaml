@@ -20,3 +20,28 @@ joints-vector:
   networksize: [256, 512].                    
   changed_values:
     states: ["vector1", "vector2", "five of joints"]
+
+decrease_networksize:
+  networksize: [64, 128].                    
+  changed_values:
+    states: ["vector1", "vector2", "five of joints"]
+
+baseline:
+  networksize: [256, 512].                    
+  changed_values:
+    states: ["vector1", "vector2", "five of joints"]
+    reward: "+1 if distance1 < 0.085"
+    joint_increment_value: 0.2
+
+change_state:
+  *: "same as above"
+  states: ["distance1", "distance2"]
+
+add_joints:
+  *: "same as above"
+  states: ["distance1", "distance2", "five of joints"]
+
+non_additional_reward:
+  *: "same as above"
+  reward: null
+  
