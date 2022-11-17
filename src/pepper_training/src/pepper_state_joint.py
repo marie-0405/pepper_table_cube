@@ -12,6 +12,7 @@ from rosgraph_msgs.msg import Clock
 import tf
 import numpy
 import math
+import time
 
 import time_recorder
 
@@ -103,7 +104,7 @@ class PepperState(object):
         self._done_reward = done_reward
         self._base_reward = base_reward
         self._success_reward = success_reward
-
+        
         self._weight_r1 = weight_r1
         self._weight_r2 = weight_r2
 
@@ -148,6 +149,7 @@ class PepperState(object):
         rospy.Subscriber("/gazebo/model_states", ModelStates, self.models_state_callback)
         # We use it to get the position of hand.
         rospy.Subscriber("/gazebo/link_states", LinkStates, self.links_state_callback)
+
     def check_all_systems_ready(self):
         """
         We check that all systems are ready
@@ -174,6 +176,15 @@ class PepperState(object):
         self.desired_length.y = y
         self.desired_length.z = z
     
+    def set_init_distances(self):
+        # Set init distance
+        cube_pos = self.get_model_position("cube")
+        target_pos = self.get_model_position("target")
+        hand_pos = self.get_link_position("pepper::r_gripper")
+        self.before_distances = {'hand_cube': self.get_distance_from_point_to_point(hand_pos, cube_pos),
+                                'cube_target': self.get_distance_from_point_to_point(cube_pos, target_pos)}
+        print("Before distances", self.before_distances)
+
     def get_simulation_time_in_secs(self):
         return self.simulation_time.clock.secs
 
@@ -275,6 +286,30 @@ class PepperState(object):
         rospy.loginfo("Distance" + str(distance))
         reward = weight * (distance - 0.025)
         return reward
+    
+    def calculate_positive_reward_distance(self, weight, p_from, p_to, from_to_key):
+        """
+        We calculate reward on the distance between hand and cube or cube and marker
+        To make reward positive, we compare the before distance and current distance
+        if before distance < current distance:
+            reward = +1 * weight
+        elif before distance == current distance:
+            reward = 0
+        else:  # (before distance > current distance)
+            reward = -1 * weight
+        """
+        distance = self.get_distance_from_point_to_point(p_from, p_to)
+        rospy.loginfo("Distance" + str(distance))
+        if self.before_distances[from_to_key] > distance:
+            reward = weight * 1
+        elif round(self.before_distances[from_to_key], 10) == round(distance, 10):
+            reward = 0
+        else:
+            reward = -1 * weight
+        print("{} before distance", self.before_distances[from_to_key])
+        print("{} Reward".format(from_to_key), reward)
+        self.before_distances[from_to_key] = distance
+        return reward
 
     def calculate_reward_joint_position(self, weight=1.0):
         """
@@ -349,11 +384,16 @@ class PepperState(object):
         r1 = self.calculate_reward_distance(self._weight_r1, hand_pos, cube_pos)
         r2 = self.calculate_reward_distance(self._weight_r2, cube_pos, target_pos)
 
+        # r1 = self.calculate_positive_reward_distance(self._weight_r1, hand_pos, cube_pos, 'hand_cube')
+        # r2 = self.calculate_positive_reward_distance(self._weight_r2, cube_pos, target_pos, 'cube_target')
+
         # The sign depend on its function.
         total_reward = self._base_reward - r1 - r2
 
+        # total_reward = r1 + r2
+
         # Add additional reward when hand reaches cube
-        if self.get_distance_from_point_to_point(hand_pos, cube_pos) <= 0.03:
+        if self.get_distance_from_point_to_point(hand_pos, cube_pos) <= 0.085:
             rospy.loginfo("Additional reward is added")
             total_reward += 1
 
@@ -514,14 +554,13 @@ class PepperState(object):
         return self.current_joint_pose
     
     # @time_recorder.time_recorder
-    def get_action_to_position(self, action):
+    def get_action_to_position(self, joint_names, action):
         """
         Here we have the Actions number to real joint movement correspondance.
         :param action: Integer that goes from 0 to 9, because we have 10 actions.
         :return:
         """
-        right_arms = ["RShoulderPitch", "RShoulderRoll", "RElbowYaw", "RElbowRoll", "RWristYaw"]
-        self.current_joint_pose = self.get_joint_positions(right_arms)
+        self.current_joint_pose = self.get_joint_positions(joint_names)
         print("current joint pose>>>"+str(self.current_joint_pose))
         rospy.logdebug("Action Number>>>"+str(action))
 
