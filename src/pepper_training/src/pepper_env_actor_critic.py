@@ -20,22 +20,23 @@ from body_action import BodyAction
 from pepper_state_joint import PepperState
 import time_recorder
 
-#register the training environment in the gym as an available one
+# register the training environment in the gym as an available one
 reg = register(
     id='Pepper-v1',
     entry_point='pepper_env_actor_critic:PepperEnvActorCritic',
-    max_episode_steps=100000,
+    kwargs={'joint_increment_value': 0.1}
     )
 
 
 class PepperEnvActorCritic(gym.Env):
 
-    def __init__(self):
+    def __init__(self, joint_increment_value=0.1):
         
         # We assume that a ROS node has already been created
         # before initialising the environment
 
         # gets training parameters from param server
+        self.id = id
         self.desired_length = Pose()
         self.desired_length.position.x = rospy.get_param("/desired_length/x")
         self.desired_length.position.y = rospy.get_param("/desired_length/y")
@@ -44,7 +45,9 @@ class PepperEnvActorCritic(gym.Env):
         self.min_distance = rospy.get_param("/min_distance")
         self.max_distance = rospy.get_param("/max_distance")
         self.max_simulation_time = rospy.get_param("/max_simulation_time")
-        self.joint_increment_value = rospy.get_param("/joint_increment_value")
+        # self.joint_increment_value = rospy.get_param("/joint_increment_value")
+        self.joint_increment_value = joint_increment_value
+        print("Joint increment value", self.joint_increment_value)
         self.done_reward = rospy.get_param("/done_reward")
         self.base_reward = rospy.get_param("/base_reward")
         self.success_reward = rospy.get_param("/success_reward")
@@ -84,12 +87,12 @@ class PepperEnvActorCritic(gym.Env):
         self.weight_r2 = rospy.get_param("/weight_r2")
 
         r_shoulder_pitch_init_value = rospy.get_param("/init_joint_pose/r_shoulder_pitch")
-        r_shoulder_pitch_init_value = rospy.get_param("/init_joint_pose/r_shoulder_roll")
+        r_shoulder_roll_init_value = rospy.get_param("/init_joint_pose/r_shoulder_roll")
         r_elbow_roll_init_value = rospy.get_param("/init_joint_pose/r_elbow_roll")
         r_elbow_yaw_init_value = rospy.get_param("/init_joint_pose/r_elbow_yaw")
         r_wrist_yaw_init_value = rospy.get_param("/init_joint_pose/r_wrist_yaw")
 
-        self.init_joint_pose = [r_shoulder_pitch_init_value,r_shoulder_pitch_init_value,r_elbow_roll_init_value,
+        self.init_joint_pose = [r_shoulder_pitch_init_value,r_shoulder_roll_init_value,r_elbow_roll_init_value,
                                r_elbow_yaw_init_value, r_wrist_yaw_init_value]
 
         # Fill in the Done Episode Criteria list
@@ -118,7 +121,7 @@ class PepperEnvActorCritic(gym.Env):
             maximum_base_angular_velocity=self.maximum_base_angular_velocity,
             maximum_joint_effort=self.maximum_joint_effort,
         )
-        self.joint_names = ["RShoulderRoll", "RShoulderPitch","RElbowYaw", "RElbowRoll", "RWristYaw"]
+        self.joint_names = ["RShoulderPitch", "RShoulderRoll", "RElbowRoll", "RElbowYaw", "RWristYaw"]
         self.pepper_state_object.set_desired_length(self.desired_length.position.x,
                                                     self.desired_length.position.y,
                                                     self.desired_length.position.z)
@@ -173,10 +176,6 @@ class PepperEnvActorCritic(gym.Env):
         # rospy.logdebug("reset_pepper_joint_controllers...")
         self.controllers_object.reset_pepper_joint_controllers()
 
-        # 3rd: resets the robot to initial conditions
-        # rospy.logdebug("set_init_pose init variable...>>>" + str(self.init_joint_pose))
-        # We save that position as the current joint desired position
-        init_pos = self.pepper_state_object.init_joints_pose(self.init_joint_pose)
 
 
         # 4th: Check all scribers work.
@@ -185,6 +184,16 @@ class PepperEnvActorCritic(gym.Env):
         rospy.logdebug("check_all_systems_ready...")
         self.pepper_state_object.check_all_systems_ready()
 
+        # 3rd: resets the robot to initial conditions
+        # rospy.logdebug("set_init_pose init variable...>>>" + str(self.init_joint_pose))
+        # We save that position as the current joint desired position
+        # init_pos = self.pepper_state_object.init_joints_pose(self.init_joint_pose)
+        current_position = self.pepper_state_object.get_joint_positions(self.joint_names)
+        print("Current position", current_position)
+        print('Init Position', self.init_joint_pose)
+        self.pepper_body_action_object.set_init_pose(current_position, self.init_joint_pose)
+        self.pepper_state_object.set_init_distances()
+        
         # 5th: We restore the gravity to original
         # rospy.logdebug("Restore Gravity...")
         self.gazebo.change_gravity(0.0, 0.0, -9.81)
@@ -207,7 +216,7 @@ class PepperEnvActorCritic(gym.Env):
         # we perform the corresponding movement of the robot
 
         # 1st, decide which action corresponds to which position is incremented
-        next_positions = self.pepper_state_object.get_action_to_position(action)
+        next_positions = self.pepper_state_object.get_action_to_position(self.joint_names, action)
 
         # We move it to that pos
         self.gazebo.unpauseSim()

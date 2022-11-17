@@ -206,7 +206,7 @@ class PepperEnvJoint(gym.Env):
         # we perform the corresponding movement of the robot
 
         # 1st, decide which action corresponds to which position is incremented
-        next_positions = self.pepper_state_object.get_action_to_position(action)
+        next_positions = self.pepper_state_object.get_action_to_position(self.joint_names, action)
 
         # We move it to that pos
         self.gazebo.unpauseSim()

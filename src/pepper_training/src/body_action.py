@@ -23,13 +23,12 @@ class BodyAction(object):
         self._right_arm_action_client = actionlib.SimpleActionClient(action, FollowJointTrajectoryAction)
         self._right_arm_action_client.wait_for_server()
 
-    def set_init_pose(self, init_pose):
+    def set_init_pose(self, current_position, init_position):
         """
-        Sets joints to initial position [0,0,0]
         :return: The init Pose
         """
-        self.check_publishers_connection()
-        self.move_joints(init_pose)
+        # self.check_publishers_connection()
+        self.move_joints(current_position, init_position)
 
     def check_publishers_connection(self):
         """
@@ -37,34 +36,14 @@ class BodyAction(object):
         :return:
         """
         rate = rospy.Rate(10)  # 10hz
-        while (self._haa_joint_pub.get_num_connections() == 0):
-            rospy.logdebug("No susbribers to _haa_joint_pub yet so we wait and try again")
+        while (self._right_arm_action_client.is_server_connected()  ):
+            rospy.logdebug("No susbribers to _right_arm_action_client yet so we wait and try again")
             try:
                 rate.sleep()
             except rospy.ROSInterruptException:
                 # This is to avoid error when world is rested, time when backwards.
                 pass
-        rospy.logdebug("_haa_joint_pub Publisher Connected")
-
-        while (self._hfe_joint_pub.get_num_connections() == 0):
-            rospy.logdebug("No susbribers to _hfe_joint_pub yet so we wait and try again")
-            try:
-                rate.sleep()
-            except rospy.ROSInterruptException:
-                # This is to avoid error when world is rested, time when backwards.
-                pass
-        rospy.logdebug("_hfe_joint_pub Publisher Connected")
-
-        while (self._kfe_joint_pub.get_num_connections() == 0):
-            rospy.logdebug("No susbribers to _kfe_joint_pub yet so we wait and try again")
-            try:
-                rate.sleep()
-            except rospy.ROSInterruptException:
-                # This is to avoid error when world is rested, time when backwards.
-                pass
-        rospy.logdebug("_kfe_joint_pub Publisher Connected")
-
-        rospy.logdebug("All Joint Publishers READY")
+        rospy.logdebug("_right_arm_action_client Publisher Connected")
 
     def joint_mono_des_callback(self, msg):
         rospy.logdebug(str(msg.joint_state.position))
