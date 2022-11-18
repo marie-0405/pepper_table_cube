@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<sdf version="1.5">
+  <world name="pepper_table_cube">
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+    <include>
+      <name>table</name>
+      <uri>model://my_table</uri>
+      <pose>0.43 -0.13 -0.070 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://coke_can</uri>
+      <pose>0.090 -0.28 0.702 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://target</uri>
+      <pose>0.090 -0.18 0.7055 0 0 0</pose>
+    </include>
+    <gravity>0 0 -9.81</gravity>
+  </world>
+</sdf>
