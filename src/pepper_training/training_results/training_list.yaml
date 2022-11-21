@@ -43,5 +43,37 @@ add_joints:
 
 non_additional_reward:
   *: "same as above"
+  state: ["distance1", "distance2"]
   reward: null
+
+2022-11-medium_network_size:
+  *: "same as above"
+  networksize: [128, 256]
+  states: ["vector1", "vector2", "five of joints"]
+  reward: "+1 if distance1 <= 0.085"
+
+baseline200:
+  *: "same as above"
+  networksize: [256, 512]
+  nepisodes: 200
+
+positive_reward:
+  *: "same as above"
+  networksize: [256, 512]
+  reward: "positive reward"
+
+epsilon_greedy_off:
+  *: "same as above"
+  reward: "+1 if distance1 <= 0.085"
+  epsilon: off
+
+positive_epsilon_off:
+  *: "same as above"
+  reward: "positive reward"
+  epsilon: off
+  nepisodes: 200
+
+can_negative_rewaard:
+  reward: "negative reward"
+  epsilon: off
   
