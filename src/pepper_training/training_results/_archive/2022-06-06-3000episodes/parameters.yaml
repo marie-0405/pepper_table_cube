@@ -1,0 +1,76 @@
+a=0.33-g=0.9:
+  alpha: 0.33  # 0-1 0.5
+  gamma: 0.90  # 0.8 - 0.99
+  epsilon: 0.9
+  epsilon_begin: 0.5
+  epsilon_end: 0.1
+  epsilon_discount: 0.999 # 1098 eps to reach 0.1
+  nepisodes: 3000  # 50/3000
+  nsteps: 30
+
+# Environment Parameters
+desired_length:
+  x: 0.0
+  y: 0.0
+  z: 0.026
+max_distance: 0.5  # in meters
+min_distance: 0.025  # in meters
+max_simulation_time: 30 # in seconds
+running_step: 0.001   # in seconds
+joint_increment_value: 0.5  # in radians
+position_increment_value: 0.01  # in meter
+done_reward: -1000.0 # reward
+base_reward: 0.0 # reward
+
+success_reward: 1000.0 # reward
+
+weight_r1: 1.0 # Weight for distance from hand to cube ( what hand is within a radius of 0.07 from cube is perfect )
+weight_r2: 1.0 # Weight for distance from cube to target position ( on the point is perfect )
+
+list_of_observations: # Observations you want to use for the learning
+  - distance_from_hand_to_cube
+  - distance_from_cube_to_target
+
+discrete_division: 200 # Parts in which we divide each of the observations sensory range
+
+init_joint_pose:  # Set the right arm on the table
+  r_shoulder_pitch: -0.0037184561
+  r_shoulder_roll: -0.0123692708
+  r_elbow_roll: 0.0085497772
+  r_elbow_yaw: 0.0010389422
+  r_wrist_yaw: 0.0
+init_hand_pose:  # Set the right arm on the table
+  x: 0.0830
+  y: -0.308
+  z: 0.7452
+
+joint_limits_array:  # in rad
+  r_shoulder_pitch_max: 2.0856684561
+  r_shoulder_pitch_min: -2.0856684561
+  r_shoulder_roll_max: -0.0087266463
+  r_shoulder_roll_min: -1.5620696805
+  r_elbow_roll_max: 1.5620696805
+  r_elbow_roll_min: 0.0087266463
+  r_elbow_yaw_max: 2.0856684561
+  r_elbow_yaw_min: -2.0856684561
+  r_wrist_yaw_max: 1.8238690683
+  r_wrist_yaw_min: -1.8238690683
+
+hand_limits_array:  # in meter
+  x_max: 0.01
+  x_min: 0.0
+  y_max: -0.32
+  y_min: -0.05
+  z_max: 0.1
+  z_min: 0.74523
+
+episode_done_criteria:
+  # - simulation_time
+  - cube_moved_target
+
+maximum_base_linear_acceleration: 3000.0 # Based on making fall from a body height vertical max/min imu readings
+
+maximum_base_angular_velocity: 20.0 # Based on free fall, one body length, at 45 degree angle max/min imu readings 20.0
+
+maximum_joint_effort: 10.0 # Based on observation of Falling knee flexed
+
