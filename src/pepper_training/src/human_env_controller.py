@@ -12,15 +12,16 @@ from interface.ienvironment_controller import IEnvController
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class HumanEnvController(IEnvController):
-  def __init__(self, file_name):
+  def __init__(self, file_name_end, nvideo):
     # read human data from csv file
     super().__init__()
-    self.df = pd.read_csv('./human_data/{}_distance.csv'.format(file_name))
-  
+    self.df = pd.read_csv('./human_data/{}-{}/distance_{}.csv'.format(settings.date, file_name_end, nvideo))
+    self.step_size = len(self.df)
+    
   def get_action_and_state_size(self):
     # TODO change if you change state or action
     action_size = 10
-    state_size = 2
+    state_size = 11
     print('action_size', action_size)
     print('state_size', state_size)
     return action_size, state_size
@@ -29,7 +30,7 @@ class HumanEnvController(IEnvController):
     """
     stateとnext_stateを比較して、最も大きく変化がある関節をactionとする
     """
-    joint_names = ['RShoulderRoll', 'RShoulderPitch', 'RElbowRoll', 'RElbowYaw']
+    joint_names = ["RShoulderPitch", "RShoulderRoll", "RElbowRoll", "RElbowYaw", "RWristYaw"]
     state = np.array(self.get_data(joint_names, index=index-1))
     next_state = np.array(self.get_data(joint_names, index=index))
     print('state', state)
@@ -57,9 +58,13 @@ class HumanEnvController(IEnvController):
       arr.append(self.df.iloc[index][column_name])
     return arr
   
-  def get_state(self, index=0):
-    state = self._get_data_from_file(['Distance1', 'Distance2'], index)
+  def get_state(self, state_names:list, index=0) -> list:
+    state = self._get_data_from_file(state_names, index)
     print('state', state)
+    return state
+  
+  def get_joint(self, joint_names, index=0):
+    state = self._get_data_from_file(joint_names, index)
     return state
 
   def _get_reward(self, distance1, distance2):

@@ -8,8 +8,8 @@ class PepperEnvController(IEnvController):
     super().__init__()
     # Create a new nep node
     node = nep.node("Calculator")                                                       
-    conf = node.hybrid("192.168.11.62")                         
-    # conf = node.hybrid("192.168.3.14")                         
+    # conf = node.hybrid("192.168.11.62")                         
+    conf = node.hybrid("192.168.3.7")                         
     self.sub = node.new_sub("env", "json", conf)
     self.pub = node.new_pub("calc", "json", conf)
     
@@ -24,14 +24,18 @@ class PepperEnvController(IEnvController):
     action_size, state_size = self._get_msg().values()
     return action_size, state_size
   
-  def get_state(self):
+  def get_state(self) -> list:
     state = self._get_msg()['state']
     return state
   
-  def publish_action(self, action):
-    print("ACTION", action.cpu().tolist())
+  def publish_action_and_reward(self, action, human_joint_reward=0):
+    print("Sending ACTION", action.cpu().tolist())
     self.pub.publish({'action': action.cpu().tolist()})  # need tolist for sending message as json
   
+  def publish_step_size(self, step_size):
+    print("Seding Step_size", step_size)
+    self.pub.publish({'step_size': step_size})  
+    
   def step(self, index):
     """
     return next_state, reward, and done.

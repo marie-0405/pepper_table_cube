@@ -5,6 +5,10 @@ import os
 import pandas as pd
 # import rospkg
 import sys
+import settings
+
+plt.rcParams["font.family"] = "Times New Roman"
+plt.rcParams["font.size"] = 18
 
 class ResultController():
 
@@ -20,13 +24,13 @@ class ResultController():
     self.file_name_end = file_name_end
     self.file_name = file_name
     self.file_path = {
-      'results': pkg_path + '/training_results/results-'+ file_name_end + '.csv',
-      'cumulative_reward': pkg_path + '/training_results/reward-'+ file_name_end + '.png',
-      'q_matrix': pkg_path + '/training_results/q_matrix-'+ file_name_end + '.txt',
-      'experiences': pkg_path + '/training_results/experiences-'+ file_name_end + '.csv',
-      'actor_loss': pkg_path + '/training_results/actor-loss-'+ file_name_end + '.png',
-      'critic_loss': pkg_path + '/training_results/critic-loss-'+ file_name_end + '.png',
-      'distribution': pkg_path + '/training_results/distribution-'+ file_name_end + '.png',
+      'results': '{}/training_results/{}-{}/results-{}.csv'.format(pkg_path, settings.date, file_name_end, file_name_end),
+      'cumulative_reward': '{}/training_results/{}-{}/reward-{}.png'.format(pkg_path, settings.date, file_name_end, file_name_end),
+      'q_matrix': '{}/training_results/{}-{}/q_matrix-{}.txt'.format(pkg_path, settings.date, file_name_end, file_name_end),
+      'experiences': '{}/training_results/{}-{}/experiences-{}.csv'.format(pkg_path, settings.date, file_name_end, file_name_end),
+      'actor_loss': '{}/training_results/{}-{}/actor-loss-{}.png'.format(pkg_path, settings.date, file_name_end, file_name_end),
+      'critic_loss': '{}/training_results/{}-{}/critic-loss-{}.png'.format(pkg_path, settings.date, file_name_end, file_name_end),
+      'distribution': '{}/training_results/{}-{}/distribution-{}.png'.format(pkg_path, settings.date, file_name_end, file_name_end),
     }
 
   def write(self, file_name='results', **kwargs):
@@ -51,12 +55,10 @@ class ResultController():
     average = result_df[label].mean()
     return average
 
-  def plot(self, label):
+  def plot(self, label, ylim=[-35, 150]):
     result_df = self._read()
-    plt.rcParams["font.family"] = "Times New Roman"
-    plt.rcParams["font.size"] = 18
     plt.figure()
-    result_df[label].plot(figsize=(11, 6), label=label.capitalize())
+    result_df[label].plot(figsize=(11, 6), label=label.capitalize().replace('_', ' '))
     average = self.get_average(label)
     plt.plot(np.arange(0, len(result_df)), 
              np.full(len(result_df), average),
@@ -67,9 +69,31 @@ class ResultController():
     plt.ylabel(label.capitalize().replace('_', ' '))
     # plt.ylabel("Reward")  # TODO test
 
-    plt.ylim([-30.0, 0.0])
+    plt.ylim(ylim)
     plt.legend(edgecolor="black")
     plt.savefig(self.file_path[label])
+  
+  def plot_batch(self, label, num_batch):
+    result_df = self._read()
+    plt.figure(figsize=(11, 6))
+    # result_df[label].plot(figsize=(11, 6), label=label.capitalize().replace('_', ' '))
+    # average = self.get_average(label)
+    batch_result = []
+    for i in range(int(len(result_df[label]) / num_batch)):
+      start_index = i * num_batch
+      end_index = i * num_batch + num_batch
+      batch_result.append(result_df[label][start_index:end_index].mean())
+    print(batch_result)
+    plt.plot([i for i in range(int(len(result_df[label]) / num_batch))], batch_result, label=label.capitalize().replace('_', ' '))
+    
+    # Axis label
+    plt.xlabel("The number of episode")
+    plt.ylabel(label.capitalize().replace('_', ' '))
+    # plt.ylabel("Reward")  # TODO test
+
+    plt.ylim([-30.0, -15.0])
+    plt.show()
+    # plt.savefig(self.file_path[label])
   
   def plot_arrays(self, label):
     """
@@ -98,7 +122,9 @@ class ResultController():
 if __name__ == '__main__':
   file_name_end = sys.argv[1] if len(sys.argv)==2 else ''
   # file_name_end = ['test1', 'test2', 'test3']
-  file_name_end = ['decrease_the_sizes_reward_positive']
-  for fne in file_name_end:
-    result_controller = ResultController(fne)
-    result_controller.plot('cumulative_reward')
+  file_name_end = ['positive_epsilon_off']
+  result_controller = ResultController('test_positive_epsilon_off')
+  result_controller.plot('cumulative_reward', [-60, 170])
+  # for fne in file_name_end:
+  #   experience_controller = ResultController('positive_epsilon_off', 'experiences')
+  #   experience_controller.plot_arrays('distribution')
