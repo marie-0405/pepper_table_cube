@@ -13,6 +13,7 @@
   <!-- Start Gazebo with a blank world -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
       <arg name="world_name" value="$(find pepper_table_cube)/worlds/pepper_table_cube.world"/>
+      <!-- <arg name="world_name" value="$(find pepper_table_cube)/worlds/pepper_table_can.world"/> -->
       <arg name="debug" value="$(arg debug)" />
       <arg name="gui" value="$(arg gui)" />
       <arg name="paused" value="$(arg pause)"/>
