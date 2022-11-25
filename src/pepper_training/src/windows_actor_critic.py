@@ -58,7 +58,7 @@ def trainIters(actor, critic, file_name_end):
       print('Distribution', dist.probs)
       # action, log_prob = human_data_controller.get_action(i) # TODO csv
 
-      env_controller.publish_action_and_reward(action)  # TODO NEP
+      env_controller.publish_action(action)  # TODO NEP
       next_state, reward, done = env_controller.step(i)
       print('Next_state\n', next_state)
       print('Reward', reward)

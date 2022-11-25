@@ -31,6 +31,7 @@ class ResultController():
       'actor_loss': '{}/training_results/{}-{}/actor-loss-{}.png'.format(pkg_path, settings.date, file_name_end, file_name_end),
       'critic_loss': '{}/training_results/{}-{}/critic-loss-{}.png'.format(pkg_path, settings.date, file_name_end, file_name_end),
       'distribution': '{}/training_results/{}-{}/distribution-{}.png'.format(pkg_path, settings.date, file_name_end, file_name_end),
+      'average_reward': '{}/training_results/{}-{}/avg_reward-{}.png'.format(pkg_path, settings.date, file_name_end, file_name_end),
     }
 
   def write(self, file_name='results', **kwargs):
@@ -72,6 +73,20 @@ class ResultController():
     plt.ylim(ylim)
     plt.legend(edgecolor="black")
     plt.savefig(self.file_path[label])
+
+  def plot_average_reward(self, label, ylim=[-35, 25]):
+    result_df = self._read()
+    plt.figure()
+    result_df['cumulative_reward']
+
+    # Axis label
+    plt.xlabel("The number of episode")
+    plt.ylabel(label.capitalize().replace('_', ' '))
+    # plt.ylabel("Reward")  # TODO test
+
+    plt.ylim(ylim)
+    plt.legend(edgecolor="black")
+    plt.savefig()
   
   def plot_batch(self, label, num_batch):
     result_df = self._read()

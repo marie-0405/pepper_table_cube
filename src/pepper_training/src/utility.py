@@ -23,11 +23,13 @@ def load_results_and_experiences(result_data_controller, experience_controller, 
     succeeds = result_data_controller.get_data('succeed')
     actor_losses = result_data_controller.get_data('actor_loss')
     critic_losses = result_data_controller.get_data('critic_loss')
+    average_rewards = result_data_controller.get_data('average_reward')
   else:
     cumulative_rewards = []
     succeeds = []
     actor_losses = []
     critic_losses = []
+    average_rewards = []
 
   if os.path.exists('../training_results/{}-{}/experiences-{}.csv'.format(settings.date, file_name_end, file_name_end)):
     states = experience_controller.get_data('state')
@@ -41,7 +43,7 @@ def load_results_and_experiences(result_data_controller, experience_controller, 
     rewards = []
     next_states = []
     dists = []
-  return cumulative_rewards, succeeds, actor_losses, critic_losses, states, actions, rewards, next_states, dists
+  return cumulative_rewards, succeeds, actor_losses, critic_losses, average_rewards, states, actions, rewards, next_states, dists
 
 def select_action(dist, epsilon, action_size):
   # probs = tensor([5.0393e-03, 3.0475e-01,... 2.6321e-01], device='cuda:0', grad_fn=<SoftmaxBackward0>)
@@ -52,6 +54,3 @@ def select_action(dist, epsilon, action_size):
     print('maximum is chosen')
     action = dist.sample()
   return action
-
-def compute_MSE_joint_reward(robot_states, human_states):
-  return mean_squared_error(robot_states, human_states)
