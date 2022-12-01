@@ -30,6 +30,7 @@ def trainIters(actor, critic, file_name_end):
   cumulative_rewards, succeeds, actor_losses, critic_losses, average_rewards, \
     states, actions, rewards, next_states, dists = load_results_and_experiences(result_data_controller, experience_controller, file_name_end)
   test_rewards = []
+  once_done = []
   for nepisode in range(len(cumulative_rewards), settings.nvideos):
     print("nepipsodes", nepisode)
     print("cumulative", len(cumulative_rewards))
@@ -45,6 +46,7 @@ def trainIters(actor, critic, file_name_end):
     human_env_controller = HumanEnvController(settings.video_file_name, nepisode, state_names, joint_names)
     state = human_env_controller.get_state()
     print("Human State\n", state)
+    
     if nepisode < settings.nepisodes - 1:
       epsilon = settings.epsilon_begin + (settings.epsilon_end - settings.epsilon_begin) * nepisode / settings.nepisodes
     else:
@@ -57,9 +59,9 @@ def trainIters(actor, critic, file_name_end):
       state = torch.FloatTensor(state).to(device)
       dist, value = actor(state), critic(state)
       # action = select_action(dist, epsilon, action_size)  # TODO NEP
-      action = dist.sample()  # TODO epsilon-off
+      # action = dist.sample()  # TODO epsilon-off
       # print('Distribution', dist.probs)
-      # action, log_prob = human_data_controller.get_action(i) # TODO csv
+      action = human_env_controller.get_action(i)
       
       # Cannot use action in human env
       # pepper_env_controller.publish_action(action)  # TODO NEP
@@ -68,6 +70,9 @@ def trainIters(actor, critic, file_name_end):
       print('Next_state\n', next_state)
       print('Reward', reward)
       print('Done', done)
+
+      if (not once_done) and done:
+        once_done = done
   
       log_prob = dist.log_prob(action).unsqueeze(0)
       entropy += dist.entropy().mean()
@@ -86,15 +91,10 @@ def trainIters(actor, critic, file_name_end):
       dists.append(dist.probs.cpu().tolist())
 
       # Judgement for End or Not
-      if done:
-        succeeds.append(True)
-        print('Iteration: {}, Score: {}'.format(nepisode, i))
-        # break
+      if i == human_env_controller.step_size - 1:
+          succeeds.append(once_done)
       else:
-        if i == human_env_controller.step_size - 1:
-          succeeds.append(True)
-        else:
-          state = next_state
+        state = next_state
           
       ## Save the experiences
       experience_controller.write('experiences', state=states, action=actions, reward=rewards, next_state=next_states, distribution=dists)   
@@ -127,7 +127,7 @@ def trainIters(actor, critic, file_name_end):
     
     print("When average_reward step_size", human_env_controller.step_size)
     average_rewards.append(cumulative_rewards[-1] / human_env_controller.step_size)
-    print(average_rewards )
+    print(average_rewards)
 
     # IPython.embed()
     ## Save the results 
@@ -153,7 +153,8 @@ def trainIters(actor, critic, file_name_end):
   experience_controller.plot_arrays('distribution')
 
 if __name__ == '__main__':
-  action_size, state_size = human_env_controller.get_action_and_state_size()
+  action_size = 10
+  state_size = len(state_names)
   for file_name_end in settings.file_name_end:
     # TODO test comment out while training
     test_file_name_end = 'test_' + file_name_end

@@ -84,7 +84,7 @@ def trainIters(actor, critic, file_name_end):
         print('Next_state\n', next_state)
         print('Reward', reward)
         print('Done', done)
-        reward += mse_human_pepper_joint # TODO pepper human
+        reward -= mse_human_pepper_joint # TODO pepper human
     
         log_prob = dist.log_prob(action).unsqueeze(0)
         entropy += dist.entropy().mean()
@@ -144,7 +144,7 @@ def trainIters(actor, critic, file_name_end):
       
       print("When average_reward step_size", human_env_controller.step_size)
       average_rewards.append(cumulative_rewards[-1] / human_env_controller.step_size)
-      print(average_rewards )
+      print(average_rewards)
 
       # IPython.embed()
       ## Save the results 
@@ -157,17 +157,19 @@ def trainIters(actor, critic, file_name_end):
       optimizerA.step()
       optimizerC.step()
 
+      # TODO test
+      save_fig(result_data_controller, ['cumulative_reward', 'actor_loss', 'critic_loss'])
+      # save_fig(result_data_controller, ['cumulative_reward'])
+      
+      experience_controller.plot_arrays('distribution')
+
   ## TODO test
   torch.save(actor.state_dict(), actor_path)
   torch.save(critic.state_dict(), critic_path)
   torch.save(optimizerA.state_dict(), optimizerA_path)
   torch.save(optimizerC.state_dict(), optimizerC_path)
 
-  # TODO test
-  save_fig(result_data_controller, ['cumulative_reward', 'actor_loss', 'critic_loss'])
-  # save_fig(result_data_controller, ['cumulative_reward'])
   
-  experience_controller.plot_arrays('distribution')
 
 if __name__ == '__main__':
   action_size, state_size = pepper_env_controller.get_action_and_state_size()
