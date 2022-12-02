@@ -5,7 +5,7 @@ epsilon: 0.9
 epsilon_begin: 0.5
 epsilon_end: 0.1
 epsilon_discount: 0.999 # 1098 eps to reach 0.1
-nepisodes: 100  # 50/3000
+nepisodes: 500  # 50/3000
 nsteps: 50
 
 # Environment Parameters
@@ -21,33 +21,33 @@ joint_increment_value: 0.2  # in radians
 position_increment_value: 0.01  # in meter
 done_reward: -1000.0 # reward
 base_reward: 0.0 # reward
-success_reward: 10.0 # reward
+success_reward: 100.0 # reward
 
-weight_r1: 2.0 # Weight for distance from hand to cube ( what hand is within a radius of 0.07 from cube is perfect )
-weight_r2: 3.0 # Weight for distance from cube to target position ( on the point is perfect )
+weight_r1: 2.0 # Weight for distance from hand to object ( what hand is within a radius of 0.07 from object is perfect )
+weight_r2: 3.0 # Weight for distance from object to target position ( on the point is perfect )
 
 list_of_observations: # Observations you want to use for the learning
-  # - distance_from_hand_to_cube
-  # - distance_from_cube_to_target
+  # - distance_from_hand_to_object
+  # - distance_from_object_to_target
   - r_shoulder_pitch
   - r_shoulder_roll
   - r_elbow_roll
   - r_elbow_yaw
   - r_wrist_yaw
-  - x_vector_hand_to_cube
-  - y_vector_hand_to_cube
-  - z_vector_hand_to_cube
-  - x_vector_cube_to_target
-  - y_vector_cube_to_target
-  - z_vector_cube_to_target
+  - x_vector_hand_to_object
+  - y_vector_hand_to_object
+  - z_vector_hand_to_object
+  - x_vector_object_to_target
+  - y_vector_object_to_target
+  - z_vector_object_to_target
 
 discrete_division: 20 # Parts in which we divide each of the observations sensory range
 
 init_joint_pose:  # Set the right arm on the table
-  r_shoulder_pitch: -0.0037184561
-  r_shoulder_roll: -0.0123692708
+  r_shoulder_pitch: -0.0237184561
+  r_shoulder_roll: -0.0223692708
   r_elbow_roll: 0.0085497772
-  r_elbow_yaw: 0.0010389422
+  r_elbow_yaw: 0.00
   r_wrist_yaw: 0.0
 init_hand_pose:  # Set the right arm on the table
   x: 0.0830
@@ -57,7 +57,7 @@ init_hand_pose:  # Set the right arm on the table
 joint_limits_array:  # in rad
   r_shoulder_pitch_max: 2.0856684561
   r_shoulder_pitch_min: -2.0856684561
-  r_shoulder_roll_max: -0.0087266463
+  r_shoulder_roll_max: 1.000
   r_shoulder_roll_min: -1.5620696805
   r_elbow_roll_max: 1.5620696805
   r_elbow_roll_min: 0.0087266463
@@ -76,7 +76,7 @@ hand_limits_array:  # in meter
 
 episode_done_criteria:
   # - simulation_time
-  - cube_moved_target
+  - object_moved_target
 
 maximum_base_linear_acceleration: 3000.0 # Based on making fall from a body height vertical max/min imu readings
 
