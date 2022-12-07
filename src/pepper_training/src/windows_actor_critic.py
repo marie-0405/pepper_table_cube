@@ -27,7 +27,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def trainIters(actor, critic, file_name_end):
   # Initialize the result data
-  cumulative_rewards, succeeds, actor_losses, critic_losses, \
+  cumulative_rewards, succeeds, actor_losses, critic_losses, average_rewards, \
     states, actions, rewards, next_states, dists = load_results_and_experiences(result_data_controller, experience_controller, file_name_end)
   test_rewards = []
   
@@ -93,12 +93,6 @@ def trainIters(actor, critic, file_name_end):
       
       ## Save the experiences
       experience_controller.write('experiences', state=states, action=actions, reward=rewards, next_state=next_states, distribution=dists)   
-    # Save the model and optimizer by episodes
-    # TODO train
-    # torch.save(actor.state_dict(), actor_path)
-    # torch.save(critic.state_dict(), critic_path)
-    # torch.save(optimizerA.state_dict(), optimizerA_path)
-    # torch.save(optimizerC.state_dict(), optimizerC_path)
 
     next_state = torch.FloatTensor(next_state).to(device)
     next_value = critic(next_state)
@@ -117,28 +111,39 @@ def trainIters(actor, critic, file_name_end):
     # Save the losses for plot
     actor_losses.append(actor_loss.detach().item())
     critic_losses.append(critic_loss.detach().item())
+    
+    average_rewards.append(cumulative_rewards[-1] / NSTEP)
 
     ## Save the results
-    result_data_controller.write('results', cumulative_reward=cumulative_rewards, succeed=succeeds, actor_loss=actor_losses, critic_loss=critic_losses)
+    result_data_controller.write('results', cumulative_reward=cumulative_rewards, succeed=succeeds, actor_loss=actor_losses, critic_loss=critic_losses, average_reward=average_rewards)
 
     # TODO test 
     # Optimize the weight parameters
-    # actor_loss.backward()  # calculate gradient
-    # critic_loss.backward()
-    # optimizerA.step()
-    # optimizerC.step()
-
-  ## TODO test
-  # torch.save(actor.state_dict(), actor_path)
-  # torch.save(critic.state_dict(), critic_path)
-  # torch.save(optimizerA.state_dict(), optimizerA_path)
-  # torch.save(optimizerC.state_dict(), optimizerC_path)
-
-  # TODO test
-  # save_fig(result_data_controller, ['cumulative_reward', 'actor_loss', 'critic_loss'])
-  save_fig(result_data_controller, ['cumulative_reward'])
+    actor_loss.backward()  # calculate gradient
+    critic_loss.backward()
+    optimizerA.step()
+    optimizerC.step()
+    
+    # Save the model and optimizer by episodes
+    # TODO test
+    torch.save(actor.state_dict(), actor_path)
+    torch.save(critic.state_dict(), critic_path)
+    torch.save(optimizerA.state_dict(), optimizerA_path)
+    torch.save(optimizerC.state_dict(), optimizerC_path)
   
-  experience_controller.plot_arrays('distribution')
+    # TODO test
+    save_fig(result_data_controller, ['cumulative_reward', 'actor_loss', 'critic_loss'])
+    # save_fig(result_data_controller, ['cumulative_reward'])
+    
+    experience_controller.plot_arrays('distribution')
+    
+
+  ## TODO test these are may not necessary
+  torch.save(actor.state_dict(), actor_path)
+  torch.save(critic.state_dict(), critic_path)
+  torch.save(optimizerA.state_dict(), optimizerA_path)
+  torch.save(optimizerC.state_dict(), optimizerC_path)
+
 
 if __name__ == '__main__':
   action_size, state_size = env_controller.get_action_and_state_size()
@@ -154,17 +159,17 @@ if __name__ == '__main__':
     optimizerC_path = '{}optimizer/optimizerC-{}.pkl'.format(training_results_dir, file_name_end)
     
     # TODO test
-    # result_data_controller = ResultController(file_name_end)
-    # experience_controller = ResultController(file_name_end, 'experiences')
-    result_data_controller = ResultController(test_file_name_end)
-    experience_controller = ResultController(test_file_name_end, 'experiences')
+    result_data_controller = ResultController(file_name_end)
+    experience_controller = ResultController(file_name_end, 'experiences')
+    # result_data_controller = ResultController(test_file_name_end)
+    # experience_controller = ResultController(test_file_name_end, 'experiences')
 
     print("actor_path", actor_path)
     if os.path.exists(actor_path):
       actor = Actor(state_size, action_size, 256, 512).to(device)
       actor.load_state_dict(torch.load(actor_path))
-      # actor.train()
-      actor.eval()  # TODO test
+      actor.train()
+      # actor.eval()  # TODO test
       print('Actor Model loaded')
 
       optimizerA = optim.Adam(actor.parameters(), lr=settings.lr)
@@ -176,8 +181,8 @@ if __name__ == '__main__':
     if os.path.exists(critic_path):
       critic = Critic(state_size, action_size, 256, 512).to(device)
       critic.load_state_dict(torch.load(critic_path))
-      # critic.train()
-      critic.eval()  # TODO test
+      critic.train()
+      # critic.eval()  # TODO test
       print('Critic Model loaded')
 
       optimizerC = optim.Adam(critic.parameters(), lr=settings.lr)
@@ -186,5 +191,5 @@ if __name__ == '__main__':
     else:
       critic = Critic(state_size, action_size, 256, 512).to(device)
       optimizerC = optim.Adam(critic.parameters(), lr=settings.lr)
-    # trainIters(actor, critic, file_name_end)
-    trainIters(actor, critic, test_file_name_end)
+    trainIters(actor, critic, file_name_end)
+    # trainIters(actor, critic, test_file_name_end)

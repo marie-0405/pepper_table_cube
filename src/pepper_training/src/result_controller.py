@@ -137,9 +137,9 @@ class ResultController():
 if __name__ == '__main__':
   file_name_end = sys.argv[1] if len(sys.argv)==2 else ''
   # file_name_end = ['test1', 'test2', 'test3']
-  file_name_end = ['positive_epsilon_off']
-  result_controller = ResultController('test_positive_epsilon_off')
-  result_controller.plot('cumulative_reward', [-60, 170])
+  file_name_end = ['human_only']
+  result_controller = ResultController('reward_video_loop')
+  result_controller.plot('cumulative_reward', [-150, 150])
   # for fne in file_name_end:
   #   experience_controller = ResultController('positive_epsilon_off', 'experiences')
   #   experience_controller.plot_arrays('distribution')
