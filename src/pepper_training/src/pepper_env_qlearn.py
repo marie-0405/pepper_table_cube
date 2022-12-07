@@ -117,6 +117,7 @@ class PepperEnvJoint(gym.Env):
             maximum_base_linear_acceleration=self.maximum_base_linear_acceleration,
             maximum_base_angular_velocity=self.maximum_base_angular_velocity,
             maximum_joint_effort=self.maximum_joint_effort,
+            object_name='cube'
         )
         self.joint_names = ["RShoulderRoll", "RShoulderPitch","RElbowYaw", "RElbowRoll", "RWristYaw"]
         self.pepper_state_object.set_desired_length(self.desired_length.position.x,
