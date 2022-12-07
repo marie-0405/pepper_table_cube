@@ -98,12 +98,6 @@ def trainIters(actor, critic, file_name_end):
           
       ## Save the experiences
       experience_controller.write('experiences', state=states, action=actions, reward=rewards, next_state=next_states, distribution=dists)   
-    # Save the model and optimizer by episodes
-    # TODO test
-    torch.save(actor.state_dict(), actor_path)
-    torch.save(critic.state_dict(), critic_path)
-    torch.save(optimizerA.state_dict(), optimizerA_path)
-    torch.save(optimizerC.state_dict(), optimizerC_path)
 
     next_state = torch.FloatTensor(next_state).to(device)
     next_value = critic(next_state)
@@ -139,18 +133,26 @@ def trainIters(actor, critic, file_name_end):
     critic_loss.backward()
     optimizerA.step()
     optimizerC.step()
+    
+    # Save the model and optimizer by episodes
+    # TODO test
+    torch.save(actor.state_dict(), actor_path)
+    torch.save(critic.state_dict(), critic_path)
+    torch.save(optimizerA.state_dict(), optimizerA_path)
+    torch.save(optimizerC.state_dict(), optimizerC_path)
 
+    # TODO test
+    save_fig(result_data_controller, ['cumulative_reward', 'actor_loss', 'critic_loss'])
+    # save_fig(result_data_controller, ['cumulative_reward'])
+    
+    experience_controller.plot_arrays('distribution')
+    
   ## TODO test
-  torch.save(actor.state_dict(), actor_path)
-  torch.save(critic.state_dict(), critic_path)
-  torch.save(optimizerA.state_dict(), optimizerA_path)
-  torch.save(optimizerC.state_dict(), optimizerC_path)
+  # torch.save(actor.state_dict(), actor_path)
+  # torch.save(critic.state_dict(), critic_path)
+  # torch.save(optimizerA.state_dict(), optimizerA_path)
+  # torch.save(optimizerC.state_dict(), optimizerC_path)
 
-  # TODO test
-  save_fig(result_data_controller, ['cumulative_reward', 'actor_loss', 'critic_loss'])
-  # save_fig(result_data_controller, ['cumulative_reward'])
-  
-  experience_controller.plot_arrays('distribution')
 
 if __name__ == '__main__':
   action_size = 10

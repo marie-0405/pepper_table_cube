@@ -86,14 +86,14 @@ class HumanEnvController(IEnvController):
   def _get_reward(self, index):
     weight1 = settings.w1
     weight2 = settings.w2
-    before_distances = self.get_state(['Distance1', 'Distance2'], index-1)
-    distances = self.get_state(['Distance1', 'Distance2'], index)
+    before_distances = self._get_data_from_file(['Distance1', 'Distance2'], index-1)
+    distances = self._get_data_from_file(['Distance1', 'Distance2'], index)
     r1 = self._calculate_reward(weight1, before_distances[0], distances[0])
     r2 = self._calculate_reward(weight2, before_distances[1], distances[1])
     reward = r1 + r2
     
     # additional reward
-    if distances['Distance1'] < 26:  # TODO if hand reaches the cube
+    if distances[0] < 26:  # TODO if hand reaches the cube
       reward += 1
     
     return reward
@@ -106,8 +106,8 @@ class HumanEnvController(IEnvController):
     return reward
   
   def _is_task_ok(self, index):
-    distances = self.get_state(['Distance1', 'Distance2'], index)
-    if distances['Distatnce2'] < 10:
+    distances = self._get_data_from_file(['Distance1', 'Distance2'], index)
+    if distances[1] < 10:
       return True
     return False
 
