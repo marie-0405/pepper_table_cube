@@ -24,13 +24,12 @@ import time_recorder
 reg = register(
     id='Pepper-v1',
     entry_point='pepper_env_actor_critic:PepperEnvActorCritic',
-    kwargs={'joint_increment_value': 0.1}
     )
 
 
 class PepperEnvActorCritic(gym.Env):
 
-    def __init__(self, joint_increment_value=0.1):
+    def __init__(self):
         
         # We assume that a ROS node has already been created
         # before initialising the environment
@@ -45,8 +44,7 @@ class PepperEnvActorCritic(gym.Env):
         self.min_distance = rospy.get_param("/min_distance")
         self.max_distance = rospy.get_param("/max_distance")
         self.max_simulation_time = rospy.get_param("/max_simulation_time")
-        # self.joint_increment_value = rospy.get_param("/joint_increment_value")
-        self.joint_increment_value = joint_increment_value
+        self.joint_increment_value = rospy.get_param("/joint_increment_value")
         print("Joint increment value", self.joint_increment_value)
         self.done_reward = rospy.get_param("/done_reward")
         self.base_reward = rospy.get_param("/base_reward")
@@ -120,6 +118,7 @@ class PepperEnvActorCritic(gym.Env):
             maximum_base_linear_acceleration=self.maximum_base_linear_acceleration,
             maximum_base_angular_velocity=self.maximum_base_angular_velocity,
             maximum_joint_effort=self.maximum_joint_effort,
+            object_name='cube'
         )
         self.joint_names = ["RShoulderPitch", "RShoulderRoll", "RElbowRoll", "RElbowYaw", "RWristYaw"]
         self.pepper_state_object.set_desired_length(self.desired_length.position.x,
@@ -224,6 +223,8 @@ class PepperEnvActorCritic(gym.Env):
         # Get current positions of joint
         current_positions = self.pepper_state_object.get_joint_positions(self.joint_names)
         # Then we send the command to the robot and let it go
+        print('Current position', current_positions)
+        print('Next position', next_positions)
         self.pepper_body_action_object.move_joints(current_positions, next_positions)
     
         # for running_step seconds
