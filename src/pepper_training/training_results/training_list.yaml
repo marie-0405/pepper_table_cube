@@ -76,4 +76,55 @@ positive_epsilon_off:
 can_negative_rewaard:
   reward: "negative reward"
   epsilon: off
+
+first_with_human:
+  shared: 
+    reward: "positive reward"
+    epsilon: off
+    nvideos: 20
+    additional_reward: "defference between human and robot joint"  
+    loss: null
+
+  trimmed_human:
+    videos: "trimmed videos"
+
+  loss_joint:
+    additional_reward: null
+    loss: "difference between human and robot joint"
   
+  loss_joint_average_rewaard:
+    additional_reward: null
+    loss: "difference between human and robot joint"
+    average_reward: "To compare, added figure of average_reward"
+  
+  reward_video_loop:
+    additional_reward: "difference between human and robot joint"
+    video_loop: "1 episode runs 20 videos"
+  
+human_only:
+  shared:
+    nvideos: 20
+    reward: "positive reward"
+  first_human_only:
+    description: "after the human_only learning, run 500 episodes of learning in Pepper env"
+    
+positive_epsilon_off_500:
+  nepisodes: 500
+  reward: before - 0.005 <= distance <= before + 0.005
+
+positive_epsilon_off_500_round:
+  nepisodes: 500
+  reward: round(before, 10) == round(distance, 10)
+
+human_correrct_initial_joint:
+  description: "I modified initial joint RightElbowYaw angle 
+    because it was too big to move other joint angle"
+
+big_rshoulderroll_limit:
+  description: "I make larger rshoulder roll limits"
+
+direct_to_cube_with_human:
+  description: "mistook learning. I forgot changing name of model"
+
+direct_to_cube_with_human2:
+  description: "correct learning for above one"
