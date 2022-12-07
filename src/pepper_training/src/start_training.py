@@ -22,7 +22,7 @@ import rospy
 import rospkg
 
 # import my training environment
-import pepper_env_joint
+import pepper_training.src.pepper_env_qlearn as pepper_env_qlearn
 
 # import my tool
 from hyper_parameter import HyperParameter

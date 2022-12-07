@@ -156,7 +156,7 @@
 	<joint name="RWristYaw" type="revolute">
 		<parent link="RForeArm"/>
 		<child link="r_wrist"/>
-		<origin rpy="0 0 0" xyz="0.15 0 0"/>
+		<origin rpy="0.95 0 0" xyz="0.15 0 0"/>
 		<axis xyz="1.0 0 0"/>
 		<limit effort="0.2014" lower="-1.82387" upper="1.82387" velocity="17.3835"/>
 	</joint>

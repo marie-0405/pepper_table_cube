@@ -94,7 +94,7 @@ gazebo_msgs/ContactState[] states
 
 class PepperState(object):
 
-    def __init__(self, min_distance, max_distance, max_simulation_time, list_of_observations, joint_limits, episode_done_criteria, joint_increment_value = 0.05, done_reward = -1000.0, base_reward=10.0, success_reward=1000.0, weight_r1=1.0, weight_r2=1.0, discrete_division=10, maximum_base_linear_acceleration=3000.0, maximum_base_angular_velocity=20.0, maximum_joint_effort=10.0):
+    def __init__(self, min_distance, max_distance, max_simulation_time, list_of_observations, joint_limits, episode_done_criteria, joint_increment_value = 0.05, done_reward = -1000.0, base_reward=10.0, success_reward=1000.0, weight_r1=1.0, weight_r2=1.0, discrete_division=10, maximum_base_linear_acceleration=3000.0, maximum_base_angular_velocity=20.0, maximum_joint_effort=10.0, object_name='cube'):
         rospy.logdebug("Starting pepperState Class object...")
         self.desired_length = Vector3(0.0, 0.0, 0.0)
         self._min_distance = min_distance
@@ -109,6 +109,7 @@ class PepperState(object):
         self._weight_r2 = weight_r2
 
         self._list_of_observations = list_of_observations
+        self.object_name = object_name
 
         # Dictionary with the max and min of each of the joints
         self._joint_limits = joint_limits
@@ -169,7 +170,7 @@ class PepperState(object):
 
     def set_desired_length(self, x, y, z):
         """
-        Point where you want the cube to be from target
+        Point where you want the object to be from target
         :return:
         """
         self.desired_length.x = x
@@ -178,11 +179,11 @@ class PepperState(object):
     
     def set_init_distances(self):
         # Set init distance
-        cube_pos = self.get_model_position("cube")
+        object_pos = self.get_model_position(self.object_name)
         target_pos = self.get_model_position("target")
         hand_pos = self.get_link_position("pepper::r_gripper")
-        self.before_distances = {'hand_cube': self.get_distance_from_point_to_point(hand_pos, cube_pos),
-                                'cube_target': self.get_distance_from_point_to_point(cube_pos, target_pos)}
+        self.before_distances = {'hand_object': self.get_distance_from_point_to_point(hand_pos, object_pos),
+                                'object_target': self.get_distance_from_point_to_point(object_pos, target_pos)}
         print("Before distances", self.before_distances)
 
     def get_simulation_time_in_secs(self):
@@ -254,20 +255,20 @@ class PepperState(object):
     
     def task_ok(self):
         """
-        The task is that the cube is moved to the target position. 
-        If the distance from cube to target is smaller than 0.03m, 
+        The task is that the object is moved to the target position. 
+        If the distance from object to target is smaller than 0.03m, 
         task is done.
         """
-        cube_pos = self.get_model_position("cube")
+        object_pos = self.get_model_position(self.object_name)
         target_pos = self.get_model_position("target")
-        distance_from_cube_to_target = \
-            self.get_distance_from_point_to_point(cube_pos, target_pos)
-        task_ok = bool(distance_from_cube_to_target <= 0.03)
+        distance_from_object_to_target = \
+            self.get_distance_from_point_to_point(object_pos, target_pos)
+        task_ok = bool(distance_from_object_to_target <= 0.04)
         return task_ok
 
     def calculate_reward_distance(self, weight, p_from, p_to):
         """
-        We calculate reward base on the position between hand and cube. The more near 0 the better.
+        We calculate reward base on the position between hand and object. The more near 0 the better.
         
         Parameters
         ---------- 
@@ -289,7 +290,7 @@ class PepperState(object):
     
     def calculate_positive_reward_distance(self, weight, p_from, p_to, from_to_key):
         """
-        We calculate reward on the distance between hand and cube or cube and marker
+        We calculate reward on the distance between hand and object or object and marker
         To make reward positive, we compare the before distance and current distance
         if before distance < current distance:
             reward = +1 * weight
@@ -300,10 +301,10 @@ class PepperState(object):
         """
         distance = self.get_distance_from_point_to_point(p_from, p_to)
         rospy.loginfo("Distance" + str(distance))
-        if self.before_distances[from_to_key] > distance:
+        if self.before_distances[from_to_key] - 0.005 <= distance <= self.before_distances[from_to_key] + 0.005:
+            reward = 0  
+        elif self.before_distances[from_to_key] > distance:
             reward = weight * 1
-        elif round(self.before_distances[from_to_key], 10) == round(distance, 10):
-            reward = 0
         else:
             reward = -1 * weight
         print("{} before distance", self.before_distances[from_to_key])
@@ -313,7 +314,7 @@ class PepperState(object):
 
     def calculate_reward_joint_position(self, weight=1.0):
         """
-        We calculate reward base on the position between hand and cube. The more near 0 the better.
+        We calculate reward base on the position between hand and object. The more near 0 the better.
         :return:
         """
         acumulated_joint_pos = 0.0
@@ -377,33 +378,32 @@ class PepperState(object):
         r2 = -10.0  ==> We give priority to this, giving it higher value.
         :return:
         """
-        cube_pos = self.get_model_position("cube")
+        object_pos = self.get_model_position(self.object_name)
         target_pos = self.get_model_position("target")
         hand_pos = self.get_link_position("pepper::r_gripper")
 
-        r1 = self.calculate_reward_distance(self._weight_r1, hand_pos, cube_pos)
-        r2 = self.calculate_reward_distance(self._weight_r2, cube_pos, target_pos)
+        # r1 = self.calculate_reward_distance(self._weight_r1, hand_pos, object_pos)
+        # r2 = self.calculate_reward_distance(self._weight_r2, object_pos, target_pos)
 
-        # r1 = self.calculate_positive_reward_distance(self._weight_r1, hand_pos, cube_pos, 'hand_cube')
-        # r2 = self.calculate_positive_reward_distance(self._weight_r2, cube_pos, target_pos, 'cube_target')
+        r1 = self.calculate_positive_reward_distance(self._weight_r1, hand_pos, object_pos, 'hand_object')
+        r2 = self.calculate_positive_reward_distance(self._weight_r2, object_pos, target_pos, 'object_target')
 
         # The sign depend on its function.
-        total_reward = self._base_reward - r1 - r2
+        # total_reward = self._base_reward - r1 - r2
 
-        # total_reward = r1 + r2
+        total_reward = r1 + r2
 
-        # Add additional reward when hand reaches cube
-        if self.get_distance_from_point_to_point(hand_pos, cube_pos) <= 0.085:
+        # Add additional reward when hand reaches object
+        if self.get_distance_from_point_to_point(hand_pos, object_pos) <= 0.085:
             rospy.loginfo("Additional reward is added")
             total_reward += 1
 
-        ## TODO reward 2 
         # TODO try to opposite weight 
 
         rospy.logdebug("########################")
         rospy.logdebug("base_reward=" + str(self._base_reward))
-        rospy.logdebug("r1 distance_from_hand_to_cube=" + str(r1))
-        rospy.logdebug("r2 distance_from_cube_to_target=" + str(r2))
+        rospy.logdebug("r1 distance_from_hand_to_object=" + str(r1))
+        rospy.logdebug("r2 distance_from_object_to_target=" + str(r2))
         rospy.logdebug("total_reward=" + str(total_reward))
         rospy.logdebug("#######################")
 
@@ -416,24 +416,24 @@ class PepperState(object):
         :return: observation
         """
         
-        cube_pos = self.get_model_position("cube")
+        object_pos = self.get_model_position(self.object_name)
         target_pos = self.get_model_position("target")
         hand_pos = self.get_link_position("pepper::r_gripper")
 
-        distance_from_hand_to_cube = \
-            self.get_distance_from_point_to_point(hand_pos, cube_pos)
-        distance_from_cube_to_target = \
-            self.get_distance_from_point_to_point(cube_pos, target_pos)
-        vector_from_hand_to_cube = self.get_vector_from_point_to_point(hand_pos, cube_pos)
-        vector_from_cube_to_target = self.get_vector_from_point_to_point(cube_pos, target_pos)
+        distance_from_hand_to_object = \
+            self.get_distance_from_point_to_point(hand_pos, object_pos)
+        distance_from_object_to_target = \
+            self.get_distance_from_point_to_point(object_pos, target_pos)
+        vector_from_hand_to_object = self.get_vector_from_point_to_point(hand_pos, object_pos)
+        vector_from_object_to_target = self.get_vector_from_point_to_point(object_pos, target_pos)
 
         observation = []
         # rospy.logdebug("List of Observations==>"+str(self._list_of_observations))
         for obs_name in self._list_of_observations:
-            if obs_name == "distance_from_hand_to_cube":
-                observation.append(distance_from_hand_to_cube)
-            elif obs_name == "distance_from_cube_to_target":
-                observation.append(distance_from_cube_to_target)
+            if obs_name == "distance_from_hand_to_object":
+                observation.append(distance_from_hand_to_object)
+            elif obs_name == "distance_from_object_to_target":
+                observation.append(distance_from_object_to_target)
             elif obs_name == "r_shoulder_pitch":
                 observation.append(self.get_joint_positions(['RShoulderPitch'])[0])
             elif obs_name == "r_shoulder_roll":
@@ -444,18 +444,18 @@ class PepperState(object):
                 observation.append(self.get_joint_positions(['RElbowYaw'])[0])
             elif obs_name == "r_wrist_yaw":
                 observation.append(self.get_joint_positions(['RWristYaw'])[0])
-            elif obs_name == "x_vector_hand_to_cube":
-                observation.append(vector_from_hand_to_cube[0])
-            elif obs_name == "y_vector_hand_to_cube":
-                observation.append(vector_from_hand_to_cube[1])
-            elif obs_name == "z_vector_hand_to_cube":
-                observation.append(vector_from_hand_to_cube[2])
-            elif obs_name == "x_vector_cube_to_target":
-                observation.append(vector_from_cube_to_target[0])
-            elif obs_name == "y_vector_cube_to_target":
-                observation.append(vector_from_cube_to_target[1])
-            elif obs_name == "z_vector_cube_to_target":
-                observation.append(vector_from_cube_to_target[2])
+            elif obs_name == "x_vector_hand_to_object":
+                observation.append(vector_from_hand_to_object[0])
+            elif obs_name == "y_vector_hand_to_object":
+                observation.append(vector_from_hand_to_object[1])
+            elif obs_name == "z_vector_hand_to_object":
+                observation.append(vector_from_hand_to_object[2])
+            elif obs_name == "x_vector_object_to_target":
+                observation.append(vector_from_object_to_target[0])
+            elif obs_name == "y_vector_object_to_target":
+                observation.append(vector_from_object_to_target[1])
+            elif obs_name == "z_vector_object_to_target":
+                observation.append(vector_from_object_to_target[2])
             else:
                 raise NameError('Observation Asked does not exist=='+str(obs_name))
 
@@ -507,11 +507,11 @@ class PepperState(object):
         """
         self._obs_range_dict = {}
         for obs_name in self._list_of_observations:
-            if obs_name == "distance_from_hand_to_cube":
+            if obs_name == "distance_from_hand_to_object":
                 # We consider the range as based on the range of distance between models
                 max_value = self._max_distance
                 min_value = self._min_distance
-            elif obs_name == "distance_from_cube_to_target":
+            elif obs_name == "distance_from_object_to_target":
                 max_value = self._max_distance
                 min_value = self._min_distance
             else:
@@ -638,16 +638,26 @@ class PepperState(object):
                                          self._joint_limits["rey_min"])
         self.current_joint_pose[4] = max(min(rwy_joint_value, self._joint_limits["rwy_max"]),
                                          self._joint_limits["rwy_min"])
+        if rsp_joint_value != self.current_joint_pose[0]:
+            print("RShoulderPitch limits")
+        if rsr_joint_value != self.current_joint_pose[1]:
+            print("RShoulderRoll limits")
+        if rer_joint_value != self.current_joint_pose[2]:
+            print("RElbowRoll limits")
+        if rey_joint_value != self.current_joint_pose[3]:
+            print("RElbowYaw limits")
+        if rwy_joint_value != self.current_joint_pose[4]:
+            print("RWristYaw limits")
 
     def process_data(self):
         """
         We return the total reward based on the state in which we are in and if its done or not
         :return: reward, done
         """
-        if "cube_moved_target" in self._episode_done_criteria:
+        if "object_moved_target" in self._episode_done_criteria:
             task_ok = self.task_ok()
         else:
-            rospy.logdebug("cube_moved_target NOT TAKEN INTO ACCOUNT")
+            rospy.logdebug("object_moved_target NOT TAKEN INTO ACCOUNT")
             task_ok = True
 
         rospy.logdebug("task_ok="+str(task_ok))
