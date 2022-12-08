@@ -128,3 +128,22 @@ direct_to_cube_with_human:
 
 direct_to_cube_with_human2:
   description: "correct learning for above one"
+
+direct_to_cube_with_human2:
+  description: "Just use 500 episodes of results of above one"
+
+human_only_loop:
+  description: "something is wrong"
+  nepisodes: 100
+
+with_human_only_loop:
+  description: "something is wrong"
+  description: "add for loop to learn many times for 1 video"
+
+human_only_loop_50:
+  description: "something is wrong"
+  nepisodes: 50
+
+dropped_out_both_model:
+  description: "add drop out method for Actor and Critic model"
+  dropped_out_value(p): 0.8
