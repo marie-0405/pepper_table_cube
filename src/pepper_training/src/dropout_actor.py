@@ -20,11 +20,11 @@ class DropoutActor(nn.Module):
     self.linear1 = nn.Linear(self.state_size, L1)
     self.linear2 = nn.Linear(L1, L2)
     self.linear3 = nn.Linear(L2, self.action_size)
+    self.dropout = nn.Dropout(p=settings.dropout_rate)  ## TODO change
 
   def forward(self, state):
     output = F.relu(self.linear1(state))
-    dropout = nn.Dropout(p=settings.dropout_rate)  ## TODO change
-    output = F.relu(dropout(self.linear2(output)))
-    output = dropout(self.linear3(output))
+    output = self.dropout(F.relu(self.linear2(output)))
+    output = self.dropout(self.linear3(output))
     distribution = Categorical(F.softmax(output, dim=-1))
     return distribution
