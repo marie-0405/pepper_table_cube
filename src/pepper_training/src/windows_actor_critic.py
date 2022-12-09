@@ -11,6 +11,8 @@ import torch.optim as optim
 
 from actor import Actor
 from critic import Critic
+from dropout_actor import DropoutActor
+from dropout_critic import DropoutCritic
 from result_controller import ResultController
 from human_env_controller import HumanEnvController
 from pepper_env_controller import PepperEnvController
@@ -136,14 +138,6 @@ def trainIters(actor, critic, file_name_end):
     # save_fig(result_data_controller, ['cumulative_reward'])
     
     experience_controller.plot_arrays('distribution')
-    
-
-  ## TODO test these are may not necessary
-  torch.save(actor.state_dict(), actor_path)
-  torch.save(critic.state_dict(), critic_path)
-  torch.save(optimizerA.state_dict(), optimizerA_path)
-  torch.save(optimizerC.state_dict(), optimizerC_path)
-
 
 if __name__ == '__main__':
   action_size, state_size = env_controller.get_action_and_state_size()
@@ -166,7 +160,9 @@ if __name__ == '__main__':
 
     print("actor_path", actor_path)
     if os.path.exists(actor_path):
-      actor = Actor(state_size, action_size, 256, 512).to(device)
+      # TODO Dropout
+      # actor = Actor(state_size, action_size, 256, 512).to(device)
+      actor = DropoutActor(state_size, action_size, 256, 512).to(device)
       actor.load_state_dict(torch.load(actor_path))
       actor.train()
       # actor.eval()  # TODO test
@@ -176,10 +172,14 @@ if __name__ == '__main__':
       optimizerA.load_state_dict(torch.load(optimizerA_path))
       print('Actor Optimizer loaded')
     else:
-      actor = Actor(state_size, action_size, 256, 512).to(device)
+      # TODO Dropout
+      # actor = Actor(state_size, action_size, 256, 512).to(device)
+      actor = DropoutActor(state_size, action_size, 256, 512).to(device)
       optimizerA = optim.Adam(actor.parameters(), lr=settings.lr)
     if os.path.exists(critic_path):
-      critic = Critic(state_size, action_size, 256, 512).to(device)
+      # TODO Dropout
+      # critic = Critic(state_size, action_size, 256, 512).to(device)
+      critic = DropoutCritic(state_size, action_size, 256, 512).to(device)
       critic.load_state_dict(torch.load(critic_path))
       critic.train()
       # critic.eval()  # TODO test
@@ -189,7 +189,10 @@ if __name__ == '__main__':
       optimizerC.load_state_dict(torch.load(optimizerC_path))
       print('Critic Optimizer loaded')
     else:
-      critic = Critic(state_size, action_size, 256, 512).to(device)
+      # TODO Dropout
+      # critic = Critic(state_size, action_size, 256, 512).to(device)
+      critic = DropoutCritic(state_size, action_size, 256, 512).to(device)
       optimizerC = optim.Adam(critic.parameters(), lr=settings.lr)
+    ## TODO test
     trainIters(actor, critic, file_name_end)
     # trainIters(actor, critic, test_file_name_end)

@@ -4,16 +4,17 @@ epsilon_begin = 0.2  # TODO decrease to 0.2 or delete
 epsilon_end = 0.01
 video_date = '2022-12-01'
 video_file_name = 'direct_to_cube'
-date = '2022-12-05'
-file_name_end = ['direct_to_cube_with_human2']
+date = '2022-12-08'
+file_name_end = ['dropout_both_model']
 gamma = 0.99  # TODO TUNING 0.7 良さそうだったらだんだん小さくする
+dropout_rate = 0.8
 # gamma = 0.7
 lr = 3e-4
 # TODO leraing rate を変更することがでっきる
 # TODO Change nepisode
 # nepisodes = 300
 # test
-nepisodes = 1000
+nepisodes = 500
 nsteps = 50
 nvideos = 20
 w1 = 2.0
