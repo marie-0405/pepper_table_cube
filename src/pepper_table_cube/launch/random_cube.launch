@@ -8,12 +8,11 @@
   <arg name="pause" default="true"/>  
   
   <!-- Load the URDF Model -->
-  <include file="$(find my_pepper_description)/launch/pepper_upload.launch" /> 
+  <include file="$(find my_pepper_description)/launch/pepper_upload.launch" />
 
   <!-- Start Gazebo with a blank world -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-      <arg name="world_name" value="$(find pepper_table_cube)/worlds/pepper_table_cube.world"/>
-      <!-- <arg name="world_name" value="$(find pepper_table_cube)/worlds/pepper_table_can.world"/> -->
+      <arg name="world_name" value="$(find pepper_table_cube)/worlds/pepper_table.world"/>
       <arg name="debug" value="$(arg debug)" />
       <arg name="gui" value="$(arg gui)" />
       <arg name="paused" value="$(arg pause)"/>
@@ -31,6 +30,10 @@
   <!-- Spawn a robot into Gazebo -->
   <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model"
     args="-param robot_description -urdf -x -0.1 -y 0 -z 0.820 -model pepper" />
+
+  <!-- Spawn a cube into Gazebo -->
+  <node name="spawn_cube" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find pepper_table_cube)/models/cube/model.sdf -gazebo -model cube -x 0.13 -y -0.28 -z 0.73" />
   
   <!-- Load joint_states -->
   <include file="$(find pepper_table_cube)/launch/pepper_control.launch"/>
