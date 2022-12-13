@@ -68,7 +68,7 @@ class BodyAction(object):
         # Set next point (type is JointTrajectoryPoint)
         next_point = JointTrajectoryPoint()
         next_point.positions = next_positions
-        next_point.time_from_start = rospy.Duration(0.6)
+        next_point.time_from_start = rospy.Duration(1.0)
         
         # Set goal
         self.goal = FollowJointTrajectoryGoal()

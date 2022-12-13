@@ -8,6 +8,7 @@
 import gym
 import rospy
 import numpy as np
+import random
 import time
 from gym import utils, spaces
 from geometry_msgs.msg import Pose
@@ -19,6 +20,7 @@ from controllers_connection import ControllersConnection
 from body_action import BodyAction
 from pepper_state_joint import PepperState
 import time_recorder
+from model_setter import ModelSetter
 
 # register the training environment in the gym as an available one
 reg = register(
@@ -147,6 +149,8 @@ class PepperEnvActorCritic(gym.Env):
         )
         self.reward_range = (-np.inf, np.inf)
 
+        self.cube = ModelSetter("cube")
+
         self._seed()  # TODO ランダムシードは固定しないほうがいいかも
 
     # A function to iline 49, in _initialize the random generator
@@ -175,7 +179,11 @@ class PepperEnvActorCritic(gym.Env):
         # rospy.logdebug("reset_pepper_joint_controllers...")
         self.controllers_object.reset_pepper_joint_controllers()
 
-
+        # EXTRA: move cube to random position
+        positions = [0.07, 0.10, 0.13, 0.16]
+        rand_index = random.randint(0, 3)
+        self.cube.set_position(positions[rand_index], -0.28, 0.73)
+        rospy.loginfo("X init pose = " + str(positions[rand_index]))
 
         # 4th: Check all scribers work.
         # Get the state of the Robot defined by its RPY orientation, distance from
