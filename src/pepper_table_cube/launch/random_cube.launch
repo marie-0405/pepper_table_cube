@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="launch_control_trajectory_all" default="false"/>
+  <arg name="robot" default="pepper_robot"/>
+  <arg name="debug" default="false"/>
+  <arg name="gui" default="false"/>
+  <arg name="headless" default="false"/>
+  <arg name="pause" default="true"/>  
+  
+  <!-- Load the URDF Model -->
+  <include file="$(find my_pepper_description)/launch/pepper_upload.launch" />
+
+  <!-- Start Gazebo with a blank world -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+      <arg name="world_name" value="$(find pepper_table_cube)/worlds/pepper_table.world"/>
+      <arg name="debug" value="$(arg debug)" />
+      <arg name="gui" value="$(arg gui)" />
+      <arg name="paused" value="$(arg pause)"/>
+      <arg name="use_sim_time" value="true"/>
+      <arg name="headless" value="$(arg headless)"/>
+  </include>
+
+  <!-- Load joint controller configurations from YAML file to parameter server -->
+  <rosparam file="$(find my_pepper_gazebo_plugin)/config/pepper_gazebo_controller.yaml" command="load"/>
+
+  <!-- Call Pepper Robot Trajectory Controller -->
+  <include file="$(find my_pepper_control)/launch/pepper_control_trajectory.launch" unless="$(arg launch_control_trajectory_all)"/>
+  <include file="$(find my_pepper_control)/launch/pepper_control_trajectory_all.launch" if="$(arg launch_control_trajectory_all)"/>
+
+  <!-- Spawn a robot into Gazebo -->
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model"
+    args="-param robot_description -urdf -x -0.1 -y 0 -z 0.820 -model pepper" />
+
+  <!-- Spawn a cube into Gazebo -->
+  <node name="spawn_cube" pkg="gazebo_ros" type="spawn_model"
+    args="-file $(find pepper_table_cube)/models/cube/model.sdf -gazebo -model cube -x 0.13 -y -0.28 -z 0.73" />
+  
+  <!-- Load joint_states -->
+  <include file="$(find pepper_table_cube)/launch/pepper_control.launch"/>
+
+  <!-- Show image data -->
+  <!-- <node name="img_proc" pkg="pepper_table_cube" type="get_image.py"/> -->
+
+  <!-- Move Pepper with action -->
+  <!-- <node name="action_pepper_moveit" pkg="pepper_table_cube" type="action_pepper_move.py"/> -->
+</launch>
