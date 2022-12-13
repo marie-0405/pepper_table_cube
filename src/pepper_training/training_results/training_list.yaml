@@ -144,6 +144,13 @@ human_only_loop_50:
   description: "something is wrong"
   nepisodes: 50
 
-dropped_out_both_model:
-  description: "add drop out method for Actor and Critic model"
+dropout_0.8:
+  description: "add drop out method for Actor and Critic model
+    . Only pepper environment"
   dropped_out_value(p): 0.8
+
+direct_to_cube_30_steps:
+  description: "no dropout. direct_to_cube"
+
+direct_to_cube_50_steps:
+  description: "same as above. nstep is 50"

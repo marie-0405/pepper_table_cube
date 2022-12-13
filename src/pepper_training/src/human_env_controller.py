@@ -93,7 +93,7 @@ class HumanEnvController(IEnvController):
     reward = r1 + r2
     
     # additional reward
-    if distances[0] < 26:  # TODO if hand reaches the cube
+    if distances[0] < 55:  # TODO if hand reaches the cube
       reward += 1
     
     return reward
