@@ -31,121 +31,122 @@ def trainIters(actor, critic, file_name_end):
     states, actions, rewards, next_states, dists = load_results_and_experiences(result_data_controller, experience_controller, file_name_end)
   test_rewards = []
   once_done = []
-  for nepisode in range(len(cumulative_rewards), settings.nvideos):
-    print("nepipsodes", nepisode)
-    print("cumulative", len(cumulative_rewards))
-    print("Episode: " + str(nepisode))
-    cumulative_rewards.append(0)
-    log_probs = []
-    values = []
-    entropy = 0
-    tensor_rewards = []
-    masks = []
-    
-    # print(file_name_end)
-    human_env_controller = HumanEnvController(settings.video_file_name, nepisode, state_names, joint_names)
-    state = human_env_controller.get_state()
-    print("Human State\n", state)
-    
-    if nepisode < settings.nepisodes - 1:
-      epsilon = settings.epsilon_begin + (settings.epsilon_end - settings.epsilon_begin) * nepisode / settings.nepisodes
-    else:
-      epsilon = settings.epsilon_end
-    # print("Epsilon", epsilon)
-    
-    for i in range(human_env_controller.step_size):
-      optimizerA.zero_grad()
-      optimizerC.zero_grad()
-      state = torch.FloatTensor(state).to(device)
-      dist, value = actor(state), critic(state)
-      # action = select_action(dist, epsilon, action_size)  # TODO NEP
-      # action = dist.sample()  # TODO epsilon-off
-      # print('Distribution', dist.probs)
-      action = human_env_controller.get_action(i)
+  for nepisode in range(int(len(cumulative_rewards) / settings.nvideos), int(settings.nepisodes / settings.nvideos)):
+    for nvideo in range(len(cumulative_rewards) % settings.nvideos, settings.nvideos):
+      print("cumulative", len(cumulative_rewards))
+      print("Episode: " + str(nepisode))
+      print("Video:" + str(nvideo))
+      cumulative_rewards.append(0)
+      log_probs = []
+      values = []
+      entropy = 0
+      tensor_rewards = []
+      masks = []
       
-      # Cannot use action in human env
-      # pepper_env_controller.publish_action(action)  # TODO NEP
-
-      next_state, reward, done = human_env_controller.step(i)
-      print('Next_state\n', next_state)
-      print('Reward', reward)
-      print('Done', done)
-
-      if (not once_done) and done:
-        once_done = done
-  
-      log_prob = dist.log_prob(action).unsqueeze(0)
-      entropy += dist.entropy().mean()
-
-      log_probs.append(log_prob)
-      values.append(value)
-      tensor_rewards.append(torch.tensor([reward], dtype=torch.float, device=device))
-      masks.append(torch.tensor([1-done], dtype=torch.float, device=device))
-      cumulative_rewards[-1] += reward
-      test_rewards.append(reward)
-      states.append(state.cpu().tolist())
-      action_num = action.cpu().numpy()
-      actions.append(action_num)
-      rewards.append(reward)
-      next_states.append(next_state)
-      dists.append(dist.probs.cpu().tolist())
-
-      # Judgement for End or Not
-      if i == human_env_controller.step_size - 1:
-          succeeds.append(once_done)
+      # print(file_name_end)
+      human_env_controller = HumanEnvController(settings.video_file_name, nepisode, state_names, joint_names)
+      state = human_env_controller.get_state()
+      print("Human State\n", state)
+      
+      if nepisode < settings.nepisodes - 1:
+        epsilon = settings.epsilon_begin + (settings.epsilon_end - settings.epsilon_begin) * nepisode / settings.nepisodes
       else:
-        state = next_state
-          
-      ## Save the experiences
-      experience_controller.write('experiences', state=states, action=actions, reward=rewards, next_state=next_states, distribution=dists)   
+        epsilon = settings.epsilon_end
+      # print("Epsilon", epsilon)
+      
+      for i in range(human_env_controller.step_size):
+        optimizerA.zero_grad()
+        optimizerC.zero_grad()
+        state = torch.FloatTensor(state).to(device)
+        dist, value = actor(state), critic(state)
+        # action = select_action(dist, epsilon, action_size)  # TODO NEP
+        # action = dist.sample()  # TODO epsilon-off
+        # print('Distribution', dist.probs)
+        action = human_env_controller.get_action(i)
+        
+        # Cannot use action in human env
+        # pepper_env_controller.publish_action(action)  # TODO NEP
 
-    next_state = torch.FloatTensor(next_state).to(device)
-    next_value = critic(next_state)
+        next_state, reward, done = human_env_controller.step(i)
+        print('Next_state\n', next_state)
+        print('Reward', reward)
+        print('Done', done)
 
-    returns = compute_returns(next_value, tensor_rewards, masks)
-    log_probs = torch.cat(log_probs)  # TODO NEP
-    # log_probs = torch.tensor(log_probs, device=device, requires_grad=True)  # TODO csv
-    returns = torch.cat(returns).detach()
-    values = torch.cat(values)
-
-    advantage = returns - values
-    actor_loss = -(log_probs * advantage.detach()).mean()
-    critic_loss = advantage.pow(2).mean()
-    ## TODO Additional loss value of defference between human joint and pepper joint
-    # critic_loss = advantage.pow(2).mean() + mse_human_pepper_joint
-
-
-    # Save the losses for plot
-    actor_losses.append(actor_loss.detach().item())
-    critic_losses.append(critic_loss.detach().item())
+        if (not once_done) and done:
+          once_done = done
     
-    print("When average_reward step_size", human_env_controller.step_size)
-    average_rewards.append(cumulative_rewards[-1] / human_env_controller.step_size)
-    print(average_rewards)
+        log_prob = dist.log_prob(action).unsqueeze(0)
+        entropy += dist.entropy().mean()
 
-    # IPython.embed()
-    ## Save the results 
-    result_data_controller.write('results', cumulative_reward=cumulative_rewards, succeed=succeeds, actor_loss=actor_losses, critic_loss=critic_losses, average_reward=average_rewards)
+        log_probs.append(log_prob)
+        values.append(value)
+        tensor_rewards.append(torch.tensor([reward], dtype=torch.float, device=device))
+        masks.append(torch.tensor([1-done], dtype=torch.float, device=device))
+        cumulative_rewards[-1] += reward
+        test_rewards.append(reward)
+        states.append(state.cpu().tolist())
+        action_num = action.cpu().numpy()
+        actions.append(action_num)
+        rewards.append(reward)
+        next_states.append(next_state)
+        dists.append(dist.probs.cpu().tolist())
 
-    # TODO test 
-    # Optimize the weight parameters
-    actor_loss.backward()  # calculate gradient
-    critic_loss.backward()
-    optimizerA.step()
-    optimizerC.step()
-    
-    # Save the model and optimizer by episodes
-    # TODO test
-    torch.save(actor.state_dict(), actor_path)
-    torch.save(critic.state_dict(), critic_path)
-    torch.save(optimizerA.state_dict(), optimizerA_path)
-    torch.save(optimizerC.state_dict(), optimizerC_path)
+        # Judgement for End or Not
+        if i == human_env_controller.step_size - 1:
+            succeeds.append(once_done)
+        else:
+          state = next_state
+            
+        ## Save the experiences
+        experience_controller.write('experiences', state=states, action=actions, reward=rewards, next_state=next_states, distribution=dists)   
 
-    # TODO test
-    save_fig(result_data_controller, ['cumulative_reward', 'actor_loss', 'critic_loss'])
-    # save_fig(result_data_controller, ['cumulative_reward'])
-    
-    experience_controller.plot_arrays('distribution')
+      next_state = torch.FloatTensor(next_state).to(device)
+      next_value = critic(next_state)
+
+      returns = compute_returns(next_value, tensor_rewards, masks)
+      log_probs = torch.cat(log_probs)  # TODO NEP
+      # log_probs = torch.tensor(log_probs, device=device, requires_grad=True)  # TODO csv
+      returns = torch.cat(returns).detach()
+      values = torch.cat(values)
+
+      advantage = returns - values
+      actor_loss = -(log_probs * advantage.detach()).mean()
+      critic_loss = advantage.pow(2).mean()
+      ## TODO Additional loss value of defference between human joint and pepper joint
+      # critic_loss = advantage.pow(2).mean() + mse_human_pepper_joint
+
+
+      # Save the losses for plot
+      actor_losses.append(actor_loss.detach().item())
+      critic_losses.append(critic_loss.detach().item())
+      
+      print("When average_reward step_size", human_env_controller.step_size)
+      average_rewards.append(cumulative_rewards[-1] / human_env_controller.step_size)
+      print(average_rewards)
+
+      # IPython.embed()
+      ## Save the results 
+      result_data_controller.write('results', cumulative_reward=cumulative_rewards, succeed=succeeds, actor_loss=actor_losses, critic_loss=critic_losses, average_reward=average_rewards)
+
+      # TODO test 
+      # Optimize the weight parameters
+      actor_loss.backward()  # calculate gradient
+      critic_loss.backward()
+      optimizerA.step()
+      optimizerC.step()
+      
+      # Save the model and optimizer by episodes
+      # TODO test
+      torch.save(actor.state_dict(), actor_path)
+      torch.save(critic.state_dict(), critic_path)
+      torch.save(optimizerA.state_dict(), optimizerA_path)
+      torch.save(optimizerC.state_dict(), optimizerC_path)
+
+      # TODO test
+      save_fig(result_data_controller, ['cumulative_reward', 'actor_loss', 'critic_loss'])
+      # save_fig(result_data_controller, ['cumulative_reward'])
+      
+      experience_controller.plot_arrays('distribution')
     
   ## TODO test
   # torch.save(actor.state_dict(), actor_path)

@@ -161,25 +161,25 @@ if __name__ == '__main__':
     print("actor_path", actor_path)
     if os.path.exists(actor_path):
       # TODO Dropout
-      # actor = Actor(state_size, action_size, 256, 512).to(device)
-      actor = DropoutActor(state_size, action_size, 256, 512).to(device)
+      actor = Actor(state_size, action_size, 256, 512).to(device)
+      # actor = DropoutActor(state_size, action_size, 256, 512).to(device)
       actor.load_state_dict(torch.load(actor_path))
       actor.train()
       # actor.eval()  # TODO test
       print('Actor Model loaded')
 
-      optimizerA = optim.Adam(actor.parameters(), lr=settings.lr)
+      optimizerA = optim.Adam(actor.parameters(), lr=settings.lr, )
       optimizerA.load_state_dict(torch.load(optimizerA_path))
       print('Actor Optimizer loaded')
     else:
       # TODO Dropout
-      # actor = Actor(state_size, action_size, 256, 512).to(device)
-      actor = DropoutActor(state_size, action_size, 256, 512).to(device)
+      actor = Actor(state_size, action_size, 256, 512).to(device)
+      # actor = DropoutActor(state_size, action_size, 256, 512).to(device)
       optimizerA = optim.Adam(actor.parameters(), lr=settings.lr)
     if os.path.exists(critic_path):
       # TODO Dropout
-      # critic = Critic(state_size, action_size, 256, 512).to(device)
-      critic = DropoutCritic(state_size, action_size, 256, 512).to(device)
+      critic = Critic(state_size, action_size, 256, 512).to(device)
+      # critic = DropoutCritic(state_size, action_size, 256, 512).to(device)
       critic.load_state_dict(torch.load(critic_path))
       critic.train()
       # critic.eval()  # TODO test
@@ -190,8 +190,8 @@ if __name__ == '__main__':
       print('Critic Optimizer loaded')
     else:
       # TODO Dropout
-      # critic = Critic(state_size, action_size, 256, 512).to(device)
-      critic = DropoutCritic(state_size, action_size, 256, 512).to(device)
+      critic = Critic(state_size, action_size, 256, 512).to(device)
+      # critic = DropoutCritic(state_size, action_size, 256, 512).to(device)
       optimizerC = optim.Adam(critic.parameters(), lr=settings.lr)
     ## TODO test
     trainIters(actor, critic, file_name_end)
