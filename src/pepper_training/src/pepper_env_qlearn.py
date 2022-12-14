@@ -215,7 +215,7 @@ class PepperEnvJoint(gym.Env):
         # Get current positions of joint
         current_positions = self.pepper_state_object.get_joint_positions(self.joint_names)
         # Then we send the command to the robot and let it go
-        self.pepper_body_action_object.move_joints(current_positions, next_positions)
+        self.pepper_body_action_object.move_joints(next_positions)
     
         # for running_step seconds
         time.sleep(self.running_step)

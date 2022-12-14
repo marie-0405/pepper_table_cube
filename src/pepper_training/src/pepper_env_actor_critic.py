@@ -179,11 +179,11 @@ class PepperEnvActorCritic(gym.Env):
         # rospy.logdebug("reset_pepper_joint_controllers...")
         self.controllers_object.reset_pepper_joint_controllers()
 
-        # EXTRA: move cube to random position
-        positions = [0.07, 0.10, 0.13, 0.16]
-        rand_index = random.randint(0, 3)
-        self.cube.set_position(positions[rand_index], -0.28, 0.73)
-        rospy.loginfo("X init pose = " + str(positions[rand_index]))
+        # # EXTRA: move cube to random position
+        # positions = [0.07, 0.10, 0.13, 0.16]
+        # rand_index = random.randint(0, 3)
+        # self.cube.set_position(positions[rand_index], -0.28, 0.73)
+        # rospy.loginfo("X init pose = " + str(positions[rand_index]))
 
         # 4th: Check all scribers work.
         # Get the state of the Robot defined by its RPY orientation, distance from
@@ -198,7 +198,7 @@ class PepperEnvActorCritic(gym.Env):
         current_position = self.pepper_state_object.get_joint_positions(self.joint_names)
         print("Current position", current_position)
         print('Init Position', self.init_joint_pose)
-        self.pepper_body_action_object.set_init_pose(current_position, self.init_joint_pose)
+        # self.pepper_body_action_object.set_init_pose(current_position, self.init_joint_pose)
         self.pepper_state_object.set_init_distances()
         
         # 5th: We restore the gravity to original
@@ -233,7 +233,7 @@ class PepperEnvActorCritic(gym.Env):
         # Then we send the command to the robot and let it go
         print('Current position', current_positions)
         print('Next position', next_positions)
-        self.pepper_body_action_object.move_joints(current_positions, next_positions)
+        self.pepper_body_action_object.move_joints(next_positions)
     
         # for running_step seconds
         time.sleep(self.running_step)
