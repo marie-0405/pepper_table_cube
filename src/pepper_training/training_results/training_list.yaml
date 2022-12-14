@@ -154,3 +154,11 @@ direct_to_cube_30_steps:
 
 direct_to_cube_50_steps:
   description: "same as above. nstep is 50"
+
+random_cube:
+  step: 40
+  description: "the first time on random cube"
+
+baselin_40steps:
+  step: 40
+  description: "the baseline of 40 steps not random cube"
