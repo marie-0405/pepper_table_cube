@@ -5,8 +5,8 @@ epsilon: 0.9
 epsilon_begin: 0.5
 epsilon_end: 0.1
 epsilon_discount: 0.999 # 1098 eps to reach 0.1
-nepisodes: 500  # 50/3000
-nsteps: 50
+nepisodes: 400  # 50/3000
+nsteps: 40
 
 # Environment Parameters
 desired_length:
@@ -44,11 +44,11 @@ list_of_observations: # Observations you want to use for the learning
 discrete_division: 20 # Parts in which we divide each of the observations sensory range
 
 init_joint_pose:  # Set the right arm on the table
-  r_shoulder_pitch: -0.0237184561
-  r_shoulder_roll: -0.0223692708
-  r_elbow_roll: 0.0085497772
+  r_shoulder_pitch: -0.0
+  r_shoulder_roll: -0.0
+  r_elbow_roll: 0.0
   r_elbow_yaw: 0.00
-  r_wrist_yaw: 0.95
+  r_wrist_yaw: 0.0
 init_hand_pose:  # Set the right arm on the table
   x: 0.0830
   y: -0.308
