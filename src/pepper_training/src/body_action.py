@@ -28,7 +28,7 @@ class BodyAction(object):
         :return: The init Pose
         """
         # self.check_publishers_connection()
-        self.move_joints(init_position, duration=2.0)
+        self.move_joints(init_position, duration=4.0)
 
     def check_publishers_connection(self):
         """

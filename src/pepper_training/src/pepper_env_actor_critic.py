@@ -191,20 +191,22 @@ class PepperEnvActorCritic(gym.Env):
         rospy.logdebug("check_all_systems_ready...")
         self.pepper_state_object.check_all_systems_ready()
 
-        # 3rd: resets the robot to initial conditions
-        # rospy.logdebug("set_init_pose init variable...>>>" + str(self.init_joint_pose))
-        # We save that position as the current joint desired position
-        # init_pos = self.pepper_state_object.init_joints_pose(self.init_joint_pose)
-        current_position = self.pepper_state_object.get_joint_positions(self.joint_names)
-        print("Current position", current_position)
-        print('Init Position', self.init_joint_pose)
-        # self.pepper_body_action_object.set_init_pose(current_position, self.init_joint_pose)
         self.pepper_state_object.set_init_distances()
         
         # 5th: We restore the gravity to original
         # rospy.logdebug("Restore Gravity...")
         self.gazebo.change_gravity(0.0, 0.0, -9.81)
 
+        # 3rd: resets the robot to initial conditions
+        # rospy.logdebug("set_init_pose init variable...>>>" + str(self.init_joint_pose))
+        # We save that position as the current joint desired position
+        # init_pos = self.pepper_state_object.init_joints_pose(self.init_joint_pose)
+        current_position = self.pepper_state_object.get_joint_positions(self.joint_names)
+        print("Current position", current_position)
+        # print('Init Position', self.init_joint_pose)
+        # self.pepper_body_action_object.set_init_pose(current_position, self.init_joint_pose)
+
+        # time.sleep(2)
         # 6th: pauses simulation
         rospy.logdebug("Pause SIM...")
         self.gazebo.pauseSim()
