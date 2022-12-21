@@ -159,6 +159,29 @@ random_cube:
   step: 40
   description: "the first time on random cube"
 
-baselin_40steps:
+baselinee_40steps:
   step: 40
-  description: "the baseline of 40 steps not random cube"
+  description: "the baseline of 40 steps not random cube.
+    I changed how to move joints not to use joint pose."
+
+baseline_40steps2:
+  step: 40
+  description: "same as above one"
+
+random_cube2:
+  step: 40
+  description: "back to move joints to use current joint pose.
+    random cube"
+
+distance:
+  description: "states are only distances"
+
+difficult_random_cube:
+  description: "change direction of cube to target
+    states are vector and joint"
+
+add_joints:
+  description: "states are distances and joint"
+
+vectors:
+  description: "states are vectors"
