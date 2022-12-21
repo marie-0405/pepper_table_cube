@@ -33,8 +33,8 @@ if __name__ == '__main__':
 
   node = nep.node("Environment")    # Create a new nep node
   # conf = node.hybrid('192.168.0.102')
-  conf = node.hybrid('192.168.11.41')
-  # conf = node.hybrid('192.168.3.7')
+  # conf = node.hybrid('192.168.11.41')
+  conf = node.hybrid('192.168.3.7')
   sub = node.new_sub("calc","json", conf)      # Set the topic and message type
   pub = node.new_pub("env", "json", conf)
 
