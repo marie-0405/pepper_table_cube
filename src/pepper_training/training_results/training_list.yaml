@@ -173,6 +173,8 @@ random_cube2:
   description: "back to move joints to use current joint pose.
     random cube"
 
+# From here, important learning
+
 distance:
   description: "states are only distances"
 
@@ -185,3 +187,10 @@ add_joints:
 
 vectors:
   description: "states are vectors"
+
+joints_and_vectors:
+  description: "states are joints and vectors"
+
+joints_and_vectors_500:
+  description: "states are joints and vectors. 
+    The difference between above and this is only the number of episodes"
