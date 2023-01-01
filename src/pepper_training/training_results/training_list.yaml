@@ -159,6 +159,47 @@ random_cube:
   step: 40
   description: "the first time on random cube"
 
-baselin_40steps:
+baselinee_40steps:
   step: 40
-  description: "the baseline of 40 steps not random cube"
+  description: "the baseline of 40 steps not random cube.
+    I changed how to move joints not to use joint pose."
+
+baseline_40steps2:
+  step: 40
+  description: "same as above one"
+
+random_cube2:
+  step: 40
+  description: "back to move joints to use current joint pose.
+    random cube"
+
+# From here, important learning
+
+distance:
+  description: "states are only distances"
+
+difficult_random_cube:
+  description: "change direction of cube to target
+    states are vector and joint"
+
+add_joints:
+  description: "states are distances and joint"
+
+vectors:
+  description: "states are vectors"
+
+joints_and_vectors:
+  description: "states are joints and vectors"
+
+joints_and_vectors_500:
+  description: "states are joints and vectors. 
+    The difference between above and this is only the number of episodes"
+
+epsilon_greedy:
+  description: "add epsilon-greedy method. epsilon begin is 0.2, and epsilon end is 0.01 "
+
+epsilon_greedy_with_human:
+  description: "add epsilon-greedy method. the same to above. Difference is with human"
+
+with_human:
+  description: "with human. Non epsilon-greedy"
