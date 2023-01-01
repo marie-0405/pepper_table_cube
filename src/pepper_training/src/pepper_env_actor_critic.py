@@ -148,7 +148,10 @@ class PepperEnvActorCritic(gym.Env):
             "/pepper_dcm/LeftArm_controller/follow_joint_trajectory")        
         
         observation_num = len(self.list_of_observations)
-        self.action_space = spaces.Discrete(int(len(self.list_of_actions)*2))
+        if self.use_arms:
+            self.action_space = spaces.Discrete(20)
+        else:
+            self.action_space = spaces.Discrete(10)
         self.observation_space = gym.spaces.Box(
             low=self.min_distance,
             high=self.max_distance,
@@ -196,14 +199,20 @@ class PepperEnvActorCritic(gym.Env):
 
         if self.random_cube_target:
             # # EXTRA: move cube and target to random position    
-            cube_positions_x = [0.13, 0.14, 0.06]  ## TODO delete 0.15 because arm cannot reach it
+            cube_positions_x = [0.13, 0.14, 0.06]
             cube_positions_y = [-0.28, -0.18, -0.18] 
             target_positions_x = [0.12, 0.06, 0.15]
             target_positions_y = [-0.18, -0.18, -0.18]
             rand_index = random.randint(0, 2)
             self.cube.set_position(cube_positions_x[rand_index],cube_positions_y[rand_index] , 0.73)
             self.target.set_position(target_positions_x[rand_index],target_positions_y[rand_index] , 0.7055)
-            # rospy.loginfo("X init pose = " + str(positions[rand_index]))
+        
+        if self.use_arms:
+            cube_positions_x = [0.13, 0.13]  
+            cube_positions_y = [-0.15, 0.15] 
+            rand_index = random.randint(0, 1)
+            self.cube.set_position(cube_positions_x[rand_index],cube_positions_y[rand_index] , 0.73)
+            self.target.set_position(0.13, 0.0, 0.7055)
 
         # 4th: Check all scribers work.
         # Get the state of the Robot defined by its RPY orientation, distance from

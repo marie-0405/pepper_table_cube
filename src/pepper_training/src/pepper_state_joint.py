@@ -378,27 +378,30 @@ class PepperState(object):
         r1 = -8.84 
         r2 = -10.0  ==> We give priority to this, giving it higher value.
         :return:
+
+        if use left and right arms, we don't add reward1 that is distance between object and hand.
+        This is because we want robot to learn which arms to move.
         """
         object_pos = self.get_model_position(self.object_name)
         target_pos = self.get_model_position("target")
-        hand_pos = self.get_link_position("pepper::r_gripper")
+        right_hand_pos = self.get_link_position("pepper::r_gripper")
 
         # r1 = self.calculate_reward_distance(self._weight_r1, hand_pos, object_pos)
         # r2 = self.calculate_reward_distance(self._weight_r2, object_pos, target_pos)
-
-        r1 = self.calculate_positive_reward_distance(self._weight_r1, hand_pos, object_pos, 'hand_object')
+        r1 = 0
         r2 = self.calculate_positive_reward_distance(self._weight_r2, object_pos, target_pos, 'object_target')
 
         # The sign depend on its function.
         # total_reward = self._base_reward - r1 - r2
 
-        # Add additional reward when hand reaches object
-        if self.get_distance_from_point_to_point(hand_pos, object_pos) <= 0.085:
-            rospy.loginfo("Additional reward is added")
-            self.r2 = 2
+        if not rospy.get_param("/use_arms"):
+            # Add additional reward when hand reaches object
+            r1 = self.calculate_positive_reward_distance(self._weight_r1, right_hand_pos, object_pos, 'hand_object')
+            if self.get_distance_from_point_to_point(right_hand_pos, object_pos) <= 0.085:
+                rospy.loginfo("Additional reward is added")
+                self.r2 = 2
 
         total_reward = r1 + r2
-
 
         # TODO try to opposite weight 
 
