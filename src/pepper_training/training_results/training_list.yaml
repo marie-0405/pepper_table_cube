@@ -194,3 +194,12 @@ joints_and_vectors:
 joints_and_vectors_500:
   description: "states are joints and vectors. 
     The difference between above and this is only the number of episodes"
+
+epsilon_greedy:
+  description: "add epsilon-greedy method. epsilon begin is 0.2, and epsilon end is 0.01 "
+
+epsilon_greedy_with_human:
+  description: "add epsilon-greedy method. the same to above. Difference is with human"
+
+with_human:
+  description: "with human. Non epsilon-greedy"
