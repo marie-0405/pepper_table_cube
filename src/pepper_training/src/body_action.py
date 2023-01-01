@@ -28,7 +28,7 @@ class BodyAction(object):
         :return: The init Pose
         """
         # self.check_publishers_connection()
-        self.move_joints(init_position, duration=4.0)
+        self.move_joints(current_position, init_position, duration=2.0)
 
     def check_publishers_connection(self):
         """
@@ -51,13 +51,18 @@ class BodyAction(object):
         self.move_joints(msg.joint_state.position)
 
     # @time_recorder.time_recorder
-    def move_joints(self, next_positions, duration=1.0):
+    def move_joints(self, current_positions, next_positions, duration=1.0):
         """
         Move joints angle by controller of action in ROS.
         Action is unsynchronous communication.
         :param array next_positions: positions of next joint
         :return
         """
+        # Set current point (type is JointTrajectoryPoint)
+        current_point = JointTrajectoryPoint()
+        current_point.positions = current_positions
+        current_point.time_from_start = rospy.Duration(0.3)
+
         # Set next point (type is JointTrajectoryPoint)
         next_point = JointTrajectoryPoint()
         next_point.positions = next_positions
@@ -66,7 +71,7 @@ class BodyAction(object):
         # Set goal
         self.goal = FollowJointTrajectoryGoal()
         self.goal.trajectory.joint_names = self.joint_names
-        self.goal.trajectory.points = [next_point]
+        self.goal.trajectory.points = [current_point, next_point]
         self.goal.trajectory.header.stamp = rospy.Time.now() + rospy.Duration(0.25)
 
         self._right_arm_action_client.send_goal(self.goal)
