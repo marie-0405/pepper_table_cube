@@ -56,7 +56,6 @@ class PepperEnvActorCritic(gym.Env):
         self.use_arms = rospy.get_param("/use_arms")
 
         self.list_of_observations = rospy.get_param("/list_of_observations")
-        self.list_of_actions = rospy.get_param("/list_of_actions")
 
         r_shoulder_pitch_max = rospy.get_param("/joint_limits_array/r_shoulder_pitch_max")
         r_shoulder_pitch_min = rospy.get_param("/joint_limits_array/r_shoulder_pitch_min")
@@ -121,7 +120,6 @@ class PepperEnvActorCritic(gym.Env):
             max_distance=self.max_distance,
             max_simulation_time=self.max_simulation_time,
             list_of_observations=self.list_of_observations,
-            list_of_actions=self.list_of_actions,
             joint_increment_value=self.joint_increment_value,
             joint_limits=self.joint_limits,
             episode_done_criteria=self.episode_done_criteria,

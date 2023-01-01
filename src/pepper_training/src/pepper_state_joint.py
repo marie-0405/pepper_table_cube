@@ -94,7 +94,7 @@ gazebo_msgs/ContactState[] states
 
 class PepperState(object):
 
-    def __init__(self, min_distance, max_distance, max_simulation_time, list_of_observations, list_of_actions, joint_limits, episode_done_criteria, joint_increment_value = 0.05, done_reward = -1000.0, base_reward=10.0, success_reward=1000.0, weight_r1=1.0, weight_r2=1.0, discrete_division=10, maximum_base_linear_acceleration=3000.0, maximum_base_angular_velocity=20.0, maximum_joint_effort=10.0, object_name='cube'):
+    def __init__(self, min_distance, max_distance, max_simulation_time, list_of_observations, joint_limits, episode_done_criteria, joint_increment_value = 0.05, done_reward = -1000.0, base_reward=10.0, success_reward=1000.0, weight_r1=1.0, weight_r2=1.0, discrete_division=10, maximum_base_linear_acceleration=3000.0, maximum_base_angular_velocity=20.0, maximum_joint_effort=10.0, object_name='cube'):
         rospy.logdebug("Starting pepperState Class object...")
         self.desired_length = Vector3(0.0, 0.0, 0.0)
         self._min_distance = min_distance
@@ -109,7 +109,6 @@ class PepperState(object):
         self._weight_r2 = weight_r2
 
         self._list_of_observations = list_of_observations
-        self._list_of_actions = list_of_actions
         self.object_name = object_name
 
         # Dictionary with the max and min of each of the joints

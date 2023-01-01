@@ -44,18 +44,6 @@ list_of_observations: # Observations you want to use for the learning
   - y_vector_object_to_target
   - z_vector_object_to_target
 
-list_of_actions: # Actions you want to use for the learning
-  - r_shoulder_pitch
-  - r_shoulder_roll
-  - r_elbow_roll
-  - r_elbow_yaw
-  - r_wrist_yaw
-  # - l_shoulder_pitch
-  # - l_shoulder_roll
-  # - l_elbow_roll
-  # - l_elbow_yaw
-  # - l_wrist_yaw
-
 discrete_division: 20 # Parts in which we divide each of the observations sensory range
 
 init_joint_pose:  # Set the right arm on the table
