@@ -156,7 +156,7 @@ class PepperState(object):
         We check that all systems are ready
         :return:
         """
- 
+
         joint_states_msg = None
         while joint_states_msg is None and not rospy.is_shutdown():
             try:
@@ -301,8 +301,8 @@ class PepperState(object):
         """
         distance = self.get_distance_from_point_to_point(p_from, p_to)
         rospy.loginfo("Distance" + str(distance))
-        if self.before_distances[from_to_key] - 0.005 <= distance <= self.before_distances[from_to_key] + 0.005:
-            reward = 0  
+        if self.before_distances[from_to_key] - 0.003 <= distance <= self.before_distances[from_to_key] + 0.003:
+            reward = 0 
         elif self.before_distances[from_to_key] > distance:
             reward = weight * 1
         else:
@@ -377,26 +377,30 @@ class PepperState(object):
         r1 = -8.84 
         r2 = -10.0  ==> We give priority to this, giving it higher value.
         :return:
+
+        if use left and right arms, we don't add reward1 that is distance between object and hand.
+        This is because we want robot to learn which arms to move.
         """
         object_pos = self.get_model_position(self.object_name)
         target_pos = self.get_model_position("target")
-        hand_pos = self.get_link_position("pepper::r_gripper")
+        right_hand_pos = self.get_link_position("pepper::r_gripper")
 
         # r1 = self.calculate_reward_distance(self._weight_r1, hand_pos, object_pos)
         # r2 = self.calculate_reward_distance(self._weight_r2, object_pos, target_pos)
-
-        r1 = self.calculate_positive_reward_distance(self._weight_r1, hand_pos, object_pos, 'hand_object')
+        r1 = 0
         r2 = self.calculate_positive_reward_distance(self._weight_r2, object_pos, target_pos, 'object_target')
 
         # The sign depend on its function.
         # total_reward = self._base_reward - r1 - r2
 
-        total_reward = r1 + r2
+        if not rospy.get_param("/use_arms"):
+            # Add additional reward when hand reaches object
+            r1 = self.calculate_positive_reward_distance(self._weight_r1, right_hand_pos, object_pos, 'hand_object')
+            if self.get_distance_from_point_to_point(right_hand_pos, object_pos) <= 0.085:
+                rospy.loginfo("Additional reward is added")
+                self.r2 = 2
 
-        # Add additional reward when hand reaches object
-        if self.get_distance_from_point_to_point(hand_pos, object_pos) <= 0.085:
-            rospy.loginfo("Additional reward is added")
-            total_reward += 1
+        total_reward = r1 + r2
 
         # TODO try to opposite weight 
 
@@ -594,8 +598,39 @@ class PepperState(object):
         elif action == 9: #Decrement RWristYaw
             rospy.loginfo("Action Decided:Decrement RWristYaw>>>")
             self.current_joint_pose[4] -= self._joint_increment_value
+        elif action == 10: #Increment RShoulderPitch
+            rospy.loginfo("Action Decided:Increment LShoulderPitch>>>")
+            self.current_joint_pose[5] += self._joint_increment_value
+        elif action == 11: #Decrement RShoulderPitch
+            rospy.loginfo("Action Decided:Decrement LShoulderPitch>>>")
+            self.current_joint_pose[5] -= self._joint_increment_value
+        elif action == 12: #Increment RShoulderRoll
+            rospy.loginfo("Action Decided:Increment LShoulderRoll>>>")
+            self.current_joint_pose[6] += self._joint_increment_value
+        elif action == 13: #Decrement RShoulderRoll
+            rospy.loginfo("Action Decided:Decrement LShoulderRoll>>>")
+            self.current_joint_pose[6] -= self._joint_increment_value
+        elif action == 14: #Increment RElbowRoll
+            rospy.loginfo("Action Decided:Increment LElbowRoll>>>")
+            self.current_joint_pose[7] += self._joint_increment_value
+        elif action == 15: #Decrement RElbowRoll
+            rospy.loginfo("Action Decided:Decrement LElbowRoll>>>")
+            self.current_joint_pose[7] -= self._joint_increment_value
+        elif action == 16: #Increment RElbowYaw
+            rospy.loginfo("Action Decided:Increment LElbowYaw>>>")
+            self.current_joint_pose[8] += self._joint_increment_value
+        elif action == 17: #Decrement RElbowYaw
+            rospy.loginfo("Action Decided:Decrement LElbowYaw>>>")
+            self.current_joint_pose[8] -= self._joint_increment_value
+        elif action == 18: #Increment RWristYaw
+            rospy.loginfo("Action Decided:Increment LWristYaw>>>")
+            self.current_joint_pose[9] += self._joint_increment_value
+        elif action == 19: #Decrement RWristYaw
+            rospy.loginfo("Action Decided:Decrement LWristYaw>>>")
+            self.current_joint_pose[9] -= self._joint_increment_value
+        
 
-        rospy.logdebug("action to move joint states>>>" + str(self.current_joint_pose))
+        rospy.loginfo("action to move joint states>>>" + str(self.current_joint_pose))
 
         self.clamp_to_joint_limits()
 

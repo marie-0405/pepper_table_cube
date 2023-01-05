@@ -51,6 +51,9 @@ class PepperEnvActorCritic(gym.Env):
         self.done_reward = rospy.get_param("/done_reward")
         self.base_reward = rospy.get_param("/base_reward")
         self.success_reward = rospy.get_param("/success_reward")
+        self.random_cube = rospy.get_param("/random_cube")
+        self.random_cube_target = rospy.get_param("/random_cube_target")
+        self.use_arms = rospy.get_param("/use_arms")
 
         self.list_of_observations = rospy.get_param("/list_of_observations")
 
@@ -92,8 +95,17 @@ class PepperEnvActorCritic(gym.Env):
         r_elbow_yaw_init_value = rospy.get_param("/init_joint_pose/r_elbow_yaw")
         r_wrist_yaw_init_value = rospy.get_param("/init_joint_pose/r_wrist_yaw")
 
-        self.init_joint_pose = [r_shoulder_pitch_init_value,r_shoulder_roll_init_value,r_elbow_roll_init_value,
-                               r_elbow_yaw_init_value, r_wrist_yaw_init_value]
+
+        l_shoulder_pitch_init_value = rospy.get_param("/init_joint_pose/l_shoulder_pitch")
+        l_shoulder_roll_init_value = rospy.get_param("/init_joint_pose/l_shoulder_roll")
+        l_elbow_roll_init_value = rospy.get_param("/init_joint_pose/l_elbow_roll")
+        l_elbow_yaw_init_value = rospy.get_param("/init_joint_pose/l_elbow_yaw")
+        l_wrist_yaw_init_value = rospy.get_param("/init_joint_pose/l_wrist_yaw")
+
+        self.init_right_joint_pose = [r_shoulder_pitch_init_value,r_shoulder_roll_init_value,r_elbow_roll_init_value,
+            r_elbow_yaw_init_value, r_wrist_yaw_init_value]
+        self.init_left_joint_pose = [l_shoulder_pitch_init_value,l_shoulder_roll_init_value,l_elbow_roll_init_value,
+            l_elbow_yaw_init_value, l_wrist_yaw_init_value]
 
         # Fill in the Done Episode Criteria list
         self.episode_done_criteria = rospy.get_param("/episode_done_criteria")
@@ -122,34 +134,31 @@ class PepperEnvActorCritic(gym.Env):
             maximum_joint_effort=self.maximum_joint_effort,
             object_name='cube'
         )
-        self.joint_names = ["RShoulderPitch", "RShoulderRoll", "RElbowRoll", "RElbowYaw", "RWristYaw"]
+        self.right_arm_joint_names = ["RShoulderPitch", "RShoulderRoll", "RElbowRoll", "RElbowYaw", "RWristYaw"]
+        self.left_arm_joint_names = ["LShoulderPitch", "LShoulderRoll", "LElbowRoll", "LElbowYaw", "LWristYaw"]
         self.pepper_state_object.set_desired_length(self.desired_length.position.x,
                                                     self.desired_length.position.y,
                                                     self.desired_length.position.z)
 
-        self.pepper_body_action_object = BodyAction(self.joint_names, 
+        self.right_arm_action_object = BodyAction(self.right_arm_joint_names, 
             "/pepper_dcm/RightArm_controller/follow_joint_trajectory")
+        self.left_arm_action_object = BodyAction(self.left_arm_joint_names, 
+            "/pepper_dcm/LeftArm_controller/follow_joint_trajectory")        
         
-
-
-        """
-        For this version, we consider 10 actions
-        1-2) Increment/Decrement RShoulderPitch
-        3-4) Increment/Decrement RShoulderRoll
-        5-6) Increment/Decrement RElbowRoll
-        7-8) Increment/Decrement RElbowYaw
-        9-10) Increment/Decrement RWristYaw
-        """
-        action_num = len(self.list_of_observations)
-        self.action_space = spaces.Discrete(10)
+        observation_num = len(self.list_of_observations)
+        if self.use_arms:
+            self.action_space = spaces.Discrete(20)
+        else:
+            self.action_space = spaces.Discrete(10)
         self.observation_space = gym.spaces.Box(
             low=self.min_distance,
             high=self.max_distance,
-            shape=(action_num,)
+            shape=(observation_num,)
         )
         self.reward_range = (-np.inf, np.inf)
 
         self.cube = ModelSetter("cube")
+        self.target = ModelSetter("target")
 
         self._seed()  # TODO ランダムシードは固定しないほうがいいかも
 
@@ -179,11 +188,29 @@ class PepperEnvActorCritic(gym.Env):
         # rospy.logdebug("reset_pepper_joint_controllers...")
         self.controllers_object.reset_pepper_joint_controllers()
 
-        # # EXTRA: move cube to random position
-        # positions = [0.07, 0.10, 0.13, 0.16]
-        # rand_index = random.randint(0, 3)
-        # self.cube.set_position(positions[rand_index], -0.28, 0.73)
-        # rospy.loginfo("X init pose = " + str(positions[rand_index]))
+        if self.random_cube:
+            # # EXTRA: move cube to random position    
+            positions = [0.09, 0.11, 0.13, 0.15]  ## TODO delete 0.15 because arm cannot reach it
+            rand_index = random.randint(0, 3)
+            self.cube.set_position(positions[rand_index], -0.28, 0.73)
+            rospy.loginfo("X init pose = " + str(positions[rand_index]))
+
+        if self.random_cube_target:
+            # # EXTRA: move cube and target to random position    
+            cube_positions_x = [0.13, 0.14, 0.06]
+            cube_positions_y = [-0.28, -0.18, -0.18] 
+            target_positions_x = [0.12, 0.06, 0.15]
+            target_positions_y = [-0.18, -0.18, -0.18]
+            rand_index = random.randint(0, 2)
+            self.cube.set_position(cube_positions_x[rand_index],cube_positions_y[rand_index] , 0.73)
+            self.target.set_position(target_positions_x[rand_index],target_positions_y[rand_index] , 0.7055)
+        
+        if self.use_arms:
+            cube_positions_x = [0.13, 0.13]  
+            cube_positions_y = [-0.15, 0.15] 
+            rand_index = random.randint(0, 1)
+            self.cube.set_position(cube_positions_x[rand_index],cube_positions_y[rand_index] , 0.73)
+            self.target.set_position(0.13, 0.0, 0.7055)
 
         # 4th: Check all scribers work.
         # Get the state of the Robot defined by its RPY orientation, distance from
@@ -201,10 +228,14 @@ class PepperEnvActorCritic(gym.Env):
         # rospy.logdebug("set_init_pose init variable...>>>" + str(self.init_joint_pose))
         # We save that position as the current joint desired position
         # init_pos = self.pepper_state_object.init_joints_pose(self.init_joint_pose)
-        current_position = self.pepper_state_object.get_joint_positions(self.joint_names)
-        print("Current position", current_position)
+        current_right_position = self.pepper_state_object.get_joint_positions(self.right_arm_joint_names)
+        current_left_position = self.pepper_state_object.get_joint_positions(self.left_arm_joint_names)
+        # print("Current left position", current_left_position)
         # print('Init Position', self.init_joint_pose)
-        # self.pepper_body_action_object.set_init_pose(current_position, self.init_joint_pose)
+        self.right_arm_action_object.set_init_pose(current_right_position, self.init_right_joint_pose)
+        if self.use_arms:
+            self.left_arm_action_object.set_init_pose(current_left_position, self.init_left_joint_pose)
+
 
         # time.sleep(2)
         # 6th: pauses simulation
@@ -225,17 +256,20 @@ class PepperEnvActorCritic(gym.Env):
         # we perform the corresponding movement of the robot
 
         # 1st, decide which action corresponds to which position is incremented
-        next_positions = self.pepper_state_object.get_action_to_position(self.joint_names, action)
+        next_positions = self.pepper_state_object.get_action_to_position(self.right_arm_joint_names + self.left_arm_joint_names, action)
 
         # We move it to that pos
         self.gazebo.unpauseSim()
         ## Using Action
         # Get current positions of joint
-        current_positions = self.pepper_state_object.get_joint_positions(self.joint_names)
+        current_positions = self.pepper_state_object.get_joint_positions(self.right_arm_joint_names + self.left_arm_joint_names)
         # Then we send the command to the robot and let it go
-        print('Current position', current_positions)
-        print('Next position', next_positions)
-        self.pepper_body_action_object.move_joints(next_positions)
+
+        self.right_arm_action_object.move_joints(current_positions[:4], next_positions[:4])
+        if self.use_arms:
+            print('Current left position', current_positions[5:])
+            print('Next position', next_positions[5:])
+            self.left_arm_action_object.move_joints(current_positions[5:], next_positions[5:])
     
         # for running_step seconds
         time.sleep(self.running_step)
