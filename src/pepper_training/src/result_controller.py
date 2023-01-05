@@ -157,14 +157,48 @@ class ResultController():
 
     plt.ylim([0, 1.2])
     plt.savefig(self.file_path["success_probability"])
+  
+def plot_success(with_human, without_human):
+  """
+  10回ごとの成功確率を表示する
+  """
+  div_num = 10
+  with_human_df = ResultController(with_human)._read()
+  without_human_df = ResultController(without_human)._read()
+  
+  success_probabilities_with_human = []
+  for i in range(int(len(with_human_df) / div_num)):
+    tf_list = with_human_df["succeed"][div_num*i:div_num*i + div_num].to_list()
+    success_probabilities_with_human.append(tf_list.count(True) / div_num)
+
+  success_probabilities_without_human = []
+  for i in range(int(len(without_human_df) / div_num)):
+    tf_list = without_human_df["succeed"][div_num*i:div_num*i + div_num].to_list()
+    success_probabilities_without_human.append(tf_list.count(True) / div_num)
+  
+  plt.figure(figsize=[10, 6])
+  x_linspace = np.linspace(0, len(with_human_df), int(len(with_human_df) / div_num))
+  # plt.plot(x_linspace, success_probabilities_with_human, label="With human data")
+  # plt.plot(x_linspace, success_probabilities_without_human, label="Without human data")
+  plt.plot(x_linspace, success_probabilities_with_human, label="With epsilon greedy")
+  plt.plot(x_linspace, success_probabilities_without_human, label="Without epsilon greedy")
+  
+  # Axis label
+  plt.xlabel("The number of episodes")
+  plt.ylabel("Probability of success")
+
+  plt.ylim([-0.2, 1.2])
+  # plt.savefig(self.file_path["success_probability"])
+  plt.legend(edgecolor="black")
+  plt.show()
     
 if __name__ == '__main__':
   file_name_end = sys.argv[1] if len(sys.argv)==2 else ''
   # file_name_end = ['test1', 'test2', 'test3']\
-  file_name_end = settings.file_name_end
-  result_controller = ResultController(file_name_end[0])
+  # file_name_end = settings.file_name_end
+  # result_controller = ResultController(file_name_end[0])
   # result_controller.plot('cumulative_reward', [-35, 165])
-  result_controller.plot_success_probability()
+  plot_success("epsilon_greedy_500", "joints_and_vectors_500")
   # for fne in file_name_end:
   #   experience_controller = ResultController('positive_epsilon_off', 'experiences')
   #   experience_controller.plot_arrays('distribution')
