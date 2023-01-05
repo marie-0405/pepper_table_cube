@@ -32,6 +32,7 @@ class ResultController():
       'critic_loss': '{}/training_results/{}-{}/critic-loss-{}.png'.format(pkg_path, settings.date, file_name_end, file_name_end),
       'distribution': '{}/training_results/{}-{}/distribution-{}.png'.format(pkg_path, settings.date, file_name_end, file_name_end),
       'average_reward': '{}/training_results/{}-{}/avg_reward-{}.png'.format(pkg_path, settings.date, file_name_end, file_name_end),
+      'success_probability': '{}/training_results/{}-{}/success-{}.png'.format(pkg_path, settings.date, file_name_end, file_name_end),
     }
 
   def write(self, file_name='results', **kwargs):
@@ -56,14 +57,14 @@ class ResultController():
     average = result_df[label].mean()
     return average
 
-  def plot(self, label, ylim=[-35, 150]):
+  def plot(self, label, ylim=[-35, 165]):
     result_df = self._read()
     plt.figure()
     result_df[label].plot(figsize=(11, 6), label=label.capitalize().replace('_', ' '))
     average = self.get_average(label)
-    plt.plot(np.arange(0, len(result_df)), 
-             np.full(len(result_df), average),
-             label="Average= {}".format(average))
+    # plt.plot(np.arange(0, len(result_df)), 
+    #          np.full(len(result_df), average),
+    #          label="Average= {}".format(average))
 
     # Axis label
     plt.xlabel("The number of episode")
@@ -71,7 +72,7 @@ class ResultController():
     # plt.ylabel("Reward")  # TODO test
 
     plt.ylim(ylim)
-    plt.legend(edgecolor="black")
+    # plt.legend(edgecolor="black")
     plt.savefig(self.file_path[label])
 
   def plot_average_reward(self, label, ylim=[-35, 25]):
@@ -134,13 +135,36 @@ class ResultController():
     plt.legend(edgecolor="black")
     plt.savefig(self.file_path[label])
 
+  def plot_success_probability(self):
+    """
+    10回ごとの成功確率を表示する
+    """
+    div_num = 10
+    result_df = self._read()
+    success_probabilities = []
+    for i in range(int(len(result_df) / div_num)):
+      tf_list = result_df["succeed"][div_num*i:div_num*i + div_num].to_list()
+      success_probabilities.append(tf_list.count(True) / div_num)
+    
+    plt.figure(figsize=[11, 6])
+    x_linspace = np.linspace(0, len(result_df), int(len(result_df) / div_num))
+    print(x_linspace)
+    plt.plot(x_linspace, success_probabilities)
+    
+    # Axis label
+    plt.xlabel("The number of episodes")
+    plt.ylabel("Probability of success")
+
+    plt.ylim([0, 1.2])
+    plt.savefig(self.file_path["success_probability"])
+    
 if __name__ == '__main__':
   file_name_end = sys.argv[1] if len(sys.argv)==2 else ''
   # file_name_end = ['test1', 'test2', 'test3']\
-  file_name_end = ['human_only']
-  result_controller = ResultController('baseline200')
-  # result_controller.plot('cumulative_reward', [100, 1400])
-  result_controller.plot('cumulative_reward', [-65, 170])
+  file_name_end = settings.file_name_end
+  result_controller = ResultController(file_name_end[0])
+  # result_controller.plot('cumulative_reward', [-35, 165])
+  result_controller.plot_success_probability()
   # for fne in file_name_end:
   #   experience_controller = ResultController('positive_epsilon_off', 'experiences')
   #   experience_controller.plot_arrays('distribution')

@@ -135,6 +135,7 @@ def trainIters(actor, critic, file_name_end):
   
     # TODO test
     save_fig(result_data_controller, ['cumulative_reward', 'actor_loss', 'critic_loss'])
+    result_data_controller.plot_success_probability()
     # save_fig(result_data_controller, ['cumulative_reward'])
     
     experience_controller.plot_arrays('distribution')
