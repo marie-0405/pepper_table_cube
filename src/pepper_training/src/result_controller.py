@@ -8,7 +8,7 @@ import sys
 import settings
 
 plt.rcParams["font.family"] = "Times New Roman"
-plt.rcParams["font.size"] = 18
+plt.rcParams["font.size"] = 22
 
 class ResultController():
 
@@ -60,7 +60,7 @@ class ResultController():
   def plot(self, label, ylim=[-35, 165]):
     result_df = self._read()
     plt.figure()
-    result_df[label].plot(figsize=(11, 6), label=label.capitalize().replace('_', ' '))
+    result_df[label].plot(figsize=(11, 7), label=label.capitalize().replace('_', ' '))
     average = self.get_average(label)
     # plt.plot(np.arange(0, len(result_df)), 
     #          np.full(len(result_df), average),
@@ -178,10 +178,10 @@ def plot_success(with_human, without_human):
   
   plt.figure(figsize=[10, 6])
   x_linspace = np.linspace(0, len(with_human_df), int(len(with_human_df) / div_num))
-  # plt.plot(x_linspace, success_probabilities_with_human, label="With human data")
-  # plt.plot(x_linspace, success_probabilities_without_human, label="Without human data")
-  plt.plot(x_linspace, success_probabilities_with_human, label="With epsilon greedy")
-  plt.plot(x_linspace, success_probabilities_without_human, label="Without epsilon greedy")
+  plt.plot(x_linspace, success_probabilities_with_human, label="With human data")
+  plt.plot(x_linspace, success_probabilities_without_human, label="Without human data")
+  # plt.plot(x_linspace, success_probabilities_with_human, label="With epsilon greedy")
+  # plt.plot(x_linspace, success_probabilities_without_human, label="Without epsilon greedy")
   
   # Axis label
   plt.xlabel("The number of episodes")
@@ -196,9 +196,13 @@ if __name__ == '__main__':
   file_name_end = sys.argv[1] if len(sys.argv)==2 else ''
   # file_name_end = ['test1', 'test2', 'test3']\
   # file_name_end = settings.file_name_end
-  # result_controller = ResultController(file_name_end[0])
+  # result_controller = ResultController("epsilon_greedy_500")
+  # result_controller = ResultController("joints_and_vectors_500")
+  # result_controller.plot_success_probability()
   # result_controller.plot('cumulative_reward', [-35, 165])
-  plot_success("epsilon_greedy_500", "joints_and_vectors_500")
+  # plot_success("little_random_cube_500", "little_random_cube_with_human_500")
+  # plot_success("little_random_cube", "little_random_cube_with_human")
+  plot_success("with_human_500", "joints_and_vectors_500")
   # for fne in file_name_end:
   #   experience_controller = ResultController('positive_epsilon_off', 'experiences')
   #   experience_controller.plot_arrays('distribution')

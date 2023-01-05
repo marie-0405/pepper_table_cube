@@ -216,6 +216,5 @@ little_random_cube_500:
 
 with_human_500:
 
-with_human_500_2:
-  description: "2nd time learning with human data becauses with_human_500 doesn't have
-    good results. So I run whole 500 episode learning again"
+random_cube:
+  description: "random cube"
