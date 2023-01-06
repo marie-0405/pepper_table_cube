@@ -57,7 +57,7 @@ class ResultController():
     average = result_df[label].mean()
     return average
 
-  def plot(self, label, ylim=[-35, 165]):
+  def plot(self, label, ylim=[-35, 170]):
     result_df = self._read()
     plt.figure()
     result_df[label].plot(figsize=(11, 7), label=label.capitalize().replace('_', ' '))
@@ -167,19 +167,24 @@ def plot_success(with_human, without_human):
   without_human_df = ResultController(without_human)._read()
   
   success_probabilities_with_human = []
+  average_with_human = with_human_df["succeed"].to_list().count(True) / len(with_human_df["succeed"])
   for i in range(int(len(with_human_df) / div_num)):
     tf_list = with_human_df["succeed"][div_num*i:div_num*i + div_num].to_list()
     success_probabilities_with_human.append(tf_list.count(True) / div_num)
 
   success_probabilities_without_human = []
+  average_without_human = without_human_df["succeed"].to_list().count(True) / len(without_human_df["succeed"])
   for i in range(int(len(without_human_df) / div_num)):
     tf_list = without_human_df["succeed"][div_num*i:div_num*i + div_num].to_list()
     success_probabilities_without_human.append(tf_list.count(True) / div_num)
   
-  plt.figure(figsize=[10, 6])
+  plt.figure(figsize=[10, 7])
   x_linspace = np.linspace(0, len(with_human_df), int(len(with_human_df) / div_num))
-  plt.plot(x_linspace, success_probabilities_with_human, label="With human data")
-  plt.plot(x_linspace, success_probabilities_without_human, label="Without human data")
+  plt.plot(x_linspace, success_probabilities_with_human, label="With human data", color="tab:orange")
+  plt.plot(x_linspace, success_probabilities_without_human, label="Without human data", color="tab:blue")
+  plt.plot(x_linspace, [average_with_human for i in range(len(x_linspace))], linestyle="dashed", color="tab:orange", label="Average with human")
+  plt.plot(x_linspace, [average_without_human for i in range(len(x_linspace))], linestyle="dashed", color="tab:blue", label="Average without human")
+
   # plt.plot(x_linspace, success_probabilities_with_human, label="With epsilon greedy")
   # plt.plot(x_linspace, success_probabilities_without_human, label="Without epsilon greedy")
   
@@ -199,7 +204,7 @@ if __name__ == '__main__':
   # result_controller = ResultController("epsilon_greedy_500")
   # result_controller = ResultController("joints_and_vectors_500")
   # result_controller.plot_success_probability()
-  # result_controller.plot('cumulative_reward', [-35, 165])
+  # result_controller.plot('cumulative_reward', [-35, 175])
   # plot_success("little_random_cube_500", "little_random_cube_with_human_500")
   # plot_success("little_random_cube", "little_random_cube_with_human")
   plot_success("with_human_500", "joints_and_vectors_500")
