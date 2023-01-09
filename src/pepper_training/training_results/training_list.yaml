@@ -218,3 +218,9 @@ with_human_500:
 
 random_cube:
   description: "random cube"
+
+negative_reward:
+  description: "negative reward. not random cube"
+
+random_cube_with_human:
+  description: "positive reward. random cube. with human"
