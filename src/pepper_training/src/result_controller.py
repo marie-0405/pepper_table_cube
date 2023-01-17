@@ -4,6 +4,7 @@ import numpy as np
 import os
 import pandas as pd
 # import rospkg
+from scipy import stats
 import sys
 import settings
 
@@ -139,7 +140,7 @@ class ResultController():
     """
     10回ごとの成功確率を表示する
     """
-    div_num = 10
+    div_num = 25
     result_df = self._read()
     success_probabilities = []
     for i in range(int(len(result_df) / div_num)):
@@ -162,7 +163,7 @@ def plot_success(with_human, without_human):
   """
   10回ごとの成功確率を表示する
   """
-  div_num = 10
+  div_num = 25
   with_human_df = ResultController(with_human)._read()
   without_human_df = ResultController(without_human)._read()
   
@@ -171,22 +172,44 @@ def plot_success(with_human, without_human):
   for i in range(int(len(with_human_df) / div_num)):
     tf_list = with_human_df["succeed"][div_num*i:div_num*i + div_num].to_list()
     success_probabilities_with_human.append(tf_list.count(True) / div_num)
+  cp_success_probabilities_with_human = success_probabilities_with_human.copy()
+  for v in cp_success_probabilities_with_human:
+    if v == 0.0:
+      cp_success_probabilities_with_human.remove(v)
+  average_with_human = sum(cp_success_probabilities_with_human[-10:])/len(cp_success_probabilities_with_human[-10:])
 
   success_probabilities_without_human = []
   average_without_human = without_human_df["succeed"].to_list().count(True) / len(without_human_df["succeed"])
   for i in range(int(len(without_human_df) / div_num)):
     tf_list = without_human_df["succeed"][div_num*i:div_num*i + div_num].to_list()
     success_probabilities_without_human.append(tf_list.count(True) / div_num)
+  cp_success_probabilities_without_human = success_probabilities_without_human.copy()
+  for v in cp_success_probabilities_without_human:
+    if v == 0.0:
+      cp_success_probabilities_without_human.remove(v)
+  average_without_human = sum(cp_success_probabilities_without_human[-12:])/len(cp_success_probabilities_without_human[-12:])
+
   
   plt.figure(figsize=[10, 7])
   x_linspace = np.linspace(0, len(with_human_df), int(len(with_human_df) / div_num))
+  x_linspace2 = np.linspace(div_num * 8, len(with_human_df), int(len(with_human_df) / div_num))
+  # plt.plot(x_linspace, success_probabilities_with_human, label="With human data", color="tab:orange")
+  # plt.plot(x_linspace, success_probabilities_without_human, label="Without human data", color="tab:blue")
+  # plt.plot(x_linspace, [average_with_human for i in range(len(x_linspace))], linestyle="dashed", color="tab:orange", label="Average with human")
+  # plt.plot(x_linspace, [average_without_human for i in range(len(x_linspace))], linestyle="dashed", color="tab:blue", label="Average without human")
+
   plt.plot(x_linspace, success_probabilities_with_human, label="With human data", color="tab:orange")
   plt.plot(x_linspace, success_probabilities_without_human, label="Without human data", color="tab:blue")
-  plt.plot(x_linspace, [average_with_human for i in range(len(x_linspace))], linestyle="dashed", color="tab:orange", label="Average with human")
-  plt.plot(x_linspace, [average_without_human for i in range(len(x_linspace))], linestyle="dashed", color="tab:blue", label="Average without human")
+  plt.plot(x_linspace2, [average_with_human for i in range(len(x_linspace))], linestyle="dashed", color="tab:orange", label="Average with human data")
+  plt.plot(x_linspace2, [average_without_human for i in range(len(x_linspace))], linestyle="dashed", color="tab:blue", label="Average without human data")
 
-  # plt.plot(x_linspace, success_probabilities_with_human, label="With epsilon greedy")
-  # plt.plot(x_linspace, success_probabilities_without_human, label="Without epsilon greedy")
+
+  # ans = stats.ttest_ind(cp_success_probabilities_without_human[-6:], cp_success_probabilities_with_human[-6:], alternative="less")
+  ans = stats.ttest_ind(cp_success_probabilities_without_human[-12:], cp_success_probabilities_with_human[-12:], alternative="less")
+  print(ans)
+  print(cp_success_probabilities_with_human[3:])
+  print(cp_success_probabilities_without_human[1:])
+  print(len(cp_success_probabilities_with_human))
   
   # Axis label
   plt.xlabel("The number of episodes")
@@ -196,18 +219,62 @@ def plot_success(with_human, without_human):
   # plt.savefig(self.file_path["success_probability"])
   plt.legend(edgecolor="black")
   plt.show()
+
+def plot_success_network(small, medium, large):
+  """
+  10回ごとの成功確率を表示する
+  """
+  div_num = 25
+  small_df = ResultController(small)._read()
+  medium_df = ResultController(medium)._read()
+  large_df = ResultController(large)._read()
+  
+  success_probabilities_small = []
+  for i in range(int(len(small_df) / div_num)):
+    tf_list = small_df["succeed"][div_num*i:div_num*i + div_num].to_list()
+    success_probabilities_small.append(tf_list.count(True) / div_num)
+
+  success_probabilities_medium = []
+  for i in range(int(len(medium_df) / div_num)):
+    tf_list = medium_df["succeed"][div_num*i:div_num*i + div_num].to_list()
+    success_probabilities_medium.append(tf_list.count(True) / div_num)
+
+  success_probabilities_large = []
+  for i in range(int(len(large_df) / div_num)):
+    tf_list = large_df["succeed"][div_num*i:div_num*i + div_num].to_list()
+    success_probabilities_large.append(tf_list.count(True) / div_num)
+  
+  plt.figure(figsize=[10, 7])
+  x_linspace = np.linspace(0, len(small_df), int(len(small_df) / div_num))
+
+  plt.plot(x_linspace, success_probabilities_small, label="Small size", color="tab:orange")
+  plt.plot(x_linspace, success_probabilities_medium, label="Medium size", color="tab:blue")
+  plt.plot(x_linspace, success_probabilities_large, label="Large size", color="tab:green")
+
+  # Axis label
+  plt.xlabel("The number of episodes")
+  plt.ylabel("Probability of success")
+
+  plt.ylim([-0.2, 1.2])
+  plt.legend(edgecolor="black")
+  plt.show()
+  
     
 if __name__ == '__main__':
   file_name_end = sys.argv[1] if len(sys.argv)==2 else ''
   # file_name_end = ['test1', 'test2', 'test3']\
   # file_name_end = settings.file_name_end
-  # result_controller = ResultController("epsilon_greedy_500")
+  # result_controller = ResultController("random_cube_with_human_1000")
+  # result_controller.plot("cumulative_reward", [-35, 175])
   # result_controller = ResultController("joints_and_vectors_500")
   # result_controller.plot_success_probability()
   # result_controller.plot('cumulative_reward', [-35, 175])
   # plot_success("little_random_cube_500", "little_random_cube_with_human_500")
-  # plot_success("little_random_cube", "little_random_cube_with_human")
-  plot_success("with_human_500", "joints_and_vectors_500")
+  # plot_success("random_cube_with_human", "random_cube") # Ttest_indResult(statistic=-2.8951195919207797, pvalue=0.004823261034250219)  
+  # plot_success("joints_and_vectors_500", "epsilon_greedy_500")
+  plot_success_network("small_size_network", "medium_size_network", "large_size_network")
+  # plot_success("with_human_500", "joints_and_vectors_500") # Ttest_indResult(statistic=-1.832641132962928, pvalue=0.04021317315874035) 
+  # plot_success("negative_reward_500", "joints_and_vectors_500")
   # for fne in file_name_end:
   #   experience_controller = ResultController('positive_epsilon_off', 'experiences')
   #   experience_controller.plot_arrays('distribution')

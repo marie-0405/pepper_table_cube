@@ -160,10 +160,12 @@ if __name__ == '__main__':
     # experience_controller = ResultController(test_file_name_end, 'experiences')
 
     print("actor_path", actor_path)
+    network_size1 = 256
+    network_size2 = 512
     if os.path.exists(actor_path):
       # TODO Dropout
-      actor = Actor(state_size, action_size, 256, 512).to(device)
-      # actor = DropoutActor(state_size, action_size, 256, 512).to(device)
+      actor = Actor(state_size, action_size, network_size1, network_size2).to(device)
+      # actor = DropoutActor(state_size, action_size, network_size1, network_size2).to(device)
       actor.load_state_dict(torch.load(actor_path))
       actor.train()
       # actor.eval()  # TODO test
@@ -174,13 +176,13 @@ if __name__ == '__main__':
       print('Actor Optimizer loaded')
     else:
       # TODO Dropout
-      actor = Actor(state_size, action_size, 256, 512).to(device)
-      # actor = DropoutActor(state_size, action_size, 256, 512).to(device)
+      actor = Actor(state_size, action_size, network_size1, network_size2).to(device)
+      # actor = DropoutActor(state_size, action_size, network_size1, network_size2).to(device)
       optimizerA = optim.Adam(actor.parameters(), lr=settings.lr)
     if os.path.exists(critic_path):
       # TODO Dropout
-      critic = Critic(state_size, action_size, 256, 512).to(device)
-      # critic = DropoutCritic(state_size, action_size, 256, 512).to(device)
+      critic = Critic(state_size, action_size, network_size1, network_size2).to(device)
+      # critic = DropoutCritic(state_size, action_size, network_size1, network_size2).to(device)
       critic.load_state_dict(torch.load(critic_path))
       critic.train()
       # critic.eval()  # TODO test
@@ -191,8 +193,8 @@ if __name__ == '__main__':
       print('Critic Optimizer loaded')
     else:
       # TODO Dropout
-      critic = Critic(state_size, action_size, 256, 512).to(device)
-      # critic = DropoutCritic(state_size, action_size, 256, 512).to(device)
+      critic = Critic(state_size, action_size, network_size1, network_size2).to(device)
+      # critic = DropoutCritic(state_size, action_size, network_size1, network_size2).to(device)
       optimizerC = optim.Adam(critic.parameters(), lr=settings.lr)
     ## TODO test
     trainIters(actor, critic, file_name_end)
