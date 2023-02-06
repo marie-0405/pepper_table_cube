@@ -9,8 +9,9 @@ class PepperEnvController(IEnvController):
     # Create a new nep node
     node = nep.node("Calculator")                                                       
     # conf = node.hybrid("192.168.0.102")                         
-    # conf = node.hybrid("192.168.11.41")                         
-    conf = node.hybrid("192.168.3.7")                         
+    conf = node.hybrid("192.168.11.41")                         
+    # conf = node.hybrid("192.168.3.7")                         
+    conf = node.hybrid("192.168.3.27")                         
     self.sub = node.new_sub("env", "json", conf)
     self.pub = node.new_pub("calc", "json", conf)
     

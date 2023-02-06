@@ -224,3 +224,21 @@ negative_reward:
 
 random_cube_with_human:
   description: "positive reward. random cube. with human"
+
+small_network_size:
+  description: "not random. small network size.32, 64"
+
+medium_network_size:
+  description: "128, 256"
+
+large_network_size:
+  description: "256, 512"
+
+joints_and_vectors:
+  description: "baseline"
+
+5times_with_human:
+  description: "5 times learning for each video"
+
+baseline_100:
+  descriptio: "withoud human"

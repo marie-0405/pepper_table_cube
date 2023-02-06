@@ -44,16 +44,10 @@ def trainIters(actor, critic, file_name_end):
       masks = []
       
       # print(file_name_end)
-      human_env_controller = HumanEnvController(settings.video_file_name, nepisode, state_names, joint_names)
+      human_env_controller = HumanEnvController(settings.video_file_name, nvideo, state_names, joint_names)
       state = human_env_controller.get_state()
       print("Human State\n", state)
-      
-      if nepisode < settings.nepisodes - 1:
-        epsilon = settings.epsilon_begin + (settings.epsilon_end - settings.epsilon_begin) * nepisode / settings.nepisodes
-      else:
-        epsilon = settings.epsilon_end
-      # print("Epsilon", epsilon)
-      
+
       for i in range(human_env_controller.step_size):
         optimizerA.zero_grad()
         optimizerC.zero_grad()
@@ -143,8 +137,8 @@ def trainIters(actor, critic, file_name_end):
       torch.save(optimizerC.state_dict(), optimizerC_path)
 
       # TODO test
-      save_fig(result_data_controller, ['cumulative_reward', 'actor_loss', 'critic_loss'])
-      # save_fig(result_data_controller, ['cumulative_reward'])
+      result_data_controller.plot("cumulative_reward", ylim=[400, 1500])
+      save_fig(result_data_controller, ['actor_loss', 'critic_loss'])
       
       experience_controller.plot_arrays('distribution')
     
